@@ -13,15 +13,24 @@ from dotmap import DotMap
 import logging
 import coloredlogs
 
+from modules.TwitchChat import TwitchChat
+
 
 class Botdelicious:
     def __init__(self):
-        with open("config.yml", "r") as config:
-            self.config = DotMap(yaml.load(config, Loader=yaml.FullLoader))
+        self._config = None
         self.command = False
         self.newCommand = False
         self.stop = False
         self.running = False
+
+    @property
+    def config(self):
+        return self._config
+
+    @config.setter
+    def config(self, configuration):
+        self._config = configuration
 
     def start(self):
         self.startThread()
@@ -81,14 +90,18 @@ class Botdelicious:
             return 0
         elif command == "restart":
             self.restartLooper()
+        if command == "twitch":
+            self.twitch = TwitchChat(self.config.twitch)
+            self.twitch.run()
         else:
             self.command = command
-
         return 1
 
 
 def main():
     b = Botdelicious()
+    with open("config.yml", "r") as config:
+        b.config = DotMap(yaml.load(config, Loader=yaml.FullLoader))
     logger = logging.getLogger()
     logger.setLevel(b.config.logging.level)
     formatter = logging.Formatter(
