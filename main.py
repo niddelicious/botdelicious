@@ -14,6 +14,7 @@ import logging
 import coloredlogs
 
 from modules.TwitchChat import TwitchChat
+from modules.Webhook import Webhook
 
 
 class Botdelicious:
@@ -86,6 +87,7 @@ class Botdelicious:
         command = input("Command: \n")
         if command == "exit":
             self.stopThread()
+            self.webhook.stop()
             logging.info(f"Exiting...\n")
             return 0
         elif command == "restart":
@@ -93,6 +95,8 @@ class Botdelicious:
         if command == "twitch":
             self.twitch = TwitchChat(self.config.twitch)
             self.twitch.run()
+        if command == "webhook":
+            self.webhook = Webhook(self.config.webhook.port)
         else:
             self.command = command
         return 1
@@ -117,7 +121,7 @@ def main():
     """Main entry point of the app"""
     while b.inputListener():
         pass
-    print(f"Application ended\n")
+    logger.info(f"Application ended\n")
 
 
 if __name__ == "__main__":
