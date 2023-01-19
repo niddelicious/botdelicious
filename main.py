@@ -8,6 +8,7 @@ __version__ = "0.1.0"
 
 import sys
 from threading import Thread
+import asyncio
 import yaml
 from dotmap import DotMap
 import logging
@@ -24,6 +25,8 @@ class Botdelicious:
         self.newCommand = False
         self.stop = False
         self.running = False
+        self.threads = DotMap({})
+        self.getConfig()
 
     @property
     def config(self):
@@ -65,7 +68,7 @@ class Botdelicious:
 
     def initThread(self):
         logging.info(f"Initializing thread...\n")
-        self.t = Thread(target=self.looper, args=())
+        self.t = Thread(target=self.looper, name="Looper", args=())
 
     def stopThread(self):
         logging.info(f"Stopping thread...\n")
@@ -93,19 +96,57 @@ class Botdelicious:
         elif command == "restart":
             self.restartLooper()
         if command == "twitch":
-            self.twitch = TwitchChat(self.config.twitch)
-            self.twitch.run()
+            loop = asyncio.new_event_loop()
+            self.threads.twitch = Thread(
+                target=self.startTwitch, name="TwitchChat", args=(loop,), daemon=True
+            )
+            self.threads.twitch.start()
+            loop.stop()
         if command == "webhook":
-            self.webhook = Webhook(self.config.webhook.port)
+            self.threads.webhook = Thread(
+                target=self.startWebhook, name="Webhook", args=()
+            )
+            self.threads.webhook.start()
+        if command == "status":
+            self.threadsStatus()
         else:
             self.command = command
         return 1
 
+    def threadsStatus(self):
+        logging.info(self.threads)
+
+    def startWebhook(self):
+        self.webhook = Webhook(self.config.webhook.port)
+
+    def startTwitch(self, eventLoop: asyncio.AbstractEventLoop):
+        logging.info(eventLoop)
+        logging.info("Starting TwitchChat")
+        asyncio.set_event_loop(eventLoop)
+        eventLoop.run_forever()
+        logging.info("Loading TwitchChat")
+        self.twitch = TwitchChat(Bot=self)
+        logging.info("Running TwitchChat")
+        self.twitch.run()
+        logging.info("TwitchChat currently running...")
+
+    def updateConfig(self, group, setting, value):
+        with open("config.yml") as configFile:
+            config = yaml.load(configFile, Loader=yaml.FullLoader)
+
+        config[group][setting] = value
+
+        with open("config.yml", "w") as configFile:
+            yaml.dump(config, configFile)
+        self.getConfig()
+
+    def getConfig(self):
+        with open("config.yml", "r") as config:
+            self.config = DotMap(yaml.load(config, Loader=yaml.FullLoader))
+
 
 def main():
     b = Botdelicious()
-    with open("config.yml", "r") as config:
-        b.config = DotMap(yaml.load(config, Loader=yaml.FullLoader))
     logger = logging.getLogger()
     logger.setLevel(b.config.logging.level)
     formatter = logging.Formatter(
