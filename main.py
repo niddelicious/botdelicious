@@ -17,14 +17,13 @@ import coloredlogs
 from modules.TwitchChat import TwitchChat
 from modules.Webhook import Webhook
 
+from enums import ThreadState
+
 
 class Botdelicious:
     def __init__(self):
         self._config = None
-        self.command = False
-        self.newCommand = False
-        self.stop = False
-        self.running = False
+        self.state = ThreadState.IDLE
         self.threads = DotMap({})
         self.getConfig()
 
@@ -36,65 +35,13 @@ class Botdelicious:
     def config(self, configuration):
         self._config = configuration
 
-    def start(self):
-        self.startThread()
-        logging.info(f"Listening for commands...\n")
-
-    def looper(self, *args, **kwargs):
-        logging.info(f"Starting loop...\n")
-        self.running = True
-        while self.running:
-            if self.stop:
-                self.running = False
-            if self.command:
-                self.newCommand = self.command
-                self.command = False
-                self.runCommand(self.newCommand)
-                self.newCommand = False
-        logging.info(f"Loop completed\n")
-        delattr(self, "t")
-        self.running = False
-        return
-
-    def startThread(self):
-        logging.info(f"Starting thread...\n")
-        if hasattr(self, "t"):
-            if self.t.is_alive():
-                print(f"Thread already running...\n")
-                return
-        else:
-            self.initThread()
-        self.t.start()
-
-    def initThread(self):
-        logging.info(f"Initializing thread...\n")
-        self.t = Thread(target=self.looper, name="Looper", args=())
-
-    def stopThread(self):
-        logging.info(f"Stopping thread...\n")
-        while self.running:
-            self.stop = True
-        if hasattr(self, "t"):
-            self.t.join()
-        self.stop = False
-
-    def restartLooper(self):
-        logging.info(f"Restarting loop...\n")
-        self.stopThread()
-        self.startThread()
-
-    def runCommand(self, cmd):
-        logging.info(f"Running command: {cmd}\n")
-
     def inputListener(self):
         command = input("Command: \n")
         if command == "exit":
-            self.stopThread()
-            self.webhook.stop()
+            if hasattr(self, "webhook"):
+                self.webhook.stop()
             logging.info(f"Exiting...\n")
             return 0
-        elif command == "restart":
-            self.restartLooper()
         if command == "twitch":
             loop = asyncio.new_event_loop()
             self.threads.twitch = Thread(
@@ -104,7 +51,7 @@ class Botdelicious:
             loop.stop()
         if command == "webhook":
             self.threads.webhook = Thread(
-                target=self.startWebhook, name="Webhook", args=()
+                target=self.startWebhook, name="Webhook", args=(), daemon=True
             )
             self.threads.webhook.start()
         if command == "status":
@@ -158,7 +105,7 @@ def main():
     logger.addHandler(stdout_handler)
     coloredlogs.install(level=b.config.logging.level, logger=logger)
 
-    b.start()
+    # b.start()
     """Main entry point of the app"""
     while b.inputListener():
         pass
