@@ -12,3 +12,6 @@ twitch:
   refreshToken: refreshtoken_123
 webhook:
   port: 12345
+obs:
+  port: 12345
+  password: password_123

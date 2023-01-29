@@ -16,6 +16,7 @@ import coloredlogs
 
 from modules.TwitchChat import TwitchChat
 from modules.Webhook import Webhook
+from modules.OBS import OBS
 
 from enums import ThreadState
 
@@ -53,6 +54,8 @@ class Botdelicious:
             self.startModule(moduleName="twitch", eventLoop=True)
         if command == "start webhook":
             self.startModule(moduleName="webhook")
+        if command == "start obs":
+            self.startModule(moduleName="obs", eventLoop=True)
         if command == "status":
             self.threadsStatus()
         else:
@@ -76,6 +79,12 @@ class Botdelicious:
 
     def startWebhook(self, *args, **kwargs):
         self.webhook = Webhook(self.config.webhook.port)
+
+    def startObs(self, eventLoop: asyncio.AbstractEventLoop, *args, **kwargs):
+        asyncio.set_event_loop(eventLoop)
+        eventLoop.run_forever()
+        self.obs = OBS(self.config.obs.port, self.config.obs.password)
+        eventLoop.run_until_complete(self.obs.connect())
 
     def startTwitch(self, eventLoop: asyncio.AbstractEventLoop, *args, **kwargs):
         asyncio.set_event_loop(eventLoop)
