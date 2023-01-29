@@ -26,6 +26,7 @@ class Botdelicious:
         self.state = ThreadState.IDLE
         self.threads = DotMap({})
         self.getConfig()
+        self.autostart()
 
     @property
     def config(self):
@@ -35,6 +36,12 @@ class Botdelicious:
     def config(self, configuration):
         self._config = configuration
 
+    def autostart(self):
+        with open("autostart.yml", "r") as autostart:
+            autostarts = DotMap(yaml.load(autostart, Loader=yaml.FullLoader))
+        for module in autostarts.modules:
+            self.startModule(moduleName=module.name, eventLoop=module.loop)
+
     def inputListener(self):
         command = input("Command: \n")
         if command == "exit":
@@ -42,18 +49,10 @@ class Botdelicious:
                 self.webhook.stop()
             logging.info(f"Exiting...\n")
             return 0
-        if command == "twitch":
-            loop = asyncio.new_event_loop()
-            self.threads.twitch = Thread(
-                target=self.startTwitch, name="TwitchChat", args=(loop,), daemon=True
-            )
-            self.threads.twitch.start()
-            loop.stop()
-        if command == "webhook":
-            self.threads.webhook = Thread(
-                target=self.startWebhook, name="Webhook", args=(), daemon=True
-            )
-            self.threads.webhook.start()
+        if command == "start twitch":
+            self.startModule(moduleName="twitch", eventLoop=True)
+        if command == "start webhook":
+            self.startModule(moduleName="webhook")
         if command == "status":
             self.threadsStatus()
         else:
@@ -63,19 +62,26 @@ class Botdelicious:
     def threadsStatus(self):
         logging.info(self.threads)
 
-    def startWebhook(self):
+    def startModule(self, moduleName=None, eventLoop=None):
+        threadName = moduleName.capitalize()
+        moduleStartFunctionName = f"start{moduleName.capitalize()}"
+        moduleStartFunction = getattr(self, moduleStartFunctionName)
+        eventLoop = asyncio.new_event_loop() if eventLoop is True else None
+        self.threads[moduleName] = Thread(
+            target=moduleStartFunction, name=threadName, args=(eventLoop,), daemon=True
+        )
+        self.threads[moduleName].start()
+        if eventLoop:
+            eventLoop.stop()
+
+    def startWebhook(self, *args, **kwargs):
         self.webhook = Webhook(self.config.webhook.port)
 
-    def startTwitch(self, eventLoop: asyncio.AbstractEventLoop):
-        logging.info(eventLoop)
-        logging.info("Starting TwitchChat")
+    def startTwitch(self, eventLoop: asyncio.AbstractEventLoop, *args, **kwargs):
         asyncio.set_event_loop(eventLoop)
         eventLoop.run_forever()
-        logging.info("Loading TwitchChat")
         self.twitch = TwitchChat(Bot=self)
-        logging.info("Running TwitchChat")
         self.twitch.run()
-        logging.info("TwitchChat currently running...")
 
     def updateConfig(self, group, setting, value):
         with open("config.yml") as configFile:

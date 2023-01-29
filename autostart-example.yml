@@ -1,3 +1,5 @@
 modules:
-- webhook
-- twitch
+- name: webhook
+  loop: No
+- name: twitch
+  loop: Yes
