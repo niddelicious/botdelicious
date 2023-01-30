@@ -20,17 +20,20 @@ class OBS:
         self.enableCallbacks = enableCallbacks
 
     async def connect(self, *args, **kwargs):
-        logging.info(f"-- Connecting to {self.name}...")
+        logging.info(f"Connecting to {self.name}...")
         try:
             await self.ws.connect()
             await self.ws.wait_until_identified()
-            logging.info(f"-- ... connected")
         except ConnectionError:
-            logging.warn(f".... couldn't find {self.name}")
+            logging.warn(f"Could not connect to {self.name}")
             return
         if self.enableCallbacks:
             self.ws.register_event_callback(self.on_event)
             self.ws.register_event_callback(self.on_switchscenes, "SwitchScenes")
+
+    async def disconnect(self):
+        logging.info(f"Disconnecting from {self.name}")
+        await self.ws.disconnect()
 
     async def on_event(eventType, eventData):
         logging.info(

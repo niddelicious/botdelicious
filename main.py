@@ -26,8 +26,9 @@ class Botdelicious:
         self._config = None
         self.state = ThreadState.IDLE
         self.threads = DotMap({})
+        self.modules = DotMap({})
         self.getConfig()
-        self.autostart()
+        # self.autostart()
 
     @property
     def config(self):
@@ -52,10 +53,16 @@ class Botdelicious:
             return 0
         if command == "start twitch":
             self.startModule(moduleName="twitch", eventLoop=True)
+        if command == "stop twitch":
+            self.startTwitch()
         if command == "start webhook":
             self.startModule(moduleName="webhook")
+        if command == "stop webhook":
+            self.stopWebhook()
         if command == "start obs":
             self.startModule(moduleName="obs", eventLoop=True)
+        if command == "stop obs":
+            self.stopObs()
         if command == "status":
             self.threadsStatus()
         else:
@@ -78,19 +85,34 @@ class Botdelicious:
             eventLoop.stop()
 
     def startWebhook(self, *args, **kwargs):
-        self.webhook = Webhook(self.config.webhook.port)
+        self.modules.webhook.module = Webhook(self.config.webhook.port)
+
+    def stopWebhook(self, *args, **kwargs):
+        if hasattr(self.modules, "webhook"):
+            self.modules.webhook.module.stop()
 
     def startObs(self, eventLoop: asyncio.AbstractEventLoop, *args, **kwargs):
-        asyncio.set_event_loop(eventLoop)
-        eventLoop.run_forever()
-        self.obs = OBS(self.config.obs.port, self.config.obs.password)
-        eventLoop.run_until_complete(self.obs.connect())
+        self.modules.obs.loop = eventLoop
+        asyncio.set_event_loop(self.modules.obs.loop)
+        self.modules.obs.loop.run_forever()
+        self.modules.obs.module = OBS(self.config.obs.port, self.config.obs.password)
+        self.modules.obs.loop.run_until_complete(self.modules.obs.module.connect())
+
+    def stopObs(self, *args, **kwargs):
+        if hasattr(self.modules, "obs"):
+            self.modules.obs.loop.run_until_complete(
+                self.modules.obs.module.disconnect()
+            )
 
     def startTwitch(self, eventLoop: asyncio.AbstractEventLoop, *args, **kwargs):
         asyncio.set_event_loop(eventLoop)
         eventLoop.run_forever()
-        self.twitch = TwitchChat(Bot=self)
-        self.twitch.run()
+        self.modules.twitch.module = TwitchChat(Bot=self)
+        self.modules.twitch.module.run()
+
+    def stopTwitch(self, *args, **kwargs):
+        if hasattr(self.modules, "twitch"):
+            self.modules.twitch.module.close()
 
     def updateConfig(self, group, setting, value):
         with open("config.yml") as configFile:
