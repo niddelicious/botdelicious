@@ -2,9 +2,13 @@ import asyncio
 import logging
 import simpleobsws
 
+from helpers.ModuleAbstract import BotdeliciousModule
+from helpers.Enums import ModuleStatus
 
-class OBS:
+
+class OBS(BotdeliciousModule):
     def __init__(self, port, password, name="OBS", enableCallbacks=False) -> None:
+        super().__init__()
         parameters = (
             simpleobsws.IdentificationParameters()
         )  # Create an IdentificationParameters object
@@ -18,6 +22,16 @@ class OBS:
         )
         self.name = name
         self.enableCallbacks = enableCallbacks
+
+    def start(self):
+        self.status = ModuleStatus.RUNNING
+        pass
+
+    def status(self):
+        return self.status
+
+    def stop(self):
+        pass
 
     async def connect(self, *args, **kwargs):
         logging.info(f"Connecting to {self.name}...")
@@ -42,3 +56,47 @@ class OBS:
 
     async def on_switchscenes(eventData):
         logging.info('Scene switched to "{}".'.format(eventData["sceneName"]))
+
+    async def changeSmallTrackInfoAndDisplayElement(
+        self, artist: str = "Unknown", title: str = "Unknown"
+    ):
+        request = simpleobsws.Request(
+            "SetInputSettings",
+            {
+                "inputName": f"Small track artist",
+                "inputSettings": {
+                    "text": f"{artist}",
+                },
+            },
+        )
+        ret = await self.ws.call(request)
+
+        if ret.ok():  # Check if the request succeeded
+            print("Request succeeded! Response data: {}".format(ret.responseData))
+
+        request = simpleobsws.Request(
+            "SetInputSettings",
+            {
+                "inputName": f"Small track title",
+                "inputSettings": {
+                    "text": f"{title}",
+                },
+            },
+        )
+        ret = await self.ws.call(request)
+
+        if ret.ok():  # Check if the request succeeded
+            print("Request succeeded! Response data: {}".format(ret.responseData))
+
+        request = simpleobsws.Request(
+            "SetSourceFilterEnabled",
+            {
+                "sourceName": f"Track: Small",
+                "filterName": "Slide",
+                "filterEnabled": True,
+            },
+        )
+        ret = await self.ws.call(request)  # Perform the request
+
+        if ret.ok():  # Check if the request succeeded
+            print("Request succeeded! Response data: {}".format(ret.responseData))

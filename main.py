@@ -17,8 +17,10 @@ import coloredlogs
 from modules.TwitchChat import TwitchChat
 from modules.Webhook import Webhook
 from modules.OBS import OBS
+from modules.DJctl import DJctl
 
-from enums import ThreadState
+from helpers.Enums import ThreadState, ModuleStatus
+from helpers.MessageHandler import MessageHandler
 
 
 class Botdelicious:
@@ -27,8 +29,9 @@ class Botdelicious:
         self.state = ThreadState.IDLE
         self.threads = DotMap({})
         self.modules = DotMap({})
+        self.messageHandler = MessageHandler(modules = self.modules)
         self.getConfig()
-        # self.autostart()
+        self.autostart()
 
     @property
     def config(self):
@@ -47,8 +50,9 @@ class Botdelicious:
     def inputListener(self):
         command = input("Command: \n")
         if command == "exit":
-            if hasattr(self, "webhook"):
-                self.webhook.stop()
+            self.stopWebhook()
+            self.stopTwitch()
+            self.stopObs()
             logging.info(f"Exiting...\n")
             return 0
         if command == "start twitch":
@@ -59,6 +63,10 @@ class Botdelicious:
             self.startModule(moduleName="webhook")
         if command == "stop webhook":
             self.stopWebhook()
+        if command == "start djctl":
+            self.startModule(moduleName="djctl")
+        if command == "stop djctl":
+            self.stopDjctl()
         if command == "start obs":
             self.startModule(moduleName="obs", eventLoop=True)
         if command == "stop obs":
@@ -85,11 +93,21 @@ class Botdelicious:
             eventLoop.stop()
 
     def startWebhook(self, *args, **kwargs):
-        self.modules.webhook.module = Webhook(self.config.webhook.port)
+        self.modules.webhook.module = Webhook(
+            self.config.webhook.port, messageHandler=self.messageHandler
+        )
 
     def stopWebhook(self, *args, **kwargs):
-        if hasattr(self.modules, "webhook"):
+        if self.modules.has_key("webhook"):
             self.modules.webhook.module.stop()
+
+    def startDjctl(self, *args, **kwargs):
+        self.modules.djctl.module = DJctl()
+        self.modules.djctl.module.console()
+
+    def stopDjctl(self, *args, **kwargs):
+        if self.modules.has_key("djctl"):
+            self.modules.djctl.module.stop()
 
     def startObs(self, eventLoop: asyncio.AbstractEventLoop, *args, **kwargs):
         self.modules.obs.loop = eventLoop
@@ -99,7 +117,7 @@ class Botdelicious:
         self.modules.obs.loop.run_until_complete(self.modules.obs.module.connect())
 
     def stopObs(self, *args, **kwargs):
-        if hasattr(self.modules, "obs"):
+        if self.modules.has_key("obs"):
             self.modules.obs.loop.run_until_complete(
                 self.modules.obs.module.disconnect()
             )
@@ -111,8 +129,11 @@ class Botdelicious:
         self.modules.twitch.module.run()
 
     def stopTwitch(self, *args, **kwargs):
-        if hasattr(self.modules, "twitch"):
-            self.modules.twitch.module.close()
+        if self.modules.has_key("twitch"):
+            self.modules.twitch.loop.run_until_complete(
+                self.modules.twitch.module.close()
+            )
+            self.modules.twitch.loop.stop()
 
     def updateConfig(self, group, setting, value):
         with open("config.yml") as configFile:
