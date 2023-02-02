@@ -2,12 +2,14 @@ import asyncio
 import logging
 import simpleobsws
 
-from helpers.ModuleAbstract import BotdeliciousModule
+from helpers.AbstractModule import BotdeliciousModule
 from helpers.Enums import ModuleStatus
 
 
 class OBS(BotdeliciousModule):
-    def __init__(self, port, password, name="OBS", enableCallbacks=False) -> None:
+    def __init__(
+        self, port: str, password: str, name: str = "OBS", enableCallbacks: bool = False
+    ) -> None:
         super().__init__()
         parameters = (
             simpleobsws.IdentificationParameters()
@@ -57,7 +59,7 @@ class OBS(BotdeliciousModule):
     async def on_switchscenes(eventData):
         logging.info('Scene switched to "{}".'.format(eventData["sceneName"]))
 
-    async def changeSmallTrackInfoAndDisplayElement(
+    async def changeSmallTrackInfoThenDisplayElement(
         self, artist: str = "Unknown", title: str = "Unknown"
     ):
         request = simpleobsws.Request(
@@ -97,6 +99,52 @@ class OBS(BotdeliciousModule):
             },
         )
         ret = await self.ws.call(request)  # Perform the request
+
+        if ret.ok():  # Check if the request succeeded
+            print("Request succeeded! Response data: {}".format(ret.responseData))
+
+    async def displayElementThenChangeSmallTrackInfo(
+        self, artist: str = "Unknown", title: str = "Unknown"
+    ):
+
+        request = simpleobsws.Request(
+            "SetSourceFilterEnabled",
+            {
+                "sourceName": f"Track: Small",
+                "filterName": "Slide",
+                "filterEnabled": True,
+            },
+        )
+        ret = await self.ws.call(request)  # Perform the request
+
+        await asyncio.sleep(1)
+
+        if ret.ok():  # Check if the request succeeded
+            print("Request succeeded! Response data: {}".format(ret.responseData))
+        request = simpleobsws.Request(
+            "SetInputSettings",
+            {
+                "inputName": f"Small track artist",
+                "inputSettings": {
+                    "text": f"{artist}",
+                },
+            },
+        )
+        ret = await self.ws.call(request)
+
+        if ret.ok():  # Check if the request succeeded
+            print("Request succeeded! Response data: {}".format(ret.responseData))
+
+        request = simpleobsws.Request(
+            "SetInputSettings",
+            {
+                "inputName": f"Small track title",
+                "inputSettings": {
+                    "text": f"{title}",
+                },
+            },
+        )
+        ret = await self.ws.call(request)
 
         if ret.ok():  # Check if the request succeeded
             print("Request succeeded! Response data: {}".format(ret.responseData))

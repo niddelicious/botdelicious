@@ -3,7 +3,7 @@ import logging
 import webhook_listener
 import shutil
 
-from helpers.ModuleAbstract import BotdeliciousModule
+from helpers.AbstractModule import BotdeliciousModule
 
 
 class Webhook(BotdeliciousModule):
