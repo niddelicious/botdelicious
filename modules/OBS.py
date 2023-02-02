@@ -8,9 +8,14 @@ from helpers.Enums import ModuleStatus
 
 class OBS(BotdeliciousModule):
     def __init__(
-        self, port: str, password: str, name: str = "OBS", enableCallbacks: bool = False
+        self,
+        port: str,
+        password: str,
+        name: str = "OBS",
+        enableCallbacks: bool = False,
+        eventHandler=None,
     ) -> None:
-        super().__init__()
+        super().__init__(eventHandler=eventHandler)
         parameters = (
             simpleobsws.IdentificationParameters()
         )  # Create an IdentificationParameters object
@@ -44,8 +49,9 @@ class OBS(BotdeliciousModule):
             logging.warn(f"Could not connect to {self.name}")
             return
         if self.enableCallbacks:
-            self.ws.register_event_callback(self.on_event)
-            self.ws.register_event_callback(self.on_switchscenes, "SwitchScenes")
+            # self.ws.register_event_callback(self.on_event)
+            # self.ws.register_event_callback(self.on_switchscenes, "SwitchScenes")
+            pass
 
     async def disconnect(self):
         logging.info(f"Disconnecting from {self.name}")
@@ -59,7 +65,7 @@ class OBS(BotdeliciousModule):
     async def on_switchscenes(eventData):
         logging.info('Scene switched to "{}".'.format(eventData["sceneName"]))
 
-    async def changeSmallTrackInfoThenDisplayElement(
+    async def eventUpdateSmallTrackInfoThenTriggerSlideAnimation(
         self, artist: str = "Unknown", title: str = "Unknown"
     ):
         request = simpleobsws.Request(
@@ -74,7 +80,7 @@ class OBS(BotdeliciousModule):
         ret = await self.ws.call(request)
 
         if ret.ok():  # Check if the request succeeded
-            print("Request succeeded! Response data: {}".format(ret.responseData))
+            logging.info("Request succeeded! Response data: {}".format(ret.responseData))
 
         request = simpleobsws.Request(
             "SetInputSettings",
@@ -88,7 +94,7 @@ class OBS(BotdeliciousModule):
         ret = await self.ws.call(request)
 
         if ret.ok():  # Check if the request succeeded
-            print("Request succeeded! Response data: {}".format(ret.responseData))
+            logging.info("Request succeeded! Response data: {}".format(ret.responseData))
 
         request = simpleobsws.Request(
             "SetSourceFilterEnabled",
@@ -101,9 +107,9 @@ class OBS(BotdeliciousModule):
         ret = await self.ws.call(request)  # Perform the request
 
         if ret.ok():  # Check if the request succeeded
-            print("Request succeeded! Response data: {}".format(ret.responseData))
+            logging.info("Request succeeded! Response data: {}".format(ret.responseData))
 
-    async def displayElementThenChangeSmallTrackInfo(
+    async def eventTriggerSlideAnimationThenUpdateSmallTrackInfo(
         self, artist: str = "Unknown", title: str = "Unknown"
     ):
 
@@ -116,11 +122,12 @@ class OBS(BotdeliciousModule):
             },
         )
         ret = await self.ws.call(request)  # Perform the request
+
+        if ret.ok():  # Check if the request succeeded
+            logging.info("Request succeeded! Response data: {}".format(ret.responseData))
 
         await asyncio.sleep(1)
 
-        if ret.ok():  # Check if the request succeeded
-            print("Request succeeded! Response data: {}".format(ret.responseData))
         request = simpleobsws.Request(
             "SetInputSettings",
             {
@@ -133,7 +140,7 @@ class OBS(BotdeliciousModule):
         ret = await self.ws.call(request)
 
         if ret.ok():  # Check if the request succeeded
-            print("Request succeeded! Response data: {}".format(ret.responseData))
+            logging.info("Request succeeded! Response data: {}".format(ret.responseData))
 
         request = simpleobsws.Request(
             "SetInputSettings",
@@ -147,4 +154,4 @@ class OBS(BotdeliciousModule):
         ret = await self.ws.call(request)
 
         if ret.ok():  # Check if the request succeeded
-            print("Request succeeded! Response data: {}".format(ret.responseData))
+            logging.info("Request succeeded! Response data: {}".format(ret.responseData))

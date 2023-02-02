@@ -1,14 +1,15 @@
 import json
 import logging
 import webhook_listener
-import shutil
+
+from dotmap import DotMap
 
 from helpers.AbstractModule import BotdeliciousModule
 
 
 class Webhook(BotdeliciousModule):
-    def __init__(self, port, messageHandler=None):
-        super().__init__(messageHandler=messageHandler)
+    def __init__(self, port: str = "8080", eventHandler=None):
+        super().__init__(eventHandler=eventHandler)
         self.webhookListener = webhook_listener.Listener(
             handlers={"POST": self.incomingWebhook},
             port=port,
@@ -25,23 +26,17 @@ class Webhook(BotdeliciousModule):
         logging.info("Incoming Webhook")
         logging.info(request)
         if args and (destination := getattr(self, args[0], None)):
-            destination(body=request.body.read())
+            destination(webhookData=DotMap(json.loads(request.body.read())))
         return
 
-    def djctl(self, body: object = None):
-        jsonified = json.loads(body)
-        logging.info(jsonified)
-        if not jsonified["cover"]["art"]:
-            self.copyFallbackImageToCoverFile()
-        self.messageHandler.handleNewTrack(
-            jsonified["data"]["artist"], jsonified["data"]["title"]
+    def djctl(self, webhookData: DotMap = None):
+        logging.info(webhookData)
+        self.eventHandler.handleEvent(
+            event="newTrack",
+            artist=webhookData.data.artist,
+            title=webhookData.data.title,
+            containsCoverArt=webhookData.cover.art,
         )
 
     def stop(self):
         self.webhookListener.stop()
-
-    def copyFallbackImageToCoverFile(self):
-        shutil.copy2(
-            "external/djctl/record-vinyl-solid-light.png",
-            "external/djctl/latest-cover-art.png",
-        )

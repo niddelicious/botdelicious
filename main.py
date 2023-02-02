@@ -29,9 +29,8 @@ class Botdelicious:
         self.state = ThreadState.IDLE
         self.threads = DotMap({})
         self.modules = DotMap({})
-        self.messageHandler = EventHandler(modules=self.modules)
+        self.eventHandler = EventHandler(modules=self.modules)
         self.getConfig()
-        self.autostart()
 
     @property
     def config(self):
@@ -73,8 +72,8 @@ class Botdelicious:
             self.stopObs()
         if command == "start podcast":
             self.startModule(moduleName="podcast", eventLoop=True)
-        if command == "stop obs":
-            self.stopObs()
+        if command == "stop podcast":
+            self.stopPodcast()
         if command == "status":
             self.threadsStatus()
         else:
@@ -98,7 +97,7 @@ class Botdelicious:
 
     def startWebhook(self, *args, **kwargs):
         self.modules.webhook.module = Webhook(
-            self.config.webhook.port, messageHandler=self.messageHandler
+            self.config.webhook.port, eventHandler=self.eventHandler
         )
 
     def stopWebhook(self, *args, **kwargs):
@@ -117,7 +116,9 @@ class Botdelicious:
         self.modules.obs.loop = eventLoop
         asyncio.set_event_loop(self.modules.obs.loop)
         self.modules.obs.loop.run_forever()
-        self.modules.obs.module = OBS(self.config.obs.port, self.config.obs.password)
+        self.modules.obs.module = OBS(
+            self.config.obs.port, self.config.obs.password, name="obs"
+        )
         self.modules.obs.loop.run_until_complete(self.modules.obs.module.connect())
 
     def stopObs(self, *args, **kwargs):
@@ -131,7 +132,7 @@ class Botdelicious:
         asyncio.set_event_loop(self.modules.podcast.loop)
         self.modules.podcast.loop.run_forever()
         self.modules.podcast.module = OBS(
-            self.config.podcast.port, self.config.podcast.password
+            self.config.podcast.port, self.config.podcast.password, name="podcast"
         )
         self.modules.podcast.loop.run_until_complete(
             self.modules.podcast.module.connect()
@@ -142,6 +143,7 @@ class Botdelicious:
             self.modules.podcast.loop.run_until_complete(
                 self.modules.podcast.module.disconnect()
             )
+            self.modules.podcast.module.stop()
 
     def startTwitch(self, eventLoop: asyncio.AbstractEventLoop, *args, **kwargs):
         asyncio.set_event_loop(eventLoop)
@@ -178,7 +180,6 @@ def main():
     formatter = logging.Formatter(
         "%(asctime)s | %(levelname)s | %(message)s", "%m-%d-%Y %H:%M:%S"
     )
-
     stdout_handler = logging.StreamHandler(sys.stdout)
     stdout_handler.setFormatter(formatter)
     logger.addHandler(stdout_handler)
@@ -186,6 +187,7 @@ def main():
 
     # b.start()
     """Main entry point of the app"""
+    b.autostart()
     while b.inputListener():
         pass
     logger.info(f"Application ended\n")
