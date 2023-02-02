@@ -20,7 +20,7 @@ from modules.OBS import OBS
 from modules.DJctl import DJctl
 
 from helpers.Enums import ThreadState, ModuleStatus
-from helpers.MessageHandler import MessageHandler
+from helpers.EventHandler import EventHandler
 
 
 class Botdelicious:
@@ -29,7 +29,7 @@ class Botdelicious:
         self.state = ThreadState.IDLE
         self.threads = DotMap({})
         self.modules = DotMap({})
-        self.messageHandler = MessageHandler(modules = self.modules)
+        self.messageHandler = EventHandler(modules=self.modules)
         self.getConfig()
         self.autostart()
 
@@ -69,6 +69,10 @@ class Botdelicious:
             self.stopDjctl()
         if command == "start obs":
             self.startModule(moduleName="obs", eventLoop=True)
+        if command == "stop obs":
+            self.stopObs()
+        if command == "start podcast":
+            self.startModule(moduleName="podcast", eventLoop=True)
         if command == "stop obs":
             self.stopObs()
         if command == "status":
@@ -120,6 +124,23 @@ class Botdelicious:
         if self.modules.has_key("obs"):
             self.modules.obs.loop.run_until_complete(
                 self.modules.obs.module.disconnect()
+            )
+
+    def startPodcast(self, eventLoop: asyncio.AbstractEventLoop, *args, **kwargs):
+        self.modules.podcast.loop = eventLoop
+        asyncio.set_event_loop(self.modules.podcast.loop)
+        self.modules.podcast.loop.run_forever()
+        self.modules.podcast.module = OBS(
+            self.config.podcast.port, self.config.podcast.password
+        )
+        self.modules.podcast.loop.run_until_complete(
+            self.modules.podcast.module.connect()
+        )
+
+    def stopPodcast(self, *args, **kwargs):
+        if self.modules.has_key("podcast"):
+            self.modules.podcast.loop.run_until_complete(
+                self.modules.podcast.module.disconnect()
             )
 
     def startTwitch(self, eventLoop: asyncio.AbstractEventLoop, *args, **kwargs):

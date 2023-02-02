@@ -2,7 +2,7 @@ import os
 import subprocess
 import logging
 
-from helpers.ModuleAbstract import BotdeliciousModule
+from helpers.AbstractModule import BotdeliciousModule
 from helpers.Enums import ModuleStatus
 
 
