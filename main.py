@@ -20,7 +20,7 @@ from modules.OBS import OBS
 from modules.DJctl import DJctl
 
 from helpers.Enums import ThreadState, ModuleStatus
-from helpers.EventHandler import EventHandler
+from helpers.MessageHandler import EventHandler
 
 
 class Botdelicious:
