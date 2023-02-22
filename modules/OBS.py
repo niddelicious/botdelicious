@@ -68,90 +68,65 @@ class OBS(BotdeliciousModule):
     async def eventUpdateSmallTrackInfoThenTriggerSlideAnimation(
         self, artist: str = "Unknown", title: str = "Unknown"
     ):
-        request = simpleobsws.Request(
-            "SetInputSettings",
-            {
-                "inputName": f"Small track artist",
-                "inputSettings": {
-                    "text": f"{artist}",
-                },
-            },
-        )
-        ret = await self.ws.call(request)
-
-        if ret.ok():  # Check if the request succeeded
-            logging.info("Request succeeded! Response data: {}".format(ret.responseData))
-
-        request = simpleobsws.Request(
-            "SetInputSettings",
-            {
-                "inputName": f"Small track title",
-                "inputSettings": {
-                    "text": f"{title}",
-                },
-            },
-        )
-        ret = await self.ws.call(request)
-
-        if ret.ok():  # Check if the request succeeded
-            logging.info("Request succeeded! Response data: {}".format(ret.responseData))
-
-        request = simpleobsws.Request(
-            "SetSourceFilterEnabled",
-            {
-                "sourceName": f"Track: Small",
-                "filterName": "Slide",
-                "filterEnabled": True,
-            },
-        )
-        ret = await self.ws.call(request)  # Perform the request
-
-        if ret.ok():  # Check if the request succeeded
-            logging.info("Request succeeded! Response data: {}".format(ret.responseData))
+        await self.callUpdateText(inputName="Small track artist", text=artist)
+        await self.callUpdateText(inputName="Small track title", text=title)
+        await self.callToggleFilter("Track: Small", "Slide", True)
 
     async def eventTriggerSlideAnimationThenUpdateSmallTrackInfo(
         self, artist: str = "Unknown", title: str = "Unknown"
     ):
 
+        await self.callToggleFilter("Track: Small", "Slide", True)
+        await asyncio.sleep(1)
+        await self.callUpdateText(inputName="Small track artist", text=artist)
+        await self.callUpdateText(inputName="Small track title", text=title)
+
+    async def callToggleFilter(
+        self,
+        sourceName: str = None,
+        filterName: str = None,
+        filterEnabled: bool = False,
+    ):
         request = simpleobsws.Request(
             "SetSourceFilterEnabled",
             {
-                "sourceName": f"Track: Small",
-                "filterName": "Slide",
-                "filterEnabled": True,
+                "sourceName": f"{sourceName}",
+                "filterName": f"{filterName}",
+                "filterEnabled": filterEnabled,
             },
         )
         ret = await self.ws.call(request)  # Perform the request
 
         if ret.ok():  # Check if the request succeeded
-            logging.info("Request succeeded! Response data: {}".format(ret.responseData))
+            logging.info(
+                "Filter toggle succeeded! Response data: {}".format(ret.responseData)
+            )
+            return True
+        else:
+            logging.warn(
+                "Filter toggle failed! Response data: {}".format(ret.responseData)
+            )
+            return False
 
-        await asyncio.sleep(1)
-
+    async def callUpdateText(self, inputName: str = None, text: str = None):
         request = simpleobsws.Request(
             "SetInputSettings",
             {
-                "inputName": f"Small track artist",
+                "inputName": f"{inputName}",
                 "inputSettings": {
-                    "text": f"{artist}",
+                    "text": f"{text}",
                 },
             },
         )
-        ret = await self.ws.call(request)
+        ret = await self.ws.call(request)  # Perform the request
 
         if ret.ok():  # Check if the request succeeded
-            logging.info("Request succeeded! Response data: {}".format(ret.responseData))
-
-        request = simpleobsws.Request(
-            "SetInputSettings",
-            {
-                "inputName": f"Small track title",
-                "inputSettings": {
-                    "text": f"{title}",
-                },
-            },
-        )
-        ret = await self.ws.call(request)
-
-        if ret.ok():  # Check if the request succeeded
-            logging.info("Request succeeded! Response data: {}".format(ret.responseData))
+            logging.info(
+                "Input update succeeded! Response data: {}".format(ret.responseData)
+            )
+            return True
+        else:
+            logging.warn(
+                "Input update failed! Response data: {}".format(ret.responseData)
+            )
+            return False

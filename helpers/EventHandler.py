@@ -28,17 +28,17 @@ class EventHandler:
         logging.info(f"Cover art: {containsCoverArt}")
         if not containsCoverArt:
             self.copyFallbackImageToCoverFile()
-            logging.info(f"{self.modules}")
-            self.modules.obs.loop.run_until_complete(
-                self.modules.obs.module.eventUpdateSmallTrackInfoThenTriggerSlideAnimation(
-                    artist, title
-                )
+        logging.info(f"{self.modules}")
+        self.modules.obs.loop.run_until_complete(
+            self.modules.obs.module.eventUpdateSmallTrackInfoThenTriggerSlideAnimation(
+                artist, title
             )
-            self.modules.podcast.loop.run_until_complete(
-                self.modules.podcast.module.eventTriggerSlideAnimationThenUpdateSmallTrackInfo(
-                    artist, title
-                )
+        )
+        self.modules.podcast.loop.run_until_complete(
+            self.modules.podcast.module.eventTriggerSlideAnimationThenUpdateSmallTrackInfo(
+                artist, title
             )
+        )
 
     def copyFallbackImageToCoverFile(self):
         shutil.copy2(
