@@ -21,6 +21,7 @@ from modules.DJctl import DJctl
 
 from helpers.Enums import ThreadState, ModuleStatus
 from helpers.EventHandler import EventHandler
+from helpers.EventLoopManager import EventLoopManager
 
 
 class Botdelicious:
@@ -29,6 +30,8 @@ class Botdelicious:
         self.state = ThreadState.IDLE
         self.threads = DotMap({})
         self.modules = DotMap({})
+        self.eventLoop = EventLoopManager()
+        self.eventLoop.start()
         self.eventHandlerLoop = asyncio.new_event_loop()
         self.eventHandler = EventHandler(
             modules=self.modules, loop=self.eventHandlerLoop
