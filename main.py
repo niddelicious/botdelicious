@@ -29,8 +29,23 @@ class Botdelicious:
         self.state = ThreadState.IDLE
         self.threads = DotMap({})
         self.modules = DotMap({})
-        self.eventHandler = EventHandler(modules=self.modules)
+        self.eventHandlerLoop = asyncio.new_event_loop()
+        self.eventHandler = EventHandler(
+            modules=self.modules, loop=self.eventHandlerLoop
+        )
         self.getConfig()
+        self.threads["eventHandler"] = Thread(
+            target=self.startEventHandler,
+            name="EventHandler",
+            args=(self.eventHandlerLoop,),
+            daemon=True,
+        )
+
+    def startEventHandler(self, eventHandler: EventHandler, eventHandlerLoop):
+        asyncio.set_event_loop(eventHandlerLoop)
+        eventHandlerLoop.run_forever()
+        self.eventHandler = eventHandler
+        self.eventHandler.start()
 
     @property
     def config(self):
@@ -187,6 +202,7 @@ def main():
 
     # b.start()
     """Main entry point of the app"""
+    b.threads["eventHandler"].start()
     b.autostart()
     while b.inputListener():
         pass
