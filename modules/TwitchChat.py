@@ -5,16 +5,15 @@ from twitchio.ext import commands
 
 
 class TwitchChat(commands.Bot):
-    def __init__(self, Bot=None):
-
-        self.Bot = Bot
+    def __init__(self, parent):
+        self.parent = parent
         self.updateTokens()
         super().__init__(
-            token=self.Bot.config.twitch.accessToken,
-            prefix=self.Bot.config.twitch.botPrefix,
-            initial_channels=self.Bot.config.twitch.channels,
-            client_id=self.Bot.config.twitch.clientId,
-            client_secret=self.Bot.config.twitch.clientSecret,
+            token=self.parent.config.twitch.accessToken,
+            prefix=self.parent.config.twitch.botPrefix,
+            initial_channels=self.parent.config.twitch.channels,
+            client_id=self.parent.config.twitch.clientId,
+            client_secret=self.parent.config.twitch.clientSecret,
             case_insensitive=True,
         )
 
@@ -31,14 +30,18 @@ class TwitchChat(commands.Bot):
     def updateTokens(self):
         logging.info("Refreshing token")
         twitchRefreshUrl = str(
-            f"https://id.twitch.tv/oauth2/token?grant_type=refresh_token&refresh_token={self.Bot.config.twitch.refreshToken}&client_id={self.Bot.config.twitch.clientId}&client_secret={self.Bot.config.twitch.clientSecret}"
+            f"https://id.twitch.tv/oauth2/token?grant_type=refresh_token&refresh_token={self.parent.config.twitch.refreshToken}&client_id={self.parent.config.twitch.clientId}&client_secret={self.parent.config.twitch.clientSecret}"
         )
         refresh = DotMap(requests.post(twitchRefreshUrl).json())
         logging.info(f"Refresh response: {refresh}")
-        if self.Bot.config.twitch.accessToken != refresh.access_token:
-            self.Bot.updateConfig("twitch", "accessToken", refresh.access_token)
+        if self.parent.config.twitch.accessToken != refresh.access_token:
+            self.parent.configManager.updateConfig(
+                "twitch", "accessToken", refresh.access_token
+            )
 
-        if self.Bot.config.twitch.refreshToken != refresh.refresh_token:
-            self.Bot.updateConfig("twitch", "refreshToken", refresh.refresh_token)
+        if self.parent.config.twitch.refreshToken != refresh.refresh_token:
+            self.parent.configManager.updateConfig(
+                "twitch", "refreshToken", refresh.refresh_token
+            )
 
         logging.info("Refreshed tokens")
