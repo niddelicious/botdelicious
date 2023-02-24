@@ -4,9 +4,10 @@ from modules.DJctl import DJctl
 from modules.OBS import OBS
 from modules.TwitchChat import TwitchChat
 from modules.Webhook import Webhook
+from modules.Event import EventModule
 
 
-class ModuleManager:
+class ModulesManager:
     def __init__(self, parent):
         self.parent = parent
         self.modules = parent.modules
@@ -24,9 +25,23 @@ class ModuleManager:
         if eventLoop:
             eventLoop.stop()
 
+    def startEvent(self, eventLoop: asyncio.AbstractEventLoop, *args, **kwargs):
+        self.modules.event.loop = eventLoop
+        asyncio.set_event_loop(self.modules.event.loop)
+        self.modules.event.loop.run_forever()
+        self.modules.event.module = EventModule(
+            eventHandler=self.parent.eventHandler, parent=self.parent
+        )
+        self.modules.event.module.start()
+        self.modules.event.loop.run_until_complete(self.modules.event.module.run())
+
+    def stopEvent(self, *args, **kwargs):
+        if self.modules.has_key("event"):
+            self.modules.event.module.stop()
+
     def startWebhook(self, *args, **kwargs):
         self.modules.webhook.module = Webhook(
-            self.parent.config.webhook.port, eventHandler=self.parent.eventHandler
+            port=self.parent.config.webhook.port, eventHandler=self.parent.eventHandler
         )
 
     def stopWebhook(self, *args, **kwargs):

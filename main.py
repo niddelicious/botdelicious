@@ -20,7 +20,7 @@ from helpers.Enums import ThreadState, ModuleStatus
 from helpers.EventHandler import EventHandler
 from helpers.EventLoopManager import EventLoopManager
 from helpers.InputCatcher import InputCatcher
-from helpers.ModuleManager import ModuleManager
+from helpers.ModulesManager import ModulesManager
 from helpers.ConfigManager import ConfigManager
 
 
@@ -31,15 +31,10 @@ class Botdelicious:
         self.threads = DotMap({})
         self.modules = DotMap({})
         self.queue = Queue()
-        self.eventLoopManager = EventLoopManager(queue=self.queue)
-        self.eventHandler = EventHandler()
+        self.eventHandler = None
         self.configManager = ConfigManager(parent=self)
         self.configManager.getConfig()
-        self.threads["eventLoopManager"] = Thread(
-            target=self.eventLoopManager, args=(self.queue,)
-        )
-        self.threads["eventLoopManager"].start()
-        self.modulesManager = ModuleManager(parent=self)
+        self.modulesManager = ModulesManager(parent=self)
         self.inputCatcher = InputCatcher(parent=self)
 
     @property
@@ -76,12 +71,6 @@ def main():
 
     """Main entry point of the app"""
     b.autostart()
-    while not b.queue.empty():
-        logging.debug(f"Queue: {b.queue}")
-        logging.debug(f"LoopManager: {b.eventLoopManager}")
-        logging.debug(f"Threads: {b.threads}")
-        logging.debug(f"Thread: {b.threads.eventLoopManager}")
-        time.sleep(3)
     while b.inputCatcher.commandline():
         pass
     logger.info(f"Application ended\n")

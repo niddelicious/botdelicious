@@ -4,42 +4,46 @@ import logging
 class InputCatcher:
     def __init__(self, parent):
         self.parent = parent
-        self.moduleManager = parent.modulesManager
+        self.modulesManager = parent.modulesManager
 
     def commandline(self):
         command = input("Command: \n")
         if command == "exit":
-            self.moduleManager.stopWebhook()
-            self.moduleManager.stopTwitch()
-            self.moduleManager.stopObs()
+            self.modulesManager.stopWebhook()
+            self.modulesManager.stopTwitch()
+            self.modulesManager.stopObs()
             logging.info(f"Exiting...\n")
             return 0
         if command == "start twitch":
-            self.moduleManager.startModule(moduleName="twitch", eventLoop=True)
+            self.modulesManager.startModule(moduleName="twitch", eventLoop=True)
         if command == "stop twitch":
-            self.moduleManager.startTwitch()
+            self.modulesManager.startTwitch()
+        if command == "start event":
+            self.modulesManager.startModule(moduleName="event", eventLoop=True)
+        if command == "stop event":
+            self.modulesManager.stopEvent()
         if command == "start webhook":
-            self.moduleManager.startModule(moduleName="webhook")
+            self.modulesManager.startModule(moduleName="webhook")
         if command == "stop webhook":
-            self.moduleManager.stopWebhook()
+            self.modulesManager.stopWebhook()
         if command == "start djctl":
-            self.moduleManager.startModule(moduleName="djctl")
+            self.modulesManager.startModule(moduleName="djctl")
         if command == "stop djctl":
-            self.moduleManager.stopDjctl()
+            self.modulesManager.stopDjctl()
         if command == "start obs":
-            self.moduleManager.startModule(moduleName="obs", eventLoop=True)
+            self.modulesManager.startModule(moduleName="obs", eventLoop=True)
         if command == "stop obs":
-            self.moduleManager.stopObs()
+            self.modulesManager.stopObs()
         if command == "start podcast":
-            self.moduleManager.startModule(moduleName="podcast", eventLoop=True)
+            self.modulesManager.startModule(moduleName="podcast", eventLoop=True)
         if command == "stop podcast":
-            self.moduleManager.stopPodcast()
+            self.modulesManager.stopPodcast()
         if command == "status":
-            self.bot.threadsStatus()
+            self.parent.threadsStatus()
         if command == "check":
-            self.bot.eventLoopManager.checkLoopIsRunning()
+            self.parent.modules.event.module.checkLoopIsRunning()
         if command == "loop":
-            self.bot.eventLoopManager.start()
+            self.parent.eventLoopManager.start()
         else:
             self.command = command
         return 1
