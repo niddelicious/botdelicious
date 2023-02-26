@@ -2,6 +2,7 @@ import requests
 import logging
 from dotmap import DotMap
 from twitchio.ext import commands
+import datetime
 
 
 class TwitchChat(commands.Bot):
@@ -21,19 +22,22 @@ class TwitchChat(commands.Bot):
         print(f"Logged in as | {self.nick}")
         print(f"User id is | {self.user_id}")
         for channel in self.connected_channels:
-            await self.sendMessageToChat(channel.name, "Hello World!")
+            current_time_string = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            await self.sendMessageToChat(
+                channel.name, f"Hello World! ({current_time_string})"
+            )
 
     async def sendMessageToChat(self, channel, message):
         chan = self.get_channel(channel)
         self.loop.create_task(chan.send(message))
 
     def updateTokens(self):
-        logging.info("Refreshing token")
+        logging.debug("Refreshing token")
         twitchRefreshUrl = str(
             f"https://id.twitch.tv/oauth2/token?grant_type=refresh_token&refresh_token={self.parent.config.twitch.refreshToken}&client_id={self.parent.config.twitch.clientId}&client_secret={self.parent.config.twitch.clientSecret}"
         )
         refresh = DotMap(requests.post(twitchRefreshUrl).json())
-        logging.info(f"Refresh response: {refresh}")
+        logging.debug(f"Refresh response: {refresh}")
         if self.parent.config.twitch.accessToken != refresh.access_token:
             self.parent.configManager.updateConfig(
                 "twitch", "accessToken", refresh.access_token
@@ -44,4 +48,4 @@ class TwitchChat(commands.Bot):
                 "twitch", "refreshToken", refresh.refresh_token
             )
 
-        logging.info("Refreshed tokens")
+        logging.info("Refreshed Twitch Tokens")

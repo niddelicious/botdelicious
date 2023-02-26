@@ -1,4 +1,3 @@
-import asyncio
 import json
 import logging
 import webhook_listener
@@ -12,7 +11,6 @@ class Webhook(BotdeliciousModule):
     def __init__(self, port: str = "8080", parent=None):
         super().__init__()
         self.parent = parent
-        self.eventHandler = parent.getEventHandler()
         self.webhookListener = webhook_listener.Listener(
             handlers={"POST": self.incomingWebhook},
             port=port,
@@ -26,18 +24,15 @@ class Webhook(BotdeliciousModule):
         return self.status
 
     def incomingWebhook(self, request, *args, **kwargs):
-        logging.info("Incoming Webhook")
-        logging.info(request)
+        logging.debug("Incoming Webhook")
+        logging.debug(request)
         if args and (destination := getattr(self, args[0], None)):
             destination(webhookData=DotMap(json.loads(request.body.read())))
         return
 
     def djctl(self, webhookData: DotMap = None):
         eventHandler = self.parent.getEventHandler()
-        logging.info(webhookData)
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(
+        self.parent.run_asyncio_coroutine(
             eventHandler.queueEvent(
                 event="newTrack",
                 artist=webhookData.data.artist,
@@ -47,4 +42,5 @@ class Webhook(BotdeliciousModule):
         )
 
     def stop(self):
+        logging.debug("Stopping webhookListener")
         self.webhookListener.stop()

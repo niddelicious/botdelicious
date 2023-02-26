@@ -7,19 +7,14 @@ __license__ = "MIT"
 __version__ = "0.1.0"
 
 import sys
-from threading import Thread
-import asyncio
-import time
 import yaml
 from dotmap import DotMap
 import logging
 import coloredlogs
-from queue import Queue
 
-from helpers.Enums import ThreadState, ModuleStatus
+from AsyncioThread import AsyncioThread
+from helpers.Enums import ThreadState
 
-# from helpers.EventHandler import EventHandler
-# from helpers.EventLoopManager import EventLoopManager
 from helpers.InputCatcher import InputCatcher
 from helpers.ModulesManager import ModulesManager
 from helpers.ConfigManager import ConfigManager
@@ -31,9 +26,7 @@ class Botdelicious:
     def __init__(self):
         self._config = None
         self.state = ThreadState.IDLE
-        self.threads = DotMap({})
         self.modules = DotMap({})
-        self.queue = Queue()
         self.configManager = ConfigManager(parent=self)
         self.configManager.getConfig()
         self.modulesManager = ModulesManager(parent=self)
@@ -50,6 +43,20 @@ class Botdelicious:
         cls.eventHandler = eventHandler
         logging.debug(f"EventHandler after:{cls.eventHandler}")
 
+    def start_asyncio_thread(self):
+        self._asyncio_thread = AsyncioThread()
+        self._asyncio_thread.start_loop()
+
+    def stop_asyncio_thread(self):
+        if self._asyncio_thread is not None:
+            self._asyncio_thread.stop_loop()
+            self._asyncio_thread = None
+
+    def run_asyncio_coroutine(self, coro):
+        if self._asyncio_thread is None:
+            self.start_asyncio_thread()
+        self._asyncio_thread.run_coroutine(coro)
+
     @property
     def config(self):
         return self._config
@@ -62,16 +69,11 @@ class Botdelicious:
         with open("autostart.yml", "r") as autostart:
             autostarts = DotMap(yaml.load(autostart, Loader=yaml.FullLoader))
         for module in autostarts.modules:
-            self.modulesManager.startModule(
-                moduleName=module.name, eventLoop=module.loop
-            )
-
-    def threadsStatus(self):
-        logging.info(self.threads)
-
+            self.modulesManager.startModule(moduleName=module.name)
 
 def main():
     b = Botdelicious()
+    b.start_asyncio_thread()
     logger = logging.getLogger()
     logger.setLevel(b.config.logging.level)
     formatter = logging.Formatter(
@@ -86,6 +88,7 @@ def main():
     b.autostart()
     while b.inputCatcher.commandline():
         pass
+    b.stop_asyncio_thread()
     logger.info(f"Application ended\n")
 
 

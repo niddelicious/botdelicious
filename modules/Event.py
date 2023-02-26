@@ -2,6 +2,7 @@ import asyncio
 import logging
 import shutil
 from dotmap import DotMap
+from AsyncioThread import AsyncioThread
 from helpers.AbstractModule import BotdeliciousModule
 from helpers.Enums import ModuleStatus, QueueStatus
 
@@ -11,32 +12,37 @@ class EventModule(BotdeliciousModule):
         super().__init__()
         self.parent = parent
         self.eventQueue = asyncio.Queue()
+        self.moduleStatus = ModuleStatus.IDLE
 
     def start(self):
         self.parent.setEventHandler(self)
-        self.status = ModuleStatus.RUNNING
+        self.moduleStatus = ModuleStatus.RUNNING
 
     def status(self):
-        return self.status
+        return self.moduleStatus
 
     def stop(self):
-        self.status = ModuleStatus.STOPPING
-        self.loop.stop()
-        self.status = ModuleStatus.IDLE
+        self.moduleStatus = ModuleStatus.STOPPING
+        self.parent.stop_asyncio_thread()
+        self.moduleStatus = ModuleStatus.IDLE
 
     async def run(self):
         logging.debug(f"Starting Event!")
-        loopIteration = 1
-        while True:
-            logging.debug(f"Event loop: {loopIteration} {self.status}")
-            self.checkLoopIsRunning()
+        while self.moduleStatus == ModuleStatus.RUNNING:
             if not self.eventQueue.empty():
                 await self.handleEventQueue()
-            await asyncio.sleep(1)
-            loopIteration += 1
+            await asyncio.sleep(0)
+        while self.moduleStatus == ModuleStatus.STOPPING:
+            logging.DEBUG(f"Stopping event!")
+            await asyncio.sleep(3)
+        while self.moduleStatus == ModuleStatus.IDLE:
+            logging.debug(f"Event stopped")
+            await asyncio.sleep(3)
 
     async def handleEventQueue(self):
+        logging.debug(f"handleEventQueue")
         event_item = await self.eventQueue.get()
+        logging.debug(f"{event_item}")
         eventTypeHandlerMethod = "handle_" + event_item.eventType
         if hasattr(self, eventTypeHandlerMethod):
             handler = getattr(self, eventTypeHandlerMethod)
@@ -64,16 +70,18 @@ class EventModule(BotdeliciousModule):
         await self.eventQueue.put(itemToQueue)
 
     async def handle_newTrack(self, itemData=None):
-        logging.info(f"Handle new track:")
-        logging.info(f"Artist: {itemData.artist} | Title: {itemData.title}")
-        logging.info(f"Cover art: {itemData.containsCoverArt}")
+        logging.debug(f"Handle new track:")
+        logging.debug(f"Artist: {itemData.artist} | Title: {itemData.title}")
+        logging.debug(f"Cover art: {itemData.containsCoverArt}")
         if not itemData.containsCoverArt:
             self.copyFallbackImageToCoverFile()
-        await self.parent.modules.podcast.module.eventTriggerSlideAnimationThenUpdateSmallTrackInfo(
-            itemData.artist, itemData.title
-        )
-        await self.parent.modules.obs.module.eventUpdateSmallTrackInfoThenTriggerSlideAnimation(
-            itemData.artist, itemData.title
+        await asyncio.gather(
+            self.parent.modules.podcast.module.eventTriggerSlideAnimationThenUpdateSmallTrackInfo(
+                itemData.artist, itemData.title
+            ),
+            self.parent.modules.obs.module.eventUpdateSmallTrackInfoThenTriggerSlideAnimation(
+                itemData.artist, itemData.title
+            ),
         )
 
     def copyFallbackImageToCoverFile(self):

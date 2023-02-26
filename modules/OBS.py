@@ -67,18 +67,23 @@ class OBS(BotdeliciousModule):
     async def eventUpdateSmallTrackInfoThenTriggerSlideAnimation(
         self, artist: str = "Unknown", title: str = "Unknown"
     ):
-        await self.callUpdateText(inputName="Small track artist", text=artist)
-        await self.callUpdateText(inputName="Small track title", text=title)
+        await asyncio.gather(
+            self.callUpdateText(inputName="Small track artist", text=artist),
+            self.callUpdateText(inputName="Small track title", text=title),
+        )
         await self.callToggleFilter("Track: Small", "Slide", True)
+        await asyncio.sleep(8)
 
     async def eventTriggerSlideAnimationThenUpdateSmallTrackInfo(
         self, artist: str = "Unknown", title: str = "Unknown"
     ):
-
         await self.callToggleFilter("Track: Small", "Slide", True)
         await asyncio.sleep(1)
-        await self.callUpdateText(inputName="Small track artist", text=artist)
-        await self.callUpdateText(inputName="Small track title", text=title)
+        await asyncio.gather(
+            self.callUpdateText(inputName="Small track artist", text=artist),
+            self.callUpdateText(inputName="Small track title", text=title),
+        )
+        await asyncio.sleep(5)
 
     async def callToggleFilter(
         self,
@@ -97,7 +102,7 @@ class OBS(BotdeliciousModule):
         ret = await self.ws.call(request)  # Perform the request
 
         if ret.ok():  # Check if the request succeeded
-            logging.info(
+            logging.debug(
                 "Filter toggle succeeded! Response data: {}".format(ret.responseData)
             )
             return True
