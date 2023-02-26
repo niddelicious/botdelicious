@@ -17,25 +17,38 @@ import coloredlogs
 from queue import Queue
 
 from helpers.Enums import ThreadState, ModuleStatus
-from helpers.EventHandler import EventHandler
-from helpers.EventLoopManager import EventLoopManager
+
+# from helpers.EventHandler import EventHandler
+# from helpers.EventLoopManager import EventLoopManager
 from helpers.InputCatcher import InputCatcher
 from helpers.ModulesManager import ModulesManager
 from helpers.ConfigManager import ConfigManager
 
 
 class Botdelicious:
+    eventHandler = None
+
     def __init__(self):
         self._config = None
         self.state = ThreadState.IDLE
         self.threads = DotMap({})
         self.modules = DotMap({})
         self.queue = Queue()
-        self.eventHandler = None
         self.configManager = ConfigManager(parent=self)
         self.configManager.getConfig()
         self.modulesManager = ModulesManager(parent=self)
         self.inputCatcher = InputCatcher(parent=self)
+
+    @classmethod
+    def getEventHandler(cls):
+        logging.debug(f"Fetching EventHandler:{cls.eventHandler}")
+        return cls.eventHandler
+
+    @classmethod
+    def setEventHandler(cls, eventHandler):
+        logging.debug(f"EventHandler before:{cls.eventHandler}")
+        cls.eventHandler = eventHandler
+        logging.debug(f"EventHandler after:{cls.eventHandler}")
 
     @property
     def config(self):

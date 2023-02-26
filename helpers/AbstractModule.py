@@ -3,9 +3,8 @@ from helpers.Enums import ModuleStatus
 
 
 class BotdeliciousModule(ABC):
-    def __init__(self, eventHandler=None):
+    def __init__(self):
         self.status = ModuleStatus.IDLE
-        self.eventHandler = eventHandler
 
     @abstractmethod
     def start(self):

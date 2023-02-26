@@ -13,9 +13,8 @@ class OBS(BotdeliciousModule):
         password: str,
         name: str = "OBS",
         enableCallbacks: bool = False,
-        eventHandler=None,
     ) -> None:
-        super().__init__(eventHandler=eventHandler)
+        super().__init__()
         parameters = (
             simpleobsws.IdentificationParameters()
         )  # Create an IdentificationParameters object

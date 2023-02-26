@@ -29,9 +29,7 @@ class ModulesManager:
         self.modules.event.loop = eventLoop
         asyncio.set_event_loop(self.modules.event.loop)
         self.modules.event.loop.run_forever()
-        self.modules.event.module = EventModule(
-            eventHandler=self.parent.eventHandler, parent=self.parent
-        )
+        self.modules.event.module = EventModule(parent=self.parent)
         self.modules.event.module.start()
         self.modules.event.loop.run_until_complete(self.modules.event.module.run())
 
@@ -41,7 +39,7 @@ class ModulesManager:
 
     def startWebhook(self, *args, **kwargs):
         self.modules.webhook.module = Webhook(
-            port=self.parent.config.webhook.port, eventHandler=self.parent.eventHandler
+            port=self.parent.config.webhook.port, parent=self.parent
         )
 
     def stopWebhook(self, *args, **kwargs):
