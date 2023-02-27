@@ -38,7 +38,11 @@ class TwitchChat(commands.Bot):
     def updateTokens(self):
         logging.debug("Refreshing token")
         twitchRefreshUrl = str(
-            f"https://id.twitch.tv/oauth2/token?grant_type=refresh_token&refresh_token={ConfigManager.config.twitch.refreshToken}&client_id={ConfigManager.config.twitch.clientId}&client_secret={ConfigManager.config.twitch.clientSecret}"
+            f"https://id.twitch.tv/oauth2/token?"
+            f"grant_type=refresh_token&"
+            f"refresh_token={ConfigManager.config.twitch.refreshToken}&"
+            f"client_id={ConfigManager.config.twitch.clientId}&"
+            f"client_secret={ConfigManager.config.twitch.clientSecret}"
         )
         refresh = DotMap(requests.post(twitchRefreshUrl).json())
         logging.debug(f"Refresh response: {refresh}")

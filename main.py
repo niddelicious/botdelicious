@@ -1,5 +1,6 @@
 """
-A Twitch chat-bot, with integrations towards Twitch, OBS, Engine OS/SoundStage, Ko-fi, and Twinkly
+A Twitch chat-bot, with integrations towards Twitch, OBS,
+Engine OS/SoundStage, Ko-fi, and Twinkly
 """
 
 __author__ = "Nidde Nedelius"
