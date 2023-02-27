@@ -5,6 +5,7 @@ from dotmap import DotMap
 from AsyncioThread import AsyncioThread
 from helpers.AbstractModule import BotdeliciousModule
 from helpers.Enums import ModuleStatus, QueueStatus
+from main import Botdelicious
 
 
 class EventModule(BotdeliciousModule):
@@ -15,7 +16,7 @@ class EventModule(BotdeliciousModule):
         self.moduleStatus = ModuleStatus.IDLE
 
     def start(self):
-        self.parent.setEventHandler(self)
+        Botdelicious.setEventHandler(self)
         self.moduleStatus = ModuleStatus.RUNNING
 
     def status(self):
@@ -23,7 +24,7 @@ class EventModule(BotdeliciousModule):
 
     def stop(self):
         self.moduleStatus = ModuleStatus.STOPPING
-        self.parent.stop_asyncio_thread()
+        AsyncioThread.stop_loop()
         self.moduleStatus = ModuleStatus.IDLE
 
     async def run(self):

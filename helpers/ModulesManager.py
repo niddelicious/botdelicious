@@ -1,4 +1,3 @@
-import asyncio
 import logging
 from AsyncioThread import AsyncioThread
 from helpers.ConfigManager import ConfigManager
@@ -10,83 +9,76 @@ from modules.Event import EventModule
 
 
 class ModulesManager:
-    def __init__(self, parent):
-        self.parent = parent
-        self.modules = parent.modules
+    def __init__(cls):
+        pass
 
-    def run_loop(self, loop):
-        asyncio.set_event_loop(loop)
-        loop.run_forever()
+    def startModule(cls, moduleName=None):
+        module = getattr(cls.modules, moduleName)
+        AsyncioThread.run_coroutine(module.start())
 
-    def startModule(self, moduleName=None):
-        moduleStartFunctionName = f"start{moduleName.capitalize()}"
-        moduleStartFunction = getattr(self, moduleStartFunctionName)
-        AsyncioThread.run_coroutine(moduleStartFunction())
+    def stopModule(cls, moduleName=None):
+        module = getattr(cls.modules, moduleName)
+        AsyncioThread.run_coroutine(module.stop())
 
-    def stopModule(self, moduleName=None):
-        moduleStopFunctionName = f"stop{moduleName.capitalize()}"
-        moduleStopFunction = getattr(self, moduleStopFunctionName)
-        AsyncioThread.run_coroutine(moduleStopFunction())
+    async def startEvent(cls, *args, **kwargs):
+        cls.modules.event.module = EventModule()
+        cls.modules.event.module.start()
+        AsyncioThread.run_coroutine(cls.modules.event.module.run())
 
-    async def startEvent(self, *args, **kwargs):
-        self.modules.event.module = EventModule(parent=self.parent)
-        self.modules.event.module.start()
-        AsyncioThread.run_coroutine(self.modules.event.module.run())
+    async def stopEvent(cls, *args, **kwargs):
+        if cls.modules.has_key("event"):
+            cls.modules.event.module.stop()
 
-    async def stopEvent(self, *args, **kwargs):
-        if self.modules.has_key("event"):
-            self.modules.event.module.stop()
-
-    async def startWebhook(self, *args, **kwargs):
-        self.modules.webhook.module = Webhook(
-            port=ConfigManager.config.webhook.port, parent=self.parent
+    async def startWebhook(cls, *args, **kwargs):
+        cls.modules.webhook.module = Webhook(
+            port=ConfigManager.config.webhook.port
         )
 
-    async def stopWebhook(self, *args, **kwargs):
+    async def stopWebhook(cls, *args, **kwargs):
         logging.debug("stopping webhook")
-        logging.debug(self.modules)
-        if self.modules.has_key("webhook"):
-            self.modules.webhook.module.stop()
+        logging.debug(cls.modules)
+        if cls.modules.has_key("webhook"):
+            cls.modules.webhook.module.stop()
 
-    async def startDjctl(self, *args, **kwargs):
-        self.modules.djctl.module = DJctl()
-        self.modules.djctl.module.console()
+    async def startDjctl(cls, *args, **kwargs):
+        cls.modules.djctl.module = DJctl()
+        cls.modules.djctl.module.console()
 
-    async def stopDjctl(self, *args, **kwargs):
-        if self.modules.has_key("djctl"):
-            self.modules.djctl.module.stop()
+    async def stopDjctl(cls, *args, **kwargs):
+        if cls.modules.has_key("djctl"):
+            cls.modules.djctl.module.stop()
 
-    async def startObs(self, *args, **kwargs):
-        self.modules.obs.module = OBS(
+    async def startObs(cls, *args, **kwargs):
+        cls.modules.obs.module = OBS(
             ConfigManager.config.obs.port,
             ConfigManager.config.obs.password,
             name="obs",
         )
-        AsyncioThread.run_coroutine(self.modules.obs.module.connect())
+        AsyncioThread.run_coroutine(cls.modules.obs.module.connect())
 
-    async def stopObs(self, *args, **kwargs):
-        if self.modules.has_key("obs"):
-            AsyncioThread.run_coroutine(self.modules.obs.module.disconnect())
+    async def stopObs(cls, *args, **kwargs):
+        if cls.modules.has_key("obs"):
+            AsyncioThread.run_coroutine(cls.modules.obs.module.disconnect())
 
-    async def startPodcast(self, *args, **kwargs):
-        self.modules.podcast.module = OBS(
+    async def startPodcast(cls, *args, **kwargs):
+        cls.modules.podcast.module = OBS(
             ConfigManager.config.podcast.port,
             ConfigManager.config.podcast.password,
             name="podcast",
         )
-        AsyncioThread.run_coroutine(self.modules.podcast.module.connect())
+        AsyncioThread.run_coroutine(cls.modules.podcast.module.connect())
 
-    async def stopPodcast(self, *args, **kwargs):
-        if self.modules.has_key("podcast"):
-            self.parent.run_asyncio_coroutine(
-                self.modules.podcast.module.disconnect()
+    async def stopPodcast(cls, *args, **kwargs):
+        if cls.modules.has_key("podcast"):
+            AsyncioThread.run_coroutine(
+                cls.modules.podcast.module.disconnect()
             )
-            self.modules.podcast.module.stop()
+            cls.modules.podcast.module.stop()
 
-    async def startTwitch(self, *args, **kwargs):
-        self.modules.twitch.module = TwitchChat(parent=self.parent)
-        AsyncioThread.run_coroutine(self.modules.twitch.module.start())
+    async def startTwitch(cls, *args, **kwargs):
+        cls.modules.twitch.module = TwitchChat()
+        AsyncioThread.run_coroutine(cls.modules.twitch.module.start())
 
-    async def stopTwitch(self, *args, **kwargs):
-        if self.modules.has_key("twitch"):
-            AsyncioThread.run_coroutine(self.modules.twitch.module.close())
+    async def stopTwitch(cls, *args, **kwargs):
+        if cls.modules.has_key("twitch"):
+            AsyncioThread.run_coroutine(cls.modules.twitch.module.close())

@@ -39,8 +39,6 @@ class InputCatcher:
             self.modulesManager.startModule(moduleName="podcast")
         if command == "stop podcast":
             self.modulesManager.stopModule(moduleName="podcast")
-        if command == "loop":
-            self.parent.eventLoopManager.start()
         else:
             self.command = command
         return 1

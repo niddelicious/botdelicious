@@ -6,23 +6,32 @@ from dotmap import DotMap
 from AsyncioThread import AsyncioThread
 
 from helpers.AbstractModule import BotdeliciousModule
+from helpers.ConfigManager import ConfigManager
+from helpers.Enums import ModuleStatus
+from main import Botdelicious
 
 
 class Webhook(BotdeliciousModule):
-    def __init__(self, port: str = "8080", parent=None):
+    STATUS = ModuleStatus.IDLE
+
+    def __init__(self):
         super().__init__()
-        self.parent = parent
         self.webhookListener = webhook_listener.Listener(
             handlers={"POST": self.incomingWebhook},
-            port=port,
+            port=ConfigManager.config.webhook.port,
         )
-        self.webhookListener.start()
 
     def start(self):
-        pass
+        self.STATUS = ModuleStatus.RUNNING
+        self.webhookListener.start()
 
     def status(self):
-        return self.status
+        return self.STATUS
+
+    def stop(self):
+        self.STATUS = ModuleStatus.STOPPING
+        self.webhookListener.stop()
+        self.STATUS = ModuleStatus.IDLE
 
     def incomingWebhook(self, request, *args, **kwargs):
         logging.debug("Incoming Webhook")
@@ -32,7 +41,7 @@ class Webhook(BotdeliciousModule):
         return
 
     def djctl(self, webhookData: DotMap = None):
-        eventHandler = self.parent.getEventHandler()
+        eventHandler = Botdelicious.getEventHandler()
         AsyncioThread.run_coroutine(
             eventHandler.queueEvent(
                 event="newTrack",

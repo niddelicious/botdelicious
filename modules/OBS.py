@@ -31,13 +31,13 @@ class OBS(BotdeliciousModule):
 
     def start(self):
         self.status = ModuleStatus.RUNNING
-        pass
+        self.connect()
 
     def status(self):
         return self.status
 
     def stop(self):
-        pass
+        self.disconnect()
 
     async def connect(self, *args, **kwargs):
         logging.info(f"Connecting to {self.name}...")
@@ -103,12 +103,16 @@ class OBS(BotdeliciousModule):
 
         if ret.ok():  # Check if the request succeeded
             logging.debug(
-                "Filter toggle succeeded! Response data: {}".format(ret.responseData)
+                "Filter toggle succeeded! Response data: {}".format(
+                    ret.responseData
+                )
             )
             return True
         else:
             logging.warn(
-                "Filter toggle failed! Response data: {}".format(ret.responseData)
+                "Filter toggle failed! Response data: {}".format(
+                    ret.responseData
+                )
             )
             return False
 
@@ -126,11 +130,15 @@ class OBS(BotdeliciousModule):
 
         if ret.ok():  # Check if the request succeeded
             logging.info(
-                "Input update succeeded! Response data: {}".format(ret.responseData)
+                "Input update succeeded! Response data: {}".format(
+                    ret.responseData
+                )
             )
             return True
         else:
             logging.warn(
-                "Input update failed! Response data: {}".format(ret.responseData)
+                "Input update failed! Response data: {}".format(
+                    ret.responseData
+                )
             )
             return False
