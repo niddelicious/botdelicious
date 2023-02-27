@@ -3,3 +3,4 @@ autostart.yml
 __pycache__/
 external/
 .idea/
+.vscode/
