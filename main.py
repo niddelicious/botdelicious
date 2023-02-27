@@ -73,7 +73,6 @@ def main():
     )
 
     """Main entry point of the app"""
-    AsyncioThread.start_loop()
     b.autostart()
     while b.inputCatcher.commandline():
         pass
