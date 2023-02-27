@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from helpers.ConfigManager import ConfigManager
 from modules.DJctl import DJctl
 from modules.OBS import OBS
 from modules.TwitchChat import TwitchChat
@@ -37,7 +38,7 @@ class ModulesManager:
 
     async def startWebhook(self, *args, **kwargs):
         self.modules.webhook.module = Webhook(
-            port=self.parent.config.webhook.port, parent=self.parent
+            port=ConfigManager.config.webhook.port, parent=self.parent
         )
 
     async def stopWebhook(self, *args, **kwargs):
@@ -56,7 +57,7 @@ class ModulesManager:
 
     async def startObs(self, *args, **kwargs):
         self.modules.obs.module = OBS(
-            self.parent.config.obs.port, self.parent.config.obs.password, name="obs"
+            ConfigManager.config.obs.port, ConfigManager.config.obs.password, name="obs"
         )
         self.parent.run_asyncio_coroutine(self.modules.obs.module.connect())
 
@@ -66,8 +67,8 @@ class ModulesManager:
 
     async def startPodcast(self, *args, **kwargs):
         self.modules.podcast.module = OBS(
-            self.parent.config.podcast.port,
-            self.parent.config.podcast.password,
+            ConfigManager.config.podcast.port,
+            ConfigManager.config.podcast.password,
             name="podcast",
         )
         self.parent.run_asyncio_coroutine(self.modules.podcast.module.connect())

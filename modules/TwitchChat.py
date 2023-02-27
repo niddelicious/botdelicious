@@ -4,17 +4,19 @@ from dotmap import DotMap
 from twitchio.ext import commands
 import datetime
 
+from helpers.ConfigManager import ConfigManager
+
 
 class TwitchChat(commands.Bot):
     def __init__(self, parent):
         self.parent = parent
         self.updateTokens()
         super().__init__(
-            token=self.parent.config.twitch.accessToken,
-            prefix=self.parent.config.twitch.botPrefix,
-            initial_channels=self.parent.config.twitch.channels,
-            client_id=self.parent.config.twitch.clientId,
-            client_secret=self.parent.config.twitch.clientSecret,
+            token=ConfigManager.config.twitch.accessToken,
+            prefix=ConfigManager.config.twitch.botPrefix,
+            initial_channels=ConfigManager.config.twitch.channels,
+            client_id=ConfigManager.config.twitch.clientId,
+            client_secret=ConfigManager.config.twitch.clientSecret,
             case_insensitive=True,
         )
 
@@ -22,7 +24,9 @@ class TwitchChat(commands.Bot):
         print(f"Logged in as | {self.nick}")
         print(f"User id is | {self.user_id}")
         for channel in self.connected_channels:
-            current_time_string = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            current_time_string = datetime.datetime.now().strftime(
+                "%Y-%m-%d %H:%M:%S"
+            )
             await self.sendMessageToChat(
                 channel.name, f"Hello World! ({current_time_string})"
             )
@@ -34,17 +38,17 @@ class TwitchChat(commands.Bot):
     def updateTokens(self):
         logging.debug("Refreshing token")
         twitchRefreshUrl = str(
-            f"https://id.twitch.tv/oauth2/token?grant_type=refresh_token&refresh_token={self.parent.config.twitch.refreshToken}&client_id={self.parent.config.twitch.clientId}&client_secret={self.parent.config.twitch.clientSecret}"
+            f"https://id.twitch.tv/oauth2/token?grant_type=refresh_token&refresh_token={ConfigManager.config.twitch.refreshToken}&client_id={ConfigManager.config.twitch.clientId}&client_secret={ConfigManager.config.twitch.clientSecret}"
         )
         refresh = DotMap(requests.post(twitchRefreshUrl).json())
         logging.debug(f"Refresh response: {refresh}")
-        if self.parent.config.twitch.accessToken != refresh.access_token:
-            self.parent.configManager.updateConfig(
+        if ConfigManager.config.twitch.accessToken != refresh.access_token:
+            ConfigManager.update_config(
                 "twitch", "accessToken", refresh.access_token
             )
 
-        if self.parent.config.twitch.refreshToken != refresh.refresh_token:
-            self.parent.configManager.updateConfig(
+        if ConfigManager.config.twitch.refreshToken != refresh.refresh_token:
+            ConfigManager.update_config(
                 "twitch", "refreshToken", refresh.refresh_token
             )
 

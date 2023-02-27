@@ -3,19 +3,20 @@ from dotmap import DotMap
 
 
 class ConfigManager:
-    def __init__(self, parent=None):
-        self.parent = parent
+    config = None
 
-    def updateConfig(self, group, setting, value):
-        with open("config.yml") as configFile:
-            config = yaml.load(configFile, Loader=yaml.FullLoader)
+    @classmethod
+    def update_config(cls, group, setting, value):
+        with open("config.yml") as config_file:
+            config = yaml.load(config_file, Loader=yaml.FullLoader)
 
         config[group][setting] = value
 
-        with open("config.yml", "w") as configFile:
-            yaml.dump(config, configFile)
-        self.getConfig()
+        with open("config.yml", "w") as config_file:
+            yaml.dump(config, config_file)
+        cls.get_config()
 
-    def getConfig(self):
-        with open("config.yml", "r") as config:
-            self.parent.config = DotMap(yaml.load(config, Loader=yaml.FullLoader))
+    @classmethod
+    def get_config(cls):
+        with open("config.yml", "r") as config_file:
+            cls.config = DotMap(yaml.load(config_file, Loader=yaml.FullLoader))

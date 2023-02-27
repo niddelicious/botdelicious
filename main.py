@@ -27,8 +27,7 @@ class Botdelicious:
         self._config = None
         self.state = ThreadState.IDLE
         self.modules = DotMap({})
-        self.configManager = ConfigManager(parent=self)
-        self.configManager.getConfig()
+        ConfigManager.get_config()
         self.modulesManager = ModulesManager(parent=self)
         self.inputCatcher = InputCatcher(parent=self)
 
@@ -71,18 +70,21 @@ class Botdelicious:
         for module in autostarts.modules:
             self.modulesManager.startModule(moduleName=module.name)
 
+
 def main():
     b = Botdelicious()
     b.start_asyncio_thread()
     logger = logging.getLogger()
-    logger.setLevel(b.config.logging.level)
+    logger.setLevel(ConfigManager.config.logging.level)
     formatter = logging.Formatter(
         "%(asctime)s | %(levelname)s | %(message)s", "%m-%d-%Y %H:%M:%S"
     )
     stdout_handler = logging.StreamHandler(sys.stdout)
     stdout_handler.setFormatter(formatter)
     logger.addHandler(stdout_handler)
-    coloredlogs.install(level=b.config.logging.level, logger=logger)
+    coloredlogs.install(
+        level=ConfigManager.config.logging.level, logger=logger
+    )
 
     """Main entry point of the app"""
     b.autostart()
