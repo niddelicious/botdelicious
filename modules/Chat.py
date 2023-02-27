@@ -8,18 +8,20 @@ from helpers.ConfigManager import ConfigManager
 from helpers.Enums import ModuleStatus
 
 
-class TwitchChat(commands.Bot, BotdeliciousModule):
+class ChatModule(commands.Bot, BotdeliciousModule):
+    _status = ModuleStatus.IDLE
+
     def init(self):
         self.update_tokens()
         super().init(
-            token=ConfigManager.config.twitch.access_token,
-            prefix=ConfigManager.config.twitch.bot_prefix,
-            initial_channels=ConfigManager.config.twitch.channels,
-            client_id=ConfigManager.config.twitch.client_id,
-            client_secret=ConfigManager.config.twitch.client_secret,
+            token=ConfigManager._config.twitch.access_token,
+            prefix=ConfigManager._config.twitch.bot_prefix,
+            initial_channels=ConfigManager._config.twitch.channels,
+            client_id=ConfigManager._config.twitch.client_id,
+            client_secret=ConfigManager._config.twitch.client_secret,
             case_insensitive=True,
         )
-        self.status = ModuleStatus.IDLE
+        self._status = ModuleStatus.IDLE
 
     async def event_ready(self):
         print(f"Logged in as | {self.nick}")
@@ -41,32 +43,32 @@ class TwitchChat(commands.Bot, BotdeliciousModule):
         twitch_refresh_url = str(
             f"https://id.twitch.tv/oauth2/token?"
             f"grant_type=refresh_token&"
-            f"refresh_token={ConfigManager.config.twitch.refresh_token}&"
-            f"client_id={ConfigManager.config.twitch.client_id}&"
-            f"client_secret={ConfigManager.config.twitch.client_secret}"
+            f"refresh_token={ConfigManager._config.twitch.refresh_token}&"
+            f"client_id={ConfigManager._config.twitch.client_id}&"
+            f"client_secret={ConfigManager._config.twitch.client_secret}"
         )
         refresh = DotMap(requests.post(twitch_refresh_url).json())
         logging.debug(f"Refresh response: {refresh}")
-        if ConfigManager.config.twitch.access_token != refresh.access_token:
+        if ConfigManager._config.twitch.access_token != refresh.access_token:
             ConfigManager.update_config(
                 "twitch", "access_token", refresh.access_token
             )
 
-        if ConfigManager.config.twitch.refresh_token != refresh.refresh_token:
+        if ConfigManager._config.twitch.refresh_token != refresh.refresh_token:
             ConfigManager.update_config(
                 "twitch", "refresh_token", refresh.refresh_token
             )
 
         logging.info("Refreshed Twitch Tokens")
 
-    def start(self):
-        self.status = ModuleStatus.RUNNING
+    async def start(self):
+        self._status = ModuleStatus.RUNNING
         self.run()
 
-    def stop(self):
-        self.status = ModuleStatus.STOPPING
+    async def stop(self):
+        self._status = ModuleStatus.STOPPING
         self.close()
-        self.status = ModuleStatus.IDLE
+        self._status = ModuleStatus.IDLE
 
-    def status(self):
-        return self.status
+    async def status(self):
+        return self._status

@@ -8,49 +8,48 @@ from AsyncioThread import AsyncioThread
 from helpers.AbstractModule import BotdeliciousModule
 from helpers.ConfigManager import ConfigManager
 from helpers.Enums import ModuleStatus
-from main import Botdelicious
+from modules.Event import EventModule
 
 
-class Webhook(BotdeliciousModule):
-    STATUS = ModuleStatus.IDLE
+class WebhookModule(BotdeliciousModule):
+    _status = ModuleStatus.IDLE
 
     def __init__(self):
         super().__init__()
-        self.webhookListener = webhook_listener.Listener(
-            handlers={"POST": self.incomingWebhook},
-            port=ConfigManager.config.webhook.port,
+
+    async def start(self):
+        self._status = ModuleStatus.RUNNING
+        self._webhook_listener = webhook_listener.Listener(
+            handlers={"POST": self.incoming_webhook},
+            port=ConfigManager._config.webhook.port,
         )
+        self._webhook_listener.start()
 
-    def start(self):
-        self.STATUS = ModuleStatus.RUNNING
-        self.webhookListener.start()
+    async def _status(self):
+        return self._status
 
-    def status(self):
-        return self.STATUS
+    async def stop(self):
+        self._status = ModuleStatus.STOPPING
+        self._webhook_listener.stop()
+        self._status = ModuleStatus.IDLE
 
-    def stop(self):
-        self.STATUS = ModuleStatus.STOPPING
-        self.webhookListener.stop()
-        self.STATUS = ModuleStatus.IDLE
-
-    def incomingWebhook(self, request, *args, **kwargs):
+    def incoming_webhook(self, request, *args, **kwargs):
         logging.debug("Incoming Webhook")
         logging.debug(request)
         if args and (destination := getattr(self, args[0], None)):
-            destination(webhookData=DotMap(json.loads(request.body.read())))
+            destination(webhook_data=DotMap(json.loads(request.body.read())))
         return
 
-    def djctl(self, webhookData: DotMap = None):
-        eventHandler = Botdelicious.getEventHandler()
+    def djctl(self, webhook_data: DotMap = None):
         AsyncioThread.run_coroutine(
-            eventHandler.queueEvent(
-                event="newTrack",
-                artist=webhookData.data.artist,
-                title=webhookData.data.title,
-                containsCoverArt=webhookData.cover.art,
+            EventModule.queue_event(
+                event="new_track",
+                artist=webhook_data.data.artist,
+                title=webhook_data.data.title,
+                contains_cover_art=webhook_data.cover.art,
             )
         )
 
     def stop(self):
         logging.debug("Stopping webhookListener")
-        self.webhookListener.stop()
+        self._webhook_listener.stop()

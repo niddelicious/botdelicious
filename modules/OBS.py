@@ -3,49 +3,45 @@ import logging
 import simpleobsws
 
 from helpers.AbstractModule import BotdeliciousModule
+from helpers.ConfigManager import ConfigManager
 from helpers.Enums import ModuleStatus
 
 
-class OBS(BotdeliciousModule):
-    def __init__(
-        self,
-        port: str,
-        password: str,
-        name: str = "OBS",
-        enableCallbacks: bool = False,
-    ) -> None:
+class OBSModule(BotdeliciousModule):
+    def __init__(self, name: str = "obs") -> None:
         super().__init__()
-        parameters = (
-            simpleobsws.IdentificationParameters()
-        )  # Create an IdentificationParameters object
-        parameters.eventSubscriptions = (1 << 0) | (
-            1 << 2
-        )  # Subscribe to the General and Scenes categories
+        self._name = name
+        self.config = None
+        self._status = ModuleStatus.IDLE
+
+    async def start(self):
+        self._status = ModuleStatus.RUNNING
+        self.config = getattr(ConfigManager._config, self._name)
+        parameters = simpleobsws.IdentificationParameters()
+        parameters.eventSubscriptions = (1 << 0) | (1 << 2)
         self.ws = simpleobsws.WebSocketClient(
-            url=f"ws://127.0.0.1:{port}",
-            password=password,
+            url=f"ws://127.0.0.1:{self.config.port}",
+            password=self.config.password,
             identification_parameters=parameters,
         )
-        self.name = name
-        self.enableCallbacks = enableCallbacks
+        self.enableCallbacks = self.config.callbacks
+        await self.connect()
 
-    def start(self):
-        self.status = ModuleStatus.RUNNING
-        self.connect()
+    def _status(self):
+        return self._status
 
-    def status(self):
-        return self.status
-
-    def stop(self):
-        self.disconnect()
+    async def stop(self):
+        self._status = ModuleStatus.STOPPING
+        await self.disconnect()
+        self._status = ModuleStatus.IDLE
 
     async def connect(self, *args, **kwargs):
-        logging.info(f"Connecting to {self.name}...")
+        logging.info(f"Connecting to {self._name}...")
         try:
             await self.ws.connect()
             await self.ws.wait_until_identified()
         except ConnectionError:
-            logging.warn(f"Could not connect to {self.name}")
+            logging.warn(f"Could not connect to {self._name}")
             return
         if self.enableCallbacks:
             # self.ws.register_event_callback(self.on_event)
@@ -53,7 +49,7 @@ class OBS(BotdeliciousModule):
             pass
 
     async def disconnect(self):
-        logging.info(f"Disconnecting from {self.name}")
+        logging.info(f"Disconnecting from {self._name}")
         await self.ws.disconnect()
 
     async def on_event(eventType, eventData):

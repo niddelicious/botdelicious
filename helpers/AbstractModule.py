@@ -3,21 +3,23 @@ from helpers.Enums import ModuleStatus
 
 
 class BotdeliciousModule(ABC):
+    _status = ModuleStatus.IDLE
+
     def __init__(self):
-        self.status = ModuleStatus.IDLE
+        self._status = ModuleStatus.IDLE
 
     @abstractmethod
-    def start(self):
+    async def start(self):
         """Start the module"""
-        self.status = ModuleStatus.RUNNING
+        self._status = ModuleStatus.RUNNING
 
     @abstractmethod
-    def stop(self):
+    async def stop(self):
         """Stop the module"""
-        self.status = ModuleStatus.STOPPING
-        self.status = ModuleStatus.IDLE
+        self._status = ModuleStatus.STOPPING
+        self._status = ModuleStatus.IDLE
 
     @abstractmethod
-    def status(self):
+    async def _status(self):
         """Return the status of the module"""
-        return self.status
+        return self._status

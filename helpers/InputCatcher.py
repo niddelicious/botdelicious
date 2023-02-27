@@ -1,44 +1,41 @@
 import logging
 
+from helpers.ModulesManager import ModulesManager
+
 
 class InputCatcher:
-    def __init__(self, parent):
-        self.parent = parent
-        self.modulesManager = parent.modulesManager
-
-    def commandline(self):
+    @classmethod
+    def commandline(cls):
         command = input("Command: \n")
         if command == "exit":
-            self.modulesManager.stopModule(moduleName="webhook")
-            self.modulesManager.stopModule(moduleName="twitch")
-            self.modulesManager.stopModule(moduleName="obs")
-            self.modulesManager.stopModule(moduleName="podcast")
+            ModulesManager.start_module(module_name="webhook")
+            ModulesManager.start_module(module_name="chat")
+            ModulesManager.start_module(module_name="twitch")
+            ModulesManager.start_module(module_name="podcast")
             logging.info(f"Exiting...\n")
             return 0
         if command == "start twitch":
-            self.modulesManager.startModule(moduleName="twitch")
+            ModulesManager.start_module(module_name="twitch")
         if command == "stop twitch":
-            self.modulesManager.stopModule(moduleName="twitch")
+            ModulesManager.stop_module(module_name="twitch")
         if command == "start event":
-            self.modulesManager.startModule(moduleName="event")
+            ModulesManager.start_module(module_name="event")
         if command == "stop event":
             logging.info(f"Cannot stop event loop. Exit application instead")
         if command == "start webhook":
-            self.modulesManager.startModule(moduleName="webhook")
+            ModulesManager.start_module(module_name="webhook")
         if command == "stop webhook":
-            self.modulesManager.stopModule(moduleName="webhook")
+            ModulesManager.stop_module(module_name="webhook")
         if command == "start djctl":
-            self.modulesManager.startModule(moduleName="djctl")
+            ModulesManager.start_module(module_name="djctl")
         if command == "stop djctl":
-            self.modulesManager.stopModule(moduleName="djctl")
-        if command == "start obs":
-            self.modulesManager.startModule(moduleName="obs")
-        if command == "stop obs":
-            self.modulesManager.stopModule(moduleName="obs")
+            ModulesManager.stop_module(module_name="djctl")
+        if command == "start chat":
+            ModulesManager.start_module(module_name="chat")
+        if command == "stop chat":
+            ModulesManager.stop_module(module_name="chat")
         if command == "start podcast":
-            self.modulesManager.startModule(moduleName="podcast")
+            ModulesManager.start_module(module_name="podcast")
         if command == "stop podcast":
-            self.modulesManager.stopModule(moduleName="podcast")
-        else:
-            self.command = command
+            ModulesManager.stop_module(module_name="podcast")
         return 1

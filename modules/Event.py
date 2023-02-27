@@ -4,51 +4,65 @@ import shutil
 from dotmap import DotMap
 from AsyncioThread import AsyncioThread
 from helpers.AbstractModule import BotdeliciousModule
-from helpers.Enums import ModuleStatus, QueueStatus
-from main import Botdelicious
+from helpers.Enums import ModuleStatus
 
 
 class EventModule(BotdeliciousModule):
-    def __init__(self, parent=None):
+    _event_queue = asyncio.Queue()
+    _status = ModuleStatus.IDLE
+
+    def __init__(self):
         super().__init__()
-        self.parent = parent
-        self.eventQueue = asyncio.Queue()
-        self.moduleStatus = ModuleStatus.IDLE
 
-    def start(self):
-        Botdelicious.setEventHandler(self)
-        self.moduleStatus = ModuleStatus.RUNNING
+    async def start(self):
+        AsyncioThread.run_coroutine(self.run())
+        self._status = ModuleStatus.RUNNING
 
-    def status(self):
-        return self.moduleStatus
+    def _status(self):
+        return self._status
 
     def stop(self):
-        self.moduleStatus = ModuleStatus.STOPPING
+        self._status = ModuleStatus.STOPPING
         AsyncioThread.stop_loop()
-        self.moduleStatus = ModuleStatus.IDLE
+        self._status = ModuleStatus.IDLE
 
-    async def run(self):
+    @classmethod
+    async def get_event_queue(cls):
+        return cls._event_queue
+
+    @classmethod
+    async def event_queue_is_empty(cls):
+        return cls._event_queue.empty()
+
+    @classmethod
+    async def add_to_event_queue(cls, data):
+        await cls._event_queue.put(data)
+
+    async def run(cls):
         logging.debug(f"Starting Event!")
-        while self.moduleStatus == ModuleStatus.RUNNING:
-            if not self.eventQueue.empty():
-                await self.handleEventQueue()
-            await asyncio.sleep(0)
-        while self.moduleStatus == ModuleStatus.STOPPING:
+        while cls._status == ModuleStatus.RUNNING:
+            if not await cls.event_queue_is_empty():
+                await cls.handle_event_queue()
+            else:
+                logging.debug(f"Event queue is empty")
+            await asyncio.sleep(2)
+        while cls._status == ModuleStatus.STOPPING:
             logging.DEBUG(f"Stopping event!")
             await asyncio.sleep(3)
-        while self.moduleStatus == ModuleStatus.IDLE:
+        while cls._status == ModuleStatus.IDLE:
             logging.debug(f"Event stopped")
             await asyncio.sleep(3)
 
-    async def handleEventQueue(self):
-        logging.debug(f"handleEventQueue")
-        event_item = await self.eventQueue.get()
+    @classmethod
+    async def handle_event_queue(cls):
+        logging.debug(f"Event queue not empty!")
+        event_item = await cls._event_queue.get()
         logging.debug(f"{event_item}")
-        eventTypeHandlerMethod = "handle_" + event_item.eventType
-        if hasattr(self, eventTypeHandlerMethod):
-            handler = getattr(self, eventTypeHandlerMethod)
-            await handler(itemData=event_item.eventData)
-        self.eventQueue.task_done()
+        event_type_handler_method = "handle_" + event_item.event_type
+        if hasattr(cls, event_type_handler_method):
+            handler = getattr(cls, event_type_handler_method)
+            await handler(item_data=event_item.event_data)
+        await cls._event_queue.task_done()
 
     def checkLoopIsRunning(self):
         try:
@@ -58,34 +72,42 @@ class EventModule(BotdeliciousModule):
         else:
             logging.debug(f"Running event loop found: {loop}")
 
-    async def queueEvent(self, event: str = None, *args, **kwargs):
+    @classmethod
+    async def queue_event(cls, event: str = None, *args, **kwargs):
         logging.debug(f"Event received:")
+        logging.debug(f"{event}")
         logging.debug(f"{args}")
         logging.debug(f"{kwargs}")
-        itemToQueue = DotMap(
+        item_to_queue = DotMap(
             {
-                "eventType": event,
-                "eventData": {**kwargs},
+                "event_type": event,
+                "event_data": {**kwargs},
+                "additional_data": {*args},
             }
         )
-        await self.eventQueue.put(itemToQueue)
+        await cls.add_to_event_queue(item_to_queue)
 
-    async def handle_newTrack(self, itemData=None):
+    @classmethod
+    async def handle_new_track(cls, item_data=None):
+        # TODO: Get these instances of these modules working
         logging.debug(f"Handle new track:")
-        logging.debug(f"Artist: {itemData.artist} | Title: {itemData.title}")
-        logging.debug(f"Cover art: {itemData.containsCoverArt}")
-        if not itemData.containsCoverArt:
-            self.copyFallbackImageToCoverFile()
+        logging.debug(f"Artist: {item_data.artist} | Title: {item_data.title}")
+        logging.debug(f"Cover art: {item_data.contains_cover_art}")
+        if not item_data.contains_cover_art:
+            cls.copy_fallback_image_to_cover_file()
+        twitch = None  # ModulesManager.get_module(module_name="twitch")
+        podcast = None  # ModulesManager.get_module(module_name="podcast")
         await asyncio.gather(
-            self.parent.modules.podcast.module.eventTriggerSlideAnimationThenUpdateSmallTrackInfo(
-                itemData.artist, itemData.title
+            twitch.eventTriggerSlideAnimationThenUpdateSmallTrackInfo(
+                item_data.artist, item_data.title
             ),
-            self.parent.modules.obs.module.eventUpdateSmallTrackInfoThenTriggerSlideAnimation(
-                itemData.artist, itemData.title
+            podcast.eventUpdateSmallTrackInfoThenTriggerSlideAnimation(
+                item_data.artist, item_data.title
             ),
         )
 
-    def copyFallbackImageToCoverFile(self):
+    @staticmethod
+    def copy_fallback_image_to_cover_file():
         shutil.copy2(
             "external/djctl/record-vinyl-solid-light.png",
             "external/djctl/latest-cover-art.png",
