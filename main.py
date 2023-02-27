@@ -43,20 +43,6 @@ class Botdelicious:
         cls.eventHandler = eventHandler
         logging.debug(f"EventHandler after:{cls.eventHandler}")
 
-    def start_asyncio_thread(self):
-        self._asyncio_thread = AsyncioThread()
-        self._asyncio_thread.start_loop()
-
-    def stop_asyncio_thread(self):
-        if self._asyncio_thread is not None:
-            self._asyncio_thread.stop_loop()
-            self._asyncio_thread = None
-
-    def run_asyncio_coroutine(self, coro):
-        if self._asyncio_thread is None:
-            self.start_asyncio_thread()
-        self._asyncio_thread.run_coroutine(coro)
-
     @property
     def config(self):
         return self._config
@@ -87,11 +73,11 @@ def main():
     )
 
     """Main entry point of the app"""
-    b.start_asyncio_thread()
+    AsyncioThread.start_loop()
     b.autostart()
     while b.inputCatcher.commandline():
         pass
-    b.stop_asyncio_thread()
+    AsyncioThread.stop_loop()
     logger.info(f"Application ended\n")
 
 

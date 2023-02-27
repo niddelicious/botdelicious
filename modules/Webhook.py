@@ -3,6 +3,7 @@ import logging
 import webhook_listener
 
 from dotmap import DotMap
+from AsyncioThread import AsyncioThread
 
 from helpers.AbstractModule import BotdeliciousModule
 
@@ -32,7 +33,7 @@ class Webhook(BotdeliciousModule):
 
     def djctl(self, webhookData: DotMap = None):
         eventHandler = self.parent.getEventHandler()
-        self.parent.run_asyncio_coroutine(
+        AsyncioThread.run_coroutine(
             eventHandler.queueEvent(
                 event="newTrack",
                 artist=webhookData.data.artist,

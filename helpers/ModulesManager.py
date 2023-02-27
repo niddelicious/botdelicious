@@ -62,13 +62,11 @@ class ModulesManager:
             ConfigManager.config.obs.password,
             name="obs",
         )
-        self.parent.run_asyncio_coroutine(self.modules.obs.module.connect())
+        AsyncioThread.run_coroutine(self.modules.obs.module.connect())
 
     async def stopObs(self, *args, **kwargs):
         if self.modules.has_key("obs"):
-            self.parent.run_asyncio_coroutine(
-                self.modules.obs.module.disconnect()
-            )
+            AsyncioThread.run_coroutine(self.modules.obs.module.disconnect())
 
     async def startPodcast(self, *args, **kwargs):
         self.modules.podcast.module = OBS(
@@ -76,9 +74,7 @@ class ModulesManager:
             ConfigManager.config.podcast.password,
             name="podcast",
         )
-        self.parent.run_asyncio_coroutine(
-            self.modules.podcast.module.connect()
-        )
+        AsyncioThread.run_coroutine(self.modules.podcast.module.connect())
 
     async def stopPodcast(self, *args, **kwargs):
         if self.modules.has_key("podcast"):
@@ -89,11 +85,8 @@ class ModulesManager:
 
     async def startTwitch(self, *args, **kwargs):
         self.modules.twitch.module = TwitchChat(parent=self.parent)
-        self.parent.run_asyncio_coroutine(self.modules.twitch.module.start())
+        AsyncioThread.run_coroutine(self.modules.twitch.module.start())
 
     async def stopTwitch(self, *args, **kwargs):
         if self.modules.has_key("twitch"):
-            self.modules.twitch.loop.run_until_complete(
-                self.modules.twitch.module.close()
-            )
-            self.modules.twitch.loop.stop()
+            AsyncioThread.run_coroutine(self.modules.twitch.module.close())
