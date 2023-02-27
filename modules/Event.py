@@ -89,7 +89,7 @@ class EventModule(BotdeliciousModule):
 
     @classmethod
     async def handle_new_track(cls, item_data=None):
-        # TODO: Get these instances of these modules working
+        # TODO: #2 #1 Get these instances of these modules working
         logging.debug(f"Handle new track:")
         logging.debug(f"Artist: {item_data.artist} | Title: {item_data.title}")
         logging.debug(f"Cover art: {item_data.contains_cover_art}")
