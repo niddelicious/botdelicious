@@ -1,7 +1,4 @@
 modules:
 - name: webhook
-  loop: No
 - name: twitch
-  loop: Yes
 - name: obs
-  loop: Yes
