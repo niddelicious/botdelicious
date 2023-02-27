@@ -74,7 +74,6 @@ class Botdelicious:
 
 def main():
     b = Botdelicious()
-    b.start_asyncio_thread()
     logger = logging.getLogger()
     logger.setLevel(ConfigManager.config.logging.level)
     formatter = logging.Formatter(
@@ -88,6 +87,7 @@ def main():
     )
 
     """Main entry point of the app"""
+    b.start_asyncio_thread()
     b.autostart()
     while b.inputCatcher.commandline():
         pass

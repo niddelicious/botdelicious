@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from AsyncioThread import AsyncioThread
 from helpers.ConfigManager import ConfigManager
 from modules.DJctl import DJctl
 from modules.OBS import OBS
@@ -20,17 +21,17 @@ class ModulesManager:
     def startModule(self, moduleName=None):
         moduleStartFunctionName = f"start{moduleName.capitalize()}"
         moduleStartFunction = getattr(self, moduleStartFunctionName)
-        self.parent.run_asyncio_coroutine(moduleStartFunction())
+        AsyncioThread.run_coroutine(moduleStartFunction())
 
     def stopModule(self, moduleName=None):
         moduleStopFunctionName = f"stop{moduleName.capitalize()}"
         moduleStopFunction = getattr(self, moduleStopFunctionName)
-        self.parent.run_asyncio_coroutine(moduleStopFunction())
+        AsyncioThread.run_coroutine(moduleStopFunction())
 
     async def startEvent(self, *args, **kwargs):
         self.modules.event.module = EventModule(parent=self.parent)
         self.modules.event.module.start()
-        self.parent.run_asyncio_coroutine(self.modules.event.module.run())
+        AsyncioThread.run_coroutine(self.modules.event.module.run())
 
     async def stopEvent(self, *args, **kwargs):
         if self.modules.has_key("event"):
