@@ -1,15 +1,15 @@
 logging:
   level: INFO
-twitch:
-  accessToken: accesstoken_123
-  clientId: client_id_123
-  clientSecret: client_secret_123
+chat:
+  access_token: accesstoken_123
+  client_id: client_id_123
+  client_secret: client_secret_123
   prefix: "!"
   channels:
     - channel_a
     - channel_b
-  caseInsensitive: No
-  refreshToken: refreshtoken_123
+  case_insensitive: No
+  refresh_token: refreshtoken_123
 webhook:
   port: 12345
 obs:

@@ -12,7 +12,7 @@ class ModulesManager:
         "webhook": WebhookModule(),
         "twitch": OBSModule("twitch"),
         "podcast": OBSModule("podcast"),
-        # "chat": ChatModule(),
+        "chat": ChatModule(),
     }
 
     @classmethod

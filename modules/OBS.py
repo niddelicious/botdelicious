@@ -68,7 +68,7 @@ class OBSModule(BotdeliciousModule):
             self.callUpdateText(inputName="Small track title", text=title),
         )
         await self.callToggleFilter("Track: Small", "Slide", True)
-        await asyncio.sleep(8)
+        await asyncio.sleep(9)
 
     async def eventTriggerSlideAnimationThenUpdateSmallTrackInfo(
         self, artist: str = "Unknown", title: str = "Unknown"
@@ -79,7 +79,7 @@ class OBSModule(BotdeliciousModule):
             self.callUpdateText(inputName="Small track artist", text=artist),
             self.callUpdateText(inputName="Small track title", text=title),
         )
-        await asyncio.sleep(5)
+        await asyncio.sleep(6)
 
     async def callToggleFilter(
         self,

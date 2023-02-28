@@ -5,9 +5,6 @@ from dotmap import DotMap
 class ConfigManager:
     _config = None
 
-    def __new__(cls) -> None:
-        cls.get_config()
-
     @classmethod
     def update_config(cls, group, setting, value):
         with open("config.yml") as config_file:
@@ -28,7 +25,7 @@ class ConfigManager:
 
     @classmethod
     def get(cls, config_name):
-        if cls._config[config_name]:
-            return cls._config[config_name]
+        if hasattr(cls._config, config_name):
+            return getattr(cls._config, config_name)
         else:
             return False

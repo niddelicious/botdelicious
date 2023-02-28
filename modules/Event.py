@@ -41,7 +41,7 @@ class EventModule(BotdeliciousModule):
     async def run(cls):
         logging.debug(f"Starting Event!")
         while cls._status == ModuleStatus.RUNNING:
-            if not await cls.event_queue_is_empty():
+            if not cls._event_queue.empty():
                 await cls.handle_event_queue()
             else:
                 logging.debug(f"Event queue is empty")
@@ -62,7 +62,7 @@ class EventModule(BotdeliciousModule):
         if hasattr(cls, event_type_handler_method):
             handler = getattr(cls, event_type_handler_method)
             await handler(item_data=event_item.event_data)
-        await cls._event_queue.task_done()
+        cls._event_queue.task_done()
 
     def checkLoopIsRunning(self):
         try:
@@ -85,23 +85,22 @@ class EventModule(BotdeliciousModule):
                 "additional_data": {*args},
             }
         )
-        await cls.add_to_event_queue(item_to_queue)
+        await cls._event_queue.put(item_to_queue)
 
     @classmethod
     async def handle_new_track(cls, item_data=None):
+        from helpers.ModulesManager import ModulesManager
+
         # TODO: #2 #1 Get these instances of these modules working
         logging.debug(f"Handle new track:")
         logging.debug(f"Artist: {item_data.artist} | Title: {item_data.title}")
         logging.debug(f"Cover art: {item_data.contains_cover_art}")
         if not item_data.contains_cover_art:
             cls.copy_fallback_image_to_cover_file()
-        twitch = None  # ModulesManager.get_module(module_name="twitch")
-        podcast = None  # ModulesManager.get_module(module_name="podcast")
+        twitch = ModulesManager.get_module(module_name="twitch")
+        podcast = ModulesManager.get_module(module_name="podcast")
         await asyncio.gather(
-            twitch.eventTriggerSlideAnimationThenUpdateSmallTrackInfo(
-                item_data.artist, item_data.title
-            ),
-            podcast.eventUpdateSmallTrackInfoThenTriggerSlideAnimation(
+            twitch.eventUpdateSmallTrackInfoThenTriggerSlideAnimation(
                 item_data.artist, item_data.title
             ),
         )
