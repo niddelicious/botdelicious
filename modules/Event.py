@@ -91,7 +91,6 @@ class EventModule(BotdeliciousModule):
     async def handle_new_track(cls, item_data=None):
         from helpers.ModulesManager import ModulesManager
 
-        # TODO: #2 #1 Get these instances of these modules working
         logging.debug(f"Handle new track:")
         logging.debug(f"Artist: {item_data.artist} | Title: {item_data.title}")
         logging.debug(f"Cover art: {item_data.contains_cover_art}")
@@ -103,6 +102,16 @@ class EventModule(BotdeliciousModule):
             twitch.eventUpdateSmallTrackInfoThenTriggerSlideAnimation(
                 item_data.artist, item_data.title
             ),
+        )
+
+    @classmethod
+    async def handle_show_track_id(cls, item_data=None):
+        from helpers.ModulesManager import ModulesManager
+
+        logging.debug(f"Show track id:")
+        twitch = ModulesManager.get_module(module_name="twitch")
+        await asyncio.gather(
+            twitch.eventTriggerSlideAnimation(),
         )
 
     @staticmethod

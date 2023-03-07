@@ -60,27 +60,6 @@ class OBSModule(BotdeliciousModule):
     async def on_switchscenes(eventData):
         logging.info('Scene switched to "{}".'.format(eventData["sceneName"]))
 
-    async def eventUpdateSmallTrackInfoThenTriggerSlideAnimation(
-        self, artist: str = "Unknown", title: str = "Unknown"
-    ):
-        await asyncio.gather(
-            self.callUpdateText(inputName="Small track artist", text=artist),
-            self.callUpdateText(inputName="Small track title", text=title),
-        )
-        await self.callToggleFilter("Track: Small", "Slide", True)
-        await asyncio.sleep(9)
-
-    async def eventTriggerSlideAnimationThenUpdateSmallTrackInfo(
-        self, artist: str = "Unknown", title: str = "Unknown"
-    ):
-        await self.callToggleFilter("Track: Small", "Slide", True)
-        await asyncio.sleep(1)
-        await asyncio.gather(
-            self.callUpdateText(inputName="Small track artist", text=artist),
-            self.callUpdateText(inputName="Small track title", text=title),
-        )
-        await asyncio.sleep(6)
-
     async def callToggleFilter(
         self,
         sourceName: str = None,
@@ -138,3 +117,28 @@ class OBSModule(BotdeliciousModule):
                 )
             )
             return False
+
+    async def eventTriggerSlideAnimation(self):
+        await self.callToggleFilter("Track: Small", "Slide", True)
+        await asyncio.sleep(9)
+
+    async def eventUpdateSmallTrackInfoThenTriggerSlideAnimation(
+        self, artist: str = "Unknown", title: str = "Unknown"
+    ):
+        await asyncio.gather(
+            self.callUpdateText(inputName="Small track artist", text=artist),
+            self.callUpdateText(inputName="Small track title", text=title),
+        )
+        await self.callToggleFilter("Track: Small", "Slide", True)
+        await asyncio.sleep(9)
+
+    async def eventTriggerSlideAnimationThenUpdateSmallTrackInfo(
+        self, artist: str = "Unknown", title: str = "Unknown"
+    ):
+        await self.callToggleFilter("Track: Small", "Slide", True)
+        await asyncio.sleep(1)
+        await asyncio.gather(
+            self.callUpdateText(inputName="Small track artist", text=artist),
+            self.callUpdateText(inputName="Small track title", text=title),
+        )
+        await asyncio.sleep(6)

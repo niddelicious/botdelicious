@@ -1,0 +1,9 @@
+- name: chess
+  aliases: [chessdotcom, chesscom]
+  message: |
+    Chess.com is the world’s #1 chess community with millions of chess players and fans. Join today! https://twitch.tv/chess
+
+- name: gmhikaru
+  aliases: [hikaru]
+  message: |
+    Grandmaster Hikaru Nakamura, 5-time United States Chess Champion  https://twitch.tv/gmhikaru

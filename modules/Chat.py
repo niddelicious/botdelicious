@@ -6,10 +6,12 @@ import datetime
 from helpers.AbstractModule import BotdeliciousModule
 from helpers.ConfigManager import ConfigManager
 from helpers.Enums import ModuleStatus
+from modules.cogs.Commands import CommandsCog
 
 
 class _TwitchBot(commands.Bot):
     def __init__(self, config):
+        logging.info(f'Starting Twitch chat bot')
         self.config = config
         super().__init__(
             token=self.config.access_token,
@@ -19,6 +21,8 @@ class _TwitchBot(commands.Bot):
             client_secret=self.config.client_secret,
             case_insensitive=True,
         )
+
+        self.add_cog(CommandsCog(self))
 
     async def event_ready(self):
         print(f"Logged in as | {self.nick}")
@@ -45,7 +49,7 @@ class ChatModule(commands.Bot, BotdeliciousModule):
     async def start(self):
         self._status = ModuleStatus.RUNNING
         self.config = ConfigManager.get("chat")
-        self._update_tokens()
+        await self._update_tokens()
         self.bot = _TwitchBot(self.config)
         self.bot.run()
 
@@ -57,7 +61,7 @@ class ChatModule(commands.Bot, BotdeliciousModule):
     async def status(self):
         return self._status
 
-    def _update_tokens(self):
+    async def _update_tokens(self):
         logging.debug("Refreshing Twitch Chat tokens")
         twitch_refresh_url = str(
             f"https://id.twitch.tv/oauth2/token?"
@@ -79,3 +83,4 @@ class ChatModule(commands.Bot, BotdeliciousModule):
             )
 
         logging.info("Refreshed Twitch Chat Tokens")
+        return True
