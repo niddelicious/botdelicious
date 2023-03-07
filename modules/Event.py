@@ -111,7 +111,7 @@ class EventModule(BotdeliciousModule):
         logging.debug(f"Show track id:")
         twitch = ModulesManager.get_module(module_name="twitch")
         await asyncio.gather(
-            twitch.eventTriggerSlideAnimation(),
+            twitch.eventTriggerBigSlideAnimation(),
         )
 
     @staticmethod

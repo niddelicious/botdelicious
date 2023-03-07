@@ -122,6 +122,10 @@ class OBSModule(BotdeliciousModule):
         await self.callToggleFilter("Track: Small", "Slide", True)
         await asyncio.sleep(9)
 
+    async def eventTriggerBigSlideAnimation(self):
+        await self.callToggleFilter("Track: Big", "Slide", True)
+        await asyncio.sleep(9)
+
     async def eventUpdateSmallTrackInfoThenTriggerSlideAnimation(
         self, artist: str = "Unknown", title: str = "Unknown"
     ):
