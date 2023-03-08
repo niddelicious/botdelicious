@@ -16,3 +16,6 @@ obs:
   port: 12345
   password: password_123
   callbacks: No
+twinkly:
+  - http://192.168.0.101/xled/v1/
+  - http://192.168.0.102/xled/v1/

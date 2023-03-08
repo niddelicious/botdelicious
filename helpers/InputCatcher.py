@@ -13,6 +13,7 @@ class InputCatcher:
             ModulesManager.stop_module(module_name="twitch")
             ModulesManager.stop_module(module_name="podcast")
             ModulesManager.stop_module(module_name="djctl")
+            ModulesManager.stop_module(module_name="twinkly")
             logging.info(f"Exiting...\n")
             return 0
         if command == "start twitch":
@@ -39,4 +40,8 @@ class InputCatcher:
             ModulesManager.start_module(module_name="podcast")
         if command == "stop podcast":
             ModulesManager.stop_module(module_name="podcast")
+        if command == "start lights":
+            ModulesManager.start_module(module_name="twinkly")
+        if command == "stop lights":
+            ModulesManager.stop_module(module_name="twinkly")
         return 1

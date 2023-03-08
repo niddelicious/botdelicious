@@ -6,7 +6,7 @@ from helpers.AbstractModule import BotdeliciousModule
 from helpers.Enums import ModuleStatus
 
 
-class DJctl(BotdeliciousModule):
+class DJctlModule(BotdeliciousModule):
     _status = ModuleStatus.IDLE
 
     def __init__(self):
