@@ -4,6 +4,7 @@ from modules.Chat import ChatModule
 from modules.Event import EventModule
 from modules.OBS import OBSModule
 from modules.Webhook import WebhookModule
+from modules.DJctl import DJctl
 
 
 class ModulesManager:
@@ -13,6 +14,7 @@ class ModulesManager:
         "twitch": OBSModule("twitch"),
         "podcast": OBSModule("podcast"),
         "chat": ChatModule(),
+        "djctl": DJctl(),
     }
 
     @classmethod

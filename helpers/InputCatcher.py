@@ -8,10 +8,11 @@ class InputCatcher:
     def commandline(cls):
         command = input("Command: \n")
         if command == "exit":
-            ModulesManager.start_module(module_name="webhook")
-            ModulesManager.start_module(module_name="chat")
-            ModulesManager.start_module(module_name="twitch")
-            ModulesManager.start_module(module_name="podcast")
+            ModulesManager.stop_module(module_name="webhook")
+            ModulesManager.stop_module(module_name="chat")
+            ModulesManager.stop_module(module_name="twitch")
+            ModulesManager.stop_module(module_name="podcast")
+            ModulesManager.stop_module(module_name="djctl")
             logging.info(f"Exiting...\n")
             return 0
         if command == "start twitch":

@@ -1,4 +1,5 @@
 import json
+import re
 import requests
 import logging
 from dotmap import DotMap
@@ -39,6 +40,16 @@ class _TwitchBot(commands.Bot):
     async def send_message_to_channel(self, channel, message):
         chan = self.get_channel(channel)
         self.loop.create_task(chan.send(message))
+
+    def find_username(self, message):
+        res = re.search("@(\w+)", message)
+        if not res:
+            res = message.split(" ")
+            try:
+                return res[1]
+            except IndexError:
+                return False
+        return res.group(1)
 
 
     async def fetch_user_info(self, username):
