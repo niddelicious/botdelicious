@@ -33,9 +33,18 @@ class CommandsCog(commands.Cog):
             aliases = command_data.get("aliases", [])
             message = command_data["message"]
 
-            async def func(self, ctx: commands.Context, message=message):
+            async def func(
+                self, ctx: commands.Context, username=name, message=message
+            ):
+                avatar_url = await self.bot.fetch_user_info(username)
                 message_to_send = message
                 await ctx.send(message_to_send)
+                await EventModule.queue_event(
+                    event="shoutout",
+                    username=username,
+                    message=message,
+                    avatar_url=avatar_url,
+                )
 
             func.__name__ = name
             func = commands.command(name=name, aliases=aliases)(func)

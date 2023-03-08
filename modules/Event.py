@@ -114,6 +114,20 @@ class EventModule(BotdeliciousModule):
             twitch.eventTriggerBigSlideAnimation(),
         )
 
+    @classmethod
+    async def handle_shoutout(cls, item_data=None):
+        from helpers.ModulesManager import ModulesManager
+
+        logging.debug(f"Show shoutout:")
+        twitch = ModulesManager.get_module(module_name="twitch")
+        await asyncio.gather(
+            twitch.eventUpdateShoutoutTextThenTriggerSlideAnimation(
+                username=item_data.username,
+                message=item_data.message,
+                avatar_url=item_data.avatar_url,
+            ),
+        )
+
     @staticmethod
     def copy_fallback_image_to_cover_file():
         shutil.copy2(

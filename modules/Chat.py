@@ -1,3 +1,4 @@
+import json
 import requests
 import logging
 from dotmap import DotMap
@@ -38,6 +39,16 @@ class _TwitchBot(commands.Bot):
     async def send_message_to_channel(self, channel, message):
         chan = self.get_channel(channel)
         self.loop.create_task(chan.send(message))
+
+
+    async def fetch_user_info(self, username):
+        fetch_url = f"https://api.twitch.tv/helix/users?login={username}"
+        headers = {
+            "Client-Id": f"{self.config.client_id}",
+            "Authorization": f"Bearer {self.config.access_token}",
+        }
+        response = requests.get(url=fetch_url, headers=headers)
+        return json.loads(response.content)["data"][0]["profile_image_url"]
 
 
 class ChatModule(commands.Bot, BotdeliciousModule):

@@ -118,6 +118,33 @@ class OBSModule(BotdeliciousModule):
             )
             return False
 
+    async def callUpdateUrl(self, inputName: str = None, url: str = None):
+        request = simpleobsws.Request(
+            "SetInputSettings",
+            {
+                "inputName": f"{inputName}",
+                "inputSettings": {
+                    "url": f"{url}",
+                },
+            },
+        )
+        ret = await self.ws.call(request)  # Perform the request
+
+        if ret.ok():  # Check if the request succeeded
+            logging.info(
+                "Input update succeeded! Response data: {}".format(
+                    ret.responseData
+                )
+            )
+            return True
+        else:
+            logging.warn(
+                "Input update failed! Response data: {}".format(
+                    ret.responseData
+                )
+            )
+            return False
+
     async def eventTriggerSlideAnimation(self):
         await self.callToggleFilter("Track: Small", "Slide", True)
         await asyncio.sleep(9)
@@ -146,3 +173,17 @@ class OBSModule(BotdeliciousModule):
             self.callUpdateText(inputName="Small track title", text=title),
         )
         await asyncio.sleep(6)
+
+    async def eventUpdateShoutoutTextThenTriggerSlideAnimation(
+        self,
+        username: str = "Unknown",
+        message: str = "Unknown",
+        avatar_url: str = "https://loremflickr.com/300/300/twitch",
+    ):
+        await asyncio.gather(
+            self.callUpdateText(inputName="Shoutout username", text=username),
+            self.callUpdateText(inputName="Shoutout message", text=message),
+            self.callUpdateUrl(inputName="Shoutout avatar", url=avatar_url),
+        )
+        await self.callToggleFilter("Shoutout", "Slide", True)
+        await asyncio.sleep(12)
