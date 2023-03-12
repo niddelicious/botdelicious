@@ -1,6 +1,8 @@
 import logging
+from AsyncioThread import AsyncioThread
 
 from helpers.ModulesManager import ModulesManager
+from modules.Event import EventModule
 
 
 class InputCatcher:
@@ -44,4 +46,8 @@ class InputCatcher:
             ModulesManager.start_module(module_name="twinkly")
         if command == "stop lights":
             ModulesManager.stop_module(module_name="twinkly")
+        if command.startswith("event "):
+            AsyncioThread.run_coroutine(
+                EventModule.queue_event(event=command[6:])
+            )
         return 1

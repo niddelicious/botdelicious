@@ -49,6 +49,9 @@ class WebhookModule(BotdeliciousModule):
                 contains_cover_art=webhook_data.cover.art,
             )
         )
+        AsyncioThread.run_coroutine(
+            EventModule.queue_event(event="show_small_track_id")
+        )
 
     def stop(self):
         logging.debug("Stopping webhookListener")

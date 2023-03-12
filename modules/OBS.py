@@ -5,6 +5,7 @@ import simpleobsws
 from helpers.AbstractModule import BotdeliciousModule
 from helpers.ConfigManager import ConfigManager
 from helpers.Enums import ModuleStatus
+from helpers.SessionData import SessionData
 
 
 class OBSModule(BotdeliciousModule):
@@ -104,7 +105,7 @@ class OBSModule(BotdeliciousModule):
         ret = await self.ws.call(request)  # Perform the request
 
         if ret.ok():  # Check if the request succeeded
-            logging.info(
+            logging.debug(
                 "Input update succeeded! Response data: {}".format(
                     ret.responseData
                 )
@@ -149,28 +150,28 @@ class OBSModule(BotdeliciousModule):
         await self.callToggleFilter("Track: Small", "Slide", True)
         await asyncio.sleep(9)
 
-    async def eventTriggerBigSlideAnimation(self):
+    async def eventUpdateTrackInfoThenTriggerBigSlideAnimation(self):
+        await asyncio.gather(
+            self.callUpdateText(inputName="Big track artist", text=SessionData.get_current_artist()),
+            self.callUpdateText(inputName="Big track title", text=SessionData.get_current_title()),
+        )
         await self.callToggleFilter("Track: Big", "Slide", True)
         await asyncio.sleep(9)
 
-    async def eventUpdateSmallTrackInfoThenTriggerSlideAnimation(
-        self, artist: str = "Unknown", title: str = "Unknown"
-    ):
+    async def eventUpdateSmallTrackInfoThenTriggerSlideAnimation(self):
         await asyncio.gather(
-            self.callUpdateText(inputName="Small track artist", text=artist),
-            self.callUpdateText(inputName="Small track title", text=title),
+            self.callUpdateText(inputName="Small track artist", text=SessionData.get_current_artist()),
+            self.callUpdateText(inputName="Small track title", text=SessionData.get_current_title()),
         )
         await self.callToggleFilter("Track: Small", "Slide", True)
         await asyncio.sleep(9)
 
-    async def eventTriggerSlideAnimationThenUpdateSmallTrackInfo(
-        self, artist: str = "Unknown", title: str = "Unknown"
-    ):
+    async def eventTriggerSlideAnimationThenUpdateSmallTrackInfo(self):
         await self.callToggleFilter("Track: Small", "Slide", True)
         await asyncio.sleep(1)
         await asyncio.gather(
-            self.callUpdateText(inputName="Small track artist", text=artist),
-            self.callUpdateText(inputName="Small track title", text=title),
+            self.callUpdateText(inputName="Small track artist", text=SessionData.get_current_artist()),
+            self.callUpdateText(inputName="Small track title", text=SessionData.get_current_title()),
         )
         await asyncio.sleep(6)
 

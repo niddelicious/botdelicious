@@ -19,7 +19,7 @@ class CommandsCog(commands.Cog):
     @commands.command(name="id", aliases=["track"])
     async def id(self, ctx: commands.Context):
         await EventModule.queue_event(
-            event="show_track_id",
+            event="show_big_track_id",
         )
 
     @commands.command(name="check", aliases=["debug"])

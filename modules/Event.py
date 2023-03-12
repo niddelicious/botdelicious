@@ -5,6 +5,7 @@ from dotmap import DotMap
 from AsyncioThread import AsyncioThread
 from helpers.AbstractModule import BotdeliciousModule
 from helpers.Enums import ModuleStatus
+from helpers.SessionData import SessionData
 
 
 class EventModule(BotdeliciousModule):
@@ -88,34 +89,40 @@ class EventModule(BotdeliciousModule):
         await cls._event_queue.put(item_to_queue)
 
     @classmethod
-    async def handle_new_track(cls, item_data=None):
-        from helpers.ModulesManager import ModulesManager
-
+    async def handle_new_track(cls, item_data=None, *args, **kwargs):
         logging.debug(f"Handle new track:")
         logging.debug(f"Artist: {item_data.artist} | Title: {item_data.title}")
         logging.debug(f"Cover art: {item_data.contains_cover_art}")
+
         if not item_data.contains_cover_art:
-            cls.copy_fallback_image_to_cover_file()
-        twitch = ModulesManager.get_module(module_name="twitch")
-        podcast = ModulesManager.get_module(module_name="podcast")
-        await asyncio.gather(
-            twitch.eventUpdateSmallTrackInfoThenTriggerSlideAnimation(
-                item_data.artist, item_data.title
-            ),
+            cls._copy_fallback_image_to_cover_file()
+
+        SessionData.set_current_track(
+            {"artist": item_data.artist, "title": item_data.title}
         )
 
     @classmethod
-    async def handle_show_track_id(cls, item_data=None):
+    async def handle_show_small_track_id(cls, *args, **kwargs):
+        from helpers.ModulesManager import ModulesManager
+
+        twitch = ModulesManager.get_module(module_name="twitch")
+        podcast = ModulesManager.get_module(module_name="podcast")
+        await asyncio.gather(
+            twitch.eventUpdateSmallTrackInfoThenTriggerSlideAnimation(),
+        )
+
+    @classmethod
+    async def handle_show_big_track_id(cls, *args, **kwargs):
         from helpers.ModulesManager import ModulesManager
 
         logging.debug(f"Show track id:")
         twitch = ModulesManager.get_module(module_name="twitch")
         await asyncio.gather(
-            twitch.eventTriggerBigSlideAnimation(),
+            twitch.eventUpdateTrackInfoThenTriggerBigSlideAnimation(),
         )
 
     @classmethod
-    async def handle_shoutout(cls, item_data=None):
+    async def handle_shoutout(cls, item_data=None, *args, **kwargs):
         from helpers.ModulesManager import ModulesManager
 
         logging.debug(f"Show shoutout:")
@@ -129,7 +136,7 @@ class EventModule(BotdeliciousModule):
         )
 
     @staticmethod
-    def copy_fallback_image_to_cover_file():
+    def _copy_fallback_image_to_cover_file():
         shutil.copy2(
             "external/djctl/record-vinyl-solid-light.png",
             "external/djctl/latest-cover-art.png",
