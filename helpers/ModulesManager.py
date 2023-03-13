@@ -22,15 +22,16 @@ class ModulesManager:
 
     @classmethod
     def start_module(cls, module_name=None):
-        logging.debug(f"Starting module: {module_name}")
         module = cls._modules[module_name]
-        AsyncioThread.run_coroutine(module.start())
+        if module.status() is ModuleStatus.IDLE:
+            logging.debug(f"Starting module: {module_name}")
+            AsyncioThread.run_coroutine(module.start())
 
     @classmethod
     def stop_module(cls, module_name=None):
-        logging.debug(f"Stopping module: {module_name}")
         module = cls.get_module(module_name)
         if module.status() is ModuleStatus.RUNNING:
+            logging.debug(f"Stopping module: {module_name}")
             AsyncioThread.run_coroutine(module.stop())
 
     @classmethod

@@ -9,6 +9,8 @@ from helpers.SessionData import SessionData
 
 
 class OBSModule(BotdeliciousModule):
+    _running_instances = []
+
     def __init__(self, name: str = "obs") -> None:
         super().__init__()
         self._name = name
@@ -26,11 +28,27 @@ class OBSModule(BotdeliciousModule):
         )
         self.enableCallbacks = self.config.callbacks
         await self.connect()
+        self.add_running_instance(self._name)
 
     async def stop(self):
         self.set_status(ModuleStatus.STOPPING)
         await self.disconnect()
+        self.remove_running_instance(self._name)
         self.set_status(ModuleStatus.IDLE)
+
+    @classmethod
+    def get_running_instances(cls):
+        return cls._running_instances
+
+    @classmethod
+    def add_running_instance(cls, instance_name: str):
+        if instance_name not in cls._running_instances:
+            cls._running_instances.append(instance_name)
+
+    @classmethod
+    def remove_running_instance(cls, instance_name: str):
+        if instance_name in cls._running_instances:
+            cls._running_instances.remove(instance_name)
 
     async def connect(self, *args, **kwargs):
         logging.info(f"Connecting to {self._name}...")

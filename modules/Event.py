@@ -10,6 +10,7 @@ from helpers.SessionData import SessionData
 
 class EventModule(BotdeliciousModule):
     _event_queue = asyncio.Queue()
+    _obs_instances = []
 
     def __init__(self):
         super().__init__()
@@ -97,38 +98,59 @@ class EventModule(BotdeliciousModule):
             {"artist": item_data.artist, "title": item_data.title}
         )
 
+    def obs_event(func, *args, **kwargs):
+        async def wrapper(self, *args, **kwargs):
+            EventModule.update_obs_instances()
+            await func(self, *args, **kwargs)
+
+        return wrapper
+
     @classmethod
+    def update_obs_instances(cls, *args, **kwargs):
+        from helpers.ModulesManager import ModulesManager
+        from modules.OBS import OBSModule
+
+        cls._obs_instances = []
+        for instance in OBSModule.get_running_instances():
+            cls._obs_instances.append(
+                ModulesManager.get_module(module_name=instance)
+            )
+
+    @classmethod
+    @obs_event
     async def handle_show_small_track_id(cls, *args, **kwargs):
-        from helpers.ModulesManager import ModulesManager
-
-        twitch = ModulesManager.get_module(module_name="twitch")
-        podcast = ModulesManager.get_module(module_name="podcast")
+        logging.debug(f"Show small track id:")
         await asyncio.gather(
-            twitch.eventUpdateSmallTrackInfoThenTriggerSlideAnimation(),
+            *[
+                instance.eventUpdateSmallTrackInfoThenTriggerSlideAnimation()
+                for instance in cls._obs_instances
+            ]
         )
 
     @classmethod
+    @obs_event
     async def handle_show_big_track_id(cls, *args, **kwargs):
-        from helpers.ModulesManager import ModulesManager
-
-        logging.debug(f"Show track id:")
-        twitch = ModulesManager.get_module(module_name="twitch")
+        logging.debug(f"Show big track id:")
         await asyncio.gather(
-            twitch.eventUpdateTrackInfoThenTriggerBigSlideAnimation(),
+            *[
+                instance.eventUpdateTrackInfoThenTriggerBigSlideAnimation()
+                for instance in cls._obs_instances
+            ]
         )
 
     @classmethod
+    @obs_event
     async def handle_shoutout(cls, item_data=None, *args, **kwargs):
-        from helpers.ModulesManager import ModulesManager
-
         logging.debug(f"Show shoutout:")
-        twitch = ModulesManager.get_module(module_name="twitch")
         await asyncio.gather(
-            twitch.eventUpdateShoutoutTextThenTriggerSlideAnimation(
-                username=item_data.username,
-                message=item_data.message,
-                avatar_url=item_data.avatar_url,
-            ),
+            *[
+                instance.eventUpdateShoutoutTextThenTriggerSlideAnimation(
+                    username=item_data.username,
+                    message=item_data.message,
+                    avatar_url=item_data.avatar_url,
+                )
+                for instance in cls._obs_instances
+            ]
         )
 
     @staticmethod
