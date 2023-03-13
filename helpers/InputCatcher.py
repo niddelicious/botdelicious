@@ -18,6 +18,8 @@ class InputCatcher:
             ModulesManager.stop_module(module_name="twinkly")
             logging.info(f"Exiting...\n")
             return 0
+        if command == "status":
+            ModulesManager.get_module_status()
         if command == "start twitch":
             ModulesManager.start_module(module_name="twitch")
         if command == "stop twitch":

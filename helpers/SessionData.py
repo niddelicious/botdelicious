@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Dict
 from dotmap import DotMap
 
@@ -5,6 +6,12 @@ from dotmap import DotMap
 class SessionData:
     _current_track = DotMap({"artist": "Unknown", "title": "Unknown"})
     _session_playlist = []
+    _session_setlist = []
+    _session_start = None
+
+    @classmethod
+    def start_session(cls):
+        cls.start_session = datetime.now()
 
     @classmethod
     def get_current_track(cls):
@@ -30,6 +37,13 @@ class SessionData:
     def add_current_track_to_session_playlist(cls):
         if cls._current_track not in cls._session_playlist:
             cls._session_playlist.append(cls._current_track)
+
+            elapsed_time = (datetime.now() - cls._session_start).seconds
+            minutes, seconds = divmod(elapsed_time, 60)
+            timestamp = f"{minutes}:{seconds}"
+            cls._session_setlist.append(
+                {**cls._current_track, "timestamp": timestamp}
+            )
 
     @classmethod
     def get_session_playlist(cls):

@@ -6,6 +6,7 @@ from modules.OBS import OBSModule
 from modules.Webhook import WebhookModule
 from modules.DJctl import DJctlModule
 from modules.Twinkly import TwinklyModule
+from helpers.Enums import ModuleStatus
 
 
 class ModulesManager:
@@ -28,9 +29,17 @@ class ModulesManager:
     @classmethod
     def stop_module(cls, module_name=None):
         logging.debug(f"Stopping module: {module_name}")
-        module = getattr(cls._modules, module_name)
-        AsyncioThread.run_coroutine(module.stop())
+        module = cls.get_module(module_name)
+        if module.status() is ModuleStatus.RUNNING:
+            AsyncioThread.run_coroutine(module.stop())
 
     @classmethod
     def get_module(cls, module_name):
         return cls._modules[module_name] or None
+
+    @classmethod
+    def get_module_status(cls):
+        logging.info(f"Module status:")
+        for name, module in cls._modules.items():
+            logging.info(name)
+            logging.info(module.get_status())

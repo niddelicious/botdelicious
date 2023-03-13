@@ -28,6 +28,6 @@ class BotdeliciousModule(ABC):
         self.set_status(ModuleStatus.IDLE)
 
     @classmethod
-    async def status(self):
+    def status(self):
         """Return the status of the module"""
         return self.get_status()
