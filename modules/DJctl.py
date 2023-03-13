@@ -7,8 +7,6 @@ from helpers.Enums import ModuleStatus
 
 
 class DJctlModule(BotdeliciousModule):
-    _status = ModuleStatus.IDLE
-
     def __init__(self):
         super().__init__()
         self.directory = os.getcwd()
@@ -20,14 +18,13 @@ class DJctlModule(BotdeliciousModule):
         ]
 
     async def start(self):
-        self._status = ModuleStatus.RUNNING
-        self.console()
-
-    def _status(self):
-        return self._status
+        self.set_status(ModuleStatus.RUNNING)
+        self.process = self.console()
 
     async def stop(self):
-        pass
+        self.set_status(ModuleStatus.STOPPING)
+        self.process.kill()
+        self.set_status(ModuleStatus.IDLE)
 
     def listen(self):
         subprocess.run(self.executable)
@@ -37,4 +34,6 @@ class DJctlModule(BotdeliciousModule):
         si.dwFlags = (
             subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NEW_CONSOLE
         )
-        subprocess.Popen(self.executable, close_fds=True, startupinfo=si)
+        return subprocess.Popen(
+            self.executable, close_fds=True, startupinfo=si
+        )

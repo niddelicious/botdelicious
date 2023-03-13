@@ -6,20 +6,28 @@ class BotdeliciousModule(ABC):
     _status = ModuleStatus.IDLE
 
     def __init__(self):
-        self._status = ModuleStatus.IDLE
+        self.set_status(ModuleStatus.IDLE)
+
+    @classmethod
+    def get_status(cls):
+        return cls._status
+
+    @classmethod
+    def set_status(cls, new_status: ModuleStatus):
+        cls._status = new_status
 
     @abstractmethod
     async def start(self):
         """Start the module"""
-        self._status = ModuleStatus.RUNNING
+        self.set_status(ModuleStatus.RUNNING)
 
     @abstractmethod
     async def stop(self):
         """Stop the module"""
-        self._status = ModuleStatus.STOPPING
-        self._status = ModuleStatus.IDLE
+        self.set_status(ModuleStatus.STOPPING)
+        self.set_status(ModuleStatus.IDLE)
 
-    @abstractmethod
-    async def _status(self):
+    @classmethod
+    async def status(self):
         """Return the status of the module"""
-        return self._status
+        return self.get_status()

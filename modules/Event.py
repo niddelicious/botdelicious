@@ -10,22 +10,18 @@ from helpers.SessionData import SessionData
 
 class EventModule(BotdeliciousModule):
     _event_queue = asyncio.Queue()
-    _status = ModuleStatus.IDLE
 
     def __init__(self):
         super().__init__()
 
     async def start(self):
         AsyncioThread.run_coroutine(self.run())
-        self._status = ModuleStatus.RUNNING
-
-    def _status(self):
-        return self._status
+        self.set_status(ModuleStatus.RUNNING)
 
     def stop(self):
-        self._status = ModuleStatus.STOPPING
+        self.set_status(ModuleStatus.STOPPING)
         AsyncioThread.stop_loop()
-        self._status = ModuleStatus.IDLE
+        self.set_status(ModuleStatus.IDLE)
 
     @classmethod
     async def get_event_queue(cls):

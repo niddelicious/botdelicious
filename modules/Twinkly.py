@@ -63,15 +63,15 @@ class TwinklyModule(BotdeliciousModule):
         self.lights = []
 
     async def start(self, **kwargs):
-        self._status = ModuleStatus.RUNNING
+        self.set_status(ModuleStatus.RUNNING)
         for light in ConfigManager.get("twinkly"):
             self.lights.append(TwinklyController(light))
         for light in self.lights:
             await light.run_twinkly_effect()
 
     async def stop(self):
-        self._status = ModuleStatus.STOPPING
-        self._status = ModuleStatus.IDLE
+        self.set_status(ModuleStatus.STOPPING)
+        self.set_status(ModuleStatus.IDLE)
 
     async def status(self):
         return self._status

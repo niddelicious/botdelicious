@@ -18,20 +18,17 @@ class WebhookModule(BotdeliciousModule):
         super().__init__()
 
     async def start(self):
-        self._status = ModuleStatus.RUNNING
+        self.set_status(ModuleStatus.RUNNING)
         self._webhook_listener = webhook_listener.Listener(
             handlers={"POST": self.incoming_webhook},
             port=ConfigManager._config.webhook.port,
         )
         self._webhook_listener.start()
 
-    async def _status(self):
-        return self._status
-
     async def stop(self):
-        self._status = ModuleStatus.STOPPING
+        self.set_status(ModuleStatus.STOPPING)
         self._webhook_listener.stop()
-        self._status = ModuleStatus.IDLE
+        self.set_status(ModuleStatus.IDLE)
 
     def incoming_webhook(self, request, *args, **kwargs):
         logging.debug("Incoming Webhook")

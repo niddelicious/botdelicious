@@ -13,7 +13,7 @@ from modules.cogs.Commands import CommandsCog
 
 class _TwitchBot(commands.Bot):
     def __init__(self, config):
-        logging.info(f'Starting Twitch chat bot')
+        logging.info(f"Starting Twitch chat bot")
         self.config = config
         super().__init__(
             token=self.config.access_token,
@@ -51,7 +51,6 @@ class _TwitchBot(commands.Bot):
                 return False
         return res.group(1)
 
-
     async def fetch_user_info(self, username):
         fetch_url = f"https://api.twitch.tv/helix/users?login={username}"
         headers = {
@@ -62,26 +61,21 @@ class _TwitchBot(commands.Bot):
         return json.loads(response.content)["data"][0]["profile_image_url"]
 
 
-class ChatModule(commands.Bot, BotdeliciousModule):
-    _status = ModuleStatus.IDLE
-
+class ChatModule(BotdeliciousModule):
     def __init__(self):
-        self._status = ModuleStatus.IDLE
+        super().__init__()
 
     async def start(self):
-        self._status = ModuleStatus.RUNNING
+        self.set_status(ModuleStatus.RUNNING)
         self.config = ConfigManager.get("chat")
         await self._update_tokens()
         self.bot = _TwitchBot(self.config)
         self.bot.run()
 
     async def stop(self):
-        self._status = ModuleStatus.STOPPING
-        self.close()
-        self._status = ModuleStatus.IDLE
-
-    async def status(self):
-        return self._status
+        self.set_status(ModuleStatus.STOPPING)
+        self.bot.close()
+        self.set_status(ModuleStatus.IDLE)
 
     async def _update_tokens(self):
         logging.debug("Refreshing Twitch Chat tokens")

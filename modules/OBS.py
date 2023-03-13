@@ -13,10 +13,9 @@ class OBSModule(BotdeliciousModule):
         super().__init__()
         self._name = name
         self.config = None
-        self._status = ModuleStatus.IDLE
 
     async def start(self):
-        self._status = ModuleStatus.RUNNING
+        self.set_status(ModuleStatus.RUNNING)
         self.config = getattr(ConfigManager._config, self._name)
         parameters = simpleobsws.IdentificationParameters()
         parameters.eventSubscriptions = (1 << 0) | (1 << 2)
@@ -28,13 +27,10 @@ class OBSModule(BotdeliciousModule):
         self.enableCallbacks = self.config.callbacks
         await self.connect()
 
-    def _status(self):
-        return self._status
-
     async def stop(self):
-        self._status = ModuleStatus.STOPPING
+        self.set_status(ModuleStatus.STOPPING)
         await self.disconnect()
-        self._status = ModuleStatus.IDLE
+        self.set_status(ModuleStatus.IDLE)
 
     async def connect(self, *args, **kwargs):
         logging.info(f"Connecting to {self._name}...")
@@ -152,16 +148,28 @@ class OBSModule(BotdeliciousModule):
 
     async def eventUpdateTrackInfoThenTriggerBigSlideAnimation(self):
         await asyncio.gather(
-            self.callUpdateText(inputName="Big track artist", text=SessionData.get_current_artist()),
-            self.callUpdateText(inputName="Big track title", text=SessionData.get_current_title()),
+            self.callUpdateText(
+                inputName="Big track artist",
+                text=SessionData.get_current_artist(),
+            ),
+            self.callUpdateText(
+                inputName="Big track title",
+                text=SessionData.get_current_title(),
+            ),
         )
         await self.callToggleFilter("Track: Big", "Slide", True)
         await asyncio.sleep(9)
 
     async def eventUpdateSmallTrackInfoThenTriggerSlideAnimation(self):
         await asyncio.gather(
-            self.callUpdateText(inputName="Small track artist", text=SessionData.get_current_artist()),
-            self.callUpdateText(inputName="Small track title", text=SessionData.get_current_title()),
+            self.callUpdateText(
+                inputName="Small track artist",
+                text=SessionData.get_current_artist(),
+            ),
+            self.callUpdateText(
+                inputName="Small track title",
+                text=SessionData.get_current_title(),
+            ),
         )
         await self.callToggleFilter("Track: Small", "Slide", True)
         await asyncio.sleep(9)
@@ -170,8 +178,14 @@ class OBSModule(BotdeliciousModule):
         await self.callToggleFilter("Track: Small", "Slide", True)
         await asyncio.sleep(1)
         await asyncio.gather(
-            self.callUpdateText(inputName="Small track artist", text=SessionData.get_current_artist()),
-            self.callUpdateText(inputName="Small track title", text=SessionData.get_current_title()),
+            self.callUpdateText(
+                inputName="Small track artist",
+                text=SessionData.get_current_artist(),
+            ),
+            self.callUpdateText(
+                inputName="Small track title",
+                text=SessionData.get_current_title(),
+            ),
         )
         await asyncio.sleep(6)
 
