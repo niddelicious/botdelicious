@@ -54,9 +54,8 @@ class TwinklyController:
 
 
 class TwinklyModule(BotdeliciousModule):
-    _status = ModuleStatus.IDLE
-
     def __init__(self):
+        super().__init__()
         self.default_mode = "movie"
         self.music_effect = "00000000-0000-0000-0000-000000000003"
         self.headers = {}
@@ -72,6 +71,3 @@ class TwinklyModule(BotdeliciousModule):
     async def stop(self):
         self.set_status(ModuleStatus.STOPPING)
         self.set_status(ModuleStatus.IDLE)
-
-    async def status(self):
-        return self._status
