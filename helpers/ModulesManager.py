@@ -22,7 +22,7 @@ class ModulesManager:
 
     @classmethod
     def start_module(cls, module_name=None):
-        module = cls._modules[module_name]
+        module = cls.get_module(module_name)
         if module.status() is ModuleStatus.IDLE:
             logging.debug(f"Starting module: {module_name}")
             AsyncioThread.run_coroutine(module.start())
@@ -36,7 +36,7 @@ class ModulesManager:
 
     @classmethod
     def get_module(cls, module_name):
-        return cls._modules[module_name] or None
+        return cls._modules.get(module_name) or None
 
     @classmethod
     def get_module_status(cls):
