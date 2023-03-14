@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from pathlib import Path
 import shutil
 from dotmap import DotMap
 from AsyncioThread import AsyncioThread
@@ -155,7 +156,9 @@ class EventModule(BotdeliciousModule):
 
     @staticmethod
     def _copy_fallback_image_to_cover_file():
+        from_file = Path("external/djctl/record-vinyl-solid-light.png")
+        to_file = Path("external/djctl/latest-cover-art.png")
         shutil.copy2(
-            "external/djctl/record-vinyl-solid-light.png",
-            "external/djctl/latest-cover-art.png",
+            from_file,
+            to_file,
         )

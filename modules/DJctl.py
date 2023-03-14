@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import subprocess
 import logging
 
@@ -9,12 +10,12 @@ from helpers.Enums import ModuleStatus
 class DJctlModule(BotdeliciousModule):
     def __init__(self):
         super().__init__()
-        self.directory = os.getcwd()
+        self.directory = Path(os.getcwd())
         self.executable = [
-            f"{self.directory}\external\djctl\djctl.exe",
+            self.directory / "external" / "djctl" / "djctl.exe",
             "start",
             "--conf",
-            f"{self.directory}\external\djctl\conf.yaml",
+            self.directory / "external" / "djctl" / "conf.yaml",
         ]
 
     async def start(self):
