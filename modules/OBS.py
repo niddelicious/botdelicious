@@ -168,11 +168,11 @@ class OBSModule(BotdeliciousModule):
         await asyncio.gather(
             self.callUpdateText(
                 inputName="Big track artist",
-                text=SessionData.get_current_artist(),
+                text=SessionData.get_current_track().artist,
             ),
             self.callUpdateText(
                 inputName="Big track title",
-                text=SessionData.get_current_title(),
+                text=SessionData.get_current_track().title,
             ),
         )
         await self.callToggleFilter("Track: Big", "Slide", True)
@@ -182,11 +182,11 @@ class OBSModule(BotdeliciousModule):
         await asyncio.gather(
             self.callUpdateText(
                 inputName="Small track artist",
-                text=SessionData.get_current_artist(),
+                text=SessionData.get_current_track().artist,
             ),
             self.callUpdateText(
                 inputName="Small track title",
-                text=SessionData.get_current_title(),
+                text=SessionData.get_current_track().title,
             ),
         )
         await self.callToggleFilter("Track: Small", "Slide", True)
@@ -198,11 +198,11 @@ class OBSModule(BotdeliciousModule):
         await asyncio.gather(
             self.callUpdateText(
                 inputName="Small track artist",
-                text=SessionData.get_current_artist(),
+                text=SessionData.get_current_track().artist,
             ),
             self.callUpdateText(
                 inputName="Small track title",
-                text=SessionData.get_current_title(),
+                text=SessionData.get_current_track().title,
             ),
         )
         await asyncio.sleep(6)

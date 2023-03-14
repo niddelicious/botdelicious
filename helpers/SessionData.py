@@ -1,5 +1,7 @@
 from datetime import datetime
 from typing import List
+
+from dotmap import DotMap
 from helpers.Dataclasses import Track
 
 
@@ -14,15 +16,12 @@ class SessionData:
 
     @classmethod
     def get_current_track(cls):
-        return cls._current_track
-
-    @classmethod
-    def get_current_artist(cls):
-        return cls._current_track.artist
-
-    @classmethod
-    def get_current_title(cls):
-        return cls._current_track.title
+        return DotMap(
+            {
+                "artist": cls._current_track.artist,
+                "title": cls._current_track.title,
+            }
+        )
 
     @classmethod
     def set_current_track(cls, artist: str, title: str):
