@@ -30,7 +30,6 @@ class Botdelicious:
 
 def main():
     ConfigManager.get_config()
-    b = Botdelicious()
     logger = logging.getLogger()
     logger.setLevel(ConfigManager._config.logging.level)
     formatter = logging.Formatter(
@@ -44,6 +43,7 @@ def main():
     )
 
     """Main entry point of the app"""
+    b = Botdelicious()
     b.autostart()
     while InputCatcher.commandline():
         pass
