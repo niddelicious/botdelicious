@@ -5,6 +5,7 @@ import simpleobsws
 from helpers.AbstractModule import BotdeliciousModule
 from helpers.ConfigManager import ConfigManager
 from helpers.Enums import ModuleStatus
+from helpers.Enums import ModuleRole
 from helpers.SessionData import SessionData
 
 
@@ -14,6 +15,7 @@ class OBSModule(BotdeliciousModule):
     def __init__(self, name: str = "obs") -> None:
         super().__init__()
         self._name = name
+        self._role = ModuleRole.FOLLOWER
         self.config = None
 
     async def start(self):
@@ -26,7 +28,9 @@ class OBSModule(BotdeliciousModule):
             password=self.config.password,
             identification_parameters=parameters,
         )
-        self.enableCallbacks = self.config.callbacks
+        self._role = (
+            ModuleRole.LEADER if self.config.callbacks else ModuleRole.FOLLOWER
+        )
         await self.connect()
         self.add_running_instance(self._name)
 
@@ -58,9 +62,10 @@ class OBSModule(BotdeliciousModule):
         except ConnectionError:
             logging.warn(f"Could not connect to {self._name}")
             return
-        if self.enableCallbacks:
+        if self._role == ModuleRole.LEADER:
             # self.ws.register_event_callback(self.on_event)
-            # self.ws.register_event_callback(self.on_switchscenes, "SwitchScenes")
+            # self.ws.register_event_callback(self.on_scene_switched, "CurrentProgramSceneChanged")
+            # self.ws.register_event_callback(self.on_record_toggled, "RecordStateChanged")
             pass
 
     async def disconnect(self):
@@ -72,8 +77,35 @@ class OBSModule(BotdeliciousModule):
             "New event! Type: {} | Raw Data: {}".format(eventType, eventData)
         )  # Print the event data. Note that `update-type` is also provided in the data
 
-    async def on_switchscenes(eventData):
-        logging.info('Scene switched to "{}".'.format(eventData["sceneName"]))
+    async def on_scene_switched(eventData):
+        """
+        This method is called when a scene is switched.
+
+        :param eventData: A dictionary containing information about the scene switch event
+        :type eventData: dict
+
+        Data Fields:
+        Name    Type    Description
+        sceneName  String  Name of the scene that was switched to
+        """
+        logging.debug('Scene switched to "{}".'.format(eventData["sceneName"]))
+
+    async def on_record_toggled(eventData):
+        """
+        Handle an event when record is toggled.
+
+        :param eventData: Dictionary containing data about the event
+        :type eventData: dict
+
+        Data Fields:
+        - outputActive: Boolean, Whether the output is active
+        - outputState: String, The specific state of the output
+        - outputPath: String, File name for the saved recording, if record stopped. null otherwise.
+        """
+        logging.debug("Recording state changed:")
+        logging.debug(eventData["outputActive"])
+        logging.debug(eventData["outputState"])
+        logging.debug(eventData["outputPath"])
 
     async def callToggleFilter(
         self,

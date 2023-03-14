@@ -16,3 +16,8 @@ class ModuleStatus(enum.Enum):
 class QueueStatus(enum.Enum):
     IDLE = 0
     PROCESSING = 1
+
+
+class ModuleRole(enum.Enum):
+    LEADER = 0
+    FOLLOWER = 1
