@@ -1,17 +1,16 @@
 from datetime import datetime
-from typing import Dict
-from dotmap import DotMap
+from typing import List
+from helpers.Dataclasses import Track
 
 
 class SessionData:
-    _current_track = DotMap({"artist": "Unknown", "title": "Unknown"})
+    _current_track = Track("Unknown", "Unknown")
     _session_playlist = []
-    _session_setlist = []
     _session_start = None
 
     @classmethod
     def start_session(cls):
-        cls.start_session = datetime.now()
+        cls._session_start = datetime.now()
 
     @classmethod
     def get_current_track(cls):
@@ -26,25 +25,21 @@ class SessionData:
         return cls._current_track.title
 
     @classmethod
-    def set_current_track(
-        cls,
-        track_info: Dict[str, str] = {"artist": "Unknown", "title": "Unknown"},
-    ):
-        cls._current_track = DotMap(track_info)
+    def set_current_track(cls, artist: str, title: str):
+        cls._current_track = Track(artist, title)
         cls.add_current_track_to_session_playlist()
 
     @classmethod
     def add_current_track_to_session_playlist(cls):
         if cls._current_track not in cls._session_playlist:
-            cls._session_playlist.append(cls._current_track)
-
             elapsed_time = (datetime.now() - cls._session_start).seconds
             minutes, seconds = divmod(elapsed_time, 60)
             timestamp = f"{minutes}:{seconds}"
-            cls._session_setlist.append(
-                {**cls._current_track, "timestamp": timestamp}
+            track = Track(
+                cls._current_track.artist, cls._current_track.title, timestamp
             )
+            cls._session_playlist.append(track)
 
     @classmethod
-    def get_session_playlist(cls):
+    def get_session_playlist(cls) -> List[Track]:
         return cls._session_playlist
