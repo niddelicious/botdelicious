@@ -16,6 +16,7 @@ class AsyncioThread:
     def start_loop(cls):
         logging.debug(f"Starting loop")
         cls._loop = asyncio.new_event_loop()
+        cls._loop.set_debug(True)
         asyncio.set_event_loop(cls._loop)
         logging.debug(f"Loop: {cls._loop}")
         logging.debug(f"Starting thread")

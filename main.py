@@ -18,6 +18,7 @@ from helpers.InputCatcher import InputCatcher
 
 from helpers.ModulesManager import ModulesManager
 from helpers.ConfigManager import ConfigManager
+from helpers.SessionData import SessionData
 
 
 class Botdelicious:
@@ -45,6 +46,7 @@ def main():
     """Main entry point of the app"""
     b = Botdelicious()
     b.autostart()
+    SessionData.start_session()
     while InputCatcher.commandline():
         pass
     AsyncioThread.stop_loop()

@@ -1,12 +1,14 @@
 import asyncio
 import logging
 import simpleobsws
+from AsyncioThread import AsyncioThread
 
 from helpers.AbstractModule import BotdeliciousModule
 from helpers.ConfigManager import ConfigManager
 from helpers.Enums import ModuleStatus
 from helpers.Enums import ModuleRole
 from helpers.SessionData import SessionData
+from modules.Event import EventModule
 
 
 class OBSModule(BotdeliciousModule):
@@ -17,12 +19,13 @@ class OBSModule(BotdeliciousModule):
         self._name = name
         self._role = ModuleRole.FOLLOWER
         self.config = None
+        self._status = ModuleStatus.IDLE
 
     async def start(self):
         self.set_status(ModuleStatus.RUNNING)
         self.config = getattr(ConfigManager._config, self._name)
         parameters = simpleobsws.IdentificationParameters()
-        parameters.eventSubscriptions = (1 << 0) | (1 << 2)
+        parameters.eventSubscriptions = (1 << 0) | (1 << 2) | (1 << 6)
         self.ws = simpleobsws.WebSocketClient(
             url=f"ws://127.0.0.1:{self.config.port}",
             password=self.config.password,
@@ -33,12 +36,43 @@ class OBSModule(BotdeliciousModule):
         )
         await self.connect()
         self.add_running_instance(self._name)
+        await asyncio.gather(
+            self.call_update_text(
+                inputName="Small track artist",
+                text=SessionData.current_artist(),
+            ),
+            self.call_update_text(
+                inputName="Small track title",
+                text=SessionData.current_title(),
+            ),
+        )
+        if self._name == "twitch":
+            asyncio.gather(
+                self.call_update_text(
+                    inputName="Big track artist",
+                    text=SessionData.current_artist(),
+                ),
+                self.call_update_text(
+                    inputName="Big track title",
+                    text=SessionData.current_title(),
+                ),
+                self.event_update_stats(),
+            )
 
     async def stop(self):
         self.set_status(ModuleStatus.STOPPING)
         await self.disconnect()
         self.remove_running_instance(self._name)
         self.set_status(ModuleStatus.IDLE)
+
+    def status(self):
+        return self.get_status()
+
+    def get_status(self):
+        return self._status
+
+    def set_status(self, new_status: ModuleStatus):
+        self._status = new_status
 
     @classmethod
     def get_running_instances(cls):
@@ -63,21 +97,44 @@ class OBSModule(BotdeliciousModule):
             logging.warn(f"Could not connect to {self._name}")
             return
         if self._role == ModuleRole.LEADER:
-            # self.ws.register_event_callback(self.on_event)
-            # self.ws.register_event_callback(self.on_scene_switched, "CurrentProgramSceneChanged")
-            # self.ws.register_event_callback(self.on_record_toggled, "RecordStateChanged")
-            pass
+            self.ws.register_event_callback(self.on_event)
+            self.ws.register_event_callback(
+                self.on_scene_switched, "CurrentProgramSceneChanged"
+            )
+            self.ws.register_event_callback(
+                self.on_record_toggled, "RecordStateChanged"
+            )
 
     async def disconnect(self):
         logging.info(f"Disconnecting from {self._name}")
         await self.ws.disconnect()
 
-    async def on_event(eventType, eventData):
-        logging.info(
-            "New event! Type: {} | Raw Data: {}".format(eventType, eventData)
+    async def call(
+        self,
+        type: str = "Call",
+        request: simpleobsws.Request = None,
+        *args,
+        **kwargs,
+    ):
+        ret = await self.ws.call(request)  # Perform the request
+
+        if ret.ok():  # Check if the request succeeded
+            logging.debug(
+                f"|{self._name}| {type} succeeded! Response data: {ret.responseData}"
+            )
+            return True
+        else:
+            logging.warn(
+                f"|{self._name}| {type} failed! Response data: {ret.responseData}"
+            )
+            return False
+
+    async def on_event(self, eventType, eventData):
+        logging.debug(
+            f"|{self._name}| New event! Type: {eventType} | Raw Data: {eventData}"
         )  # Print the event data. Note that `update-type` is also provided in the data
 
-    async def on_scene_switched(eventData):
+    async def on_scene_switched(self, eventData):
         """
         This method is called when a scene is switched.
 
@@ -88,9 +145,16 @@ class OBSModule(BotdeliciousModule):
         Name    Type    Description
         sceneName  String  Name of the scene that was switched to
         """
-        logging.debug('Scene switched to "{}".'.format(eventData["sceneName"]))
+        logging.debug(
+            f'|{self._name}| Scene switched to {eventData["sceneName"]}'
+        )
 
-    async def on_record_toggled(eventData):
+    async def sync_scene_switch(self, event_data):
+        if self._role == ModuleRole.FOLLOWER:
+            self.call_switch_scene(scene_name=event_data["sceneName"])
+        pass
+
+    async def on_record_toggled(self, eventData):
         """
         Handle an event when record is toggled.
 
@@ -102,12 +166,29 @@ class OBSModule(BotdeliciousModule):
         - outputState: String, The specific state of the output
         - outputPath: String, File name for the saved recording, if record stopped. null otherwise.
         """
-        logging.debug("Recording state changed:")
+        logging.debug(f"|{self._name}| Recording state changed:")
         logging.debug(eventData["outputActive"])
         logging.debug(eventData["outputState"])
         logging.debug(eventData["outputPath"])
+        AsyncioThread.run_coroutine(
+            EventModule.queue_event(
+                event="sync_recording", record_status=eventData["outputActive"]
+            )
+        )
 
-    async def callToggleFilter(
+    async def sync_record_toggle(self, record_status):
+        if self._role == ModuleRole.FOLLOWER:
+            if record_status:
+                request = simpleobsws.Request(
+                    "StartRecord",
+                )
+            else:
+                request = simpleobsws.Request(
+                    "StopRecord",
+                )
+            await self.call(type="Toggle recording state", request=request)
+
+    async def call_toggle_filter(
         self,
         sourceName: str = None,
         filterName: str = None,
@@ -121,24 +202,21 @@ class OBSModule(BotdeliciousModule):
                 "filterEnabled": filterEnabled,
             },
         )
-        ret = await self.ws.call(request)  # Perform the request
+        await self.call(type="Toggle filter", request=request)
 
-        if ret.ok():  # Check if the request succeeded
-            logging.debug(
-                "Filter toggle succeeded! Response data: {}".format(
-                    ret.responseData
-                )
-            )
-            return True
-        else:
-            logging.warn(
-                "Filter toggle failed! Response data: {}".format(
-                    ret.responseData
-                )
-            )
-            return False
+    async def call_switch_scene(
+        self,
+        scene_name: str = None,
+    ):
+        request = simpleobsws.Request(
+            "SetCurrentProgramScene",
+            {
+                "sceneName": f"{scene_name}",
+            },
+        )
+        await self.call(type="Switch scene", request=request)
 
-    async def callUpdateText(self, inputName: str = None, text: str = None):
+    async def call_update_text(self, inputName: str = None, text: str = None):
         request = simpleobsws.Request(
             "SetInputSettings",
             {
@@ -148,24 +226,9 @@ class OBSModule(BotdeliciousModule):
                 },
             },
         )
-        ret = await self.ws.call(request)  # Perform the request
+        await self.call(type="Update text", request=request)
 
-        if ret.ok():  # Check if the request succeeded
-            logging.debug(
-                "Input update succeeded! Response data: {}".format(
-                    ret.responseData
-                )
-            )
-            return True
-        else:
-            logging.warn(
-                "Input update failed! Response data: {}".format(
-                    ret.responseData
-                )
-            )
-            return False
-
-    async def callUpdateUrl(self, inputName: str = None, url: str = None):
+    async def call_update_url(self, inputName: str = None, url: str = None):
         request = simpleobsws.Request(
             "SetInputSettings",
             {
@@ -175,66 +238,76 @@ class OBSModule(BotdeliciousModule):
                 },
             },
         )
-        ret = await self.ws.call(request)  # Perform the request
-
-        if ret.ok():  # Check if the request succeeded
-            logging.info(
-                "Input update succeeded! Response data: {}".format(
-                    ret.responseData
-                )
-            )
-            return True
-        else:
-            logging.warn(
-                "Input update failed! Response data: {}".format(
-                    ret.responseData
-                )
-            )
-            return False
+        await self.call(type="Update url", request=request)
 
     async def eventTriggerSlideAnimation(self):
-        await self.callToggleFilter("Track: Small", "Slide", True)
+        await self.call_toggle_filter("Track: Small", "Slide", True)
         await asyncio.sleep(9)
 
     async def eventUpdateTrackInfoThenTriggerBigSlideAnimation(self):
         await asyncio.gather(
-            self.callUpdateText(
+            self.call_update_text(
                 inputName="Big track artist",
-                text=SessionData.get_current_track().artist,
+                text=SessionData.current_artist(),
             ),
-            self.callUpdateText(
+            self.call_update_text(
                 inputName="Big track title",
-                text=SessionData.get_current_track().title,
+                text=SessionData.current_title(),
             ),
         )
-        await self.callToggleFilter("Track: Big", "Slide", True)
+        await self.call_toggle_filter("Track: Big", "Slide", True)
         await asyncio.sleep(9)
+
+    async def event_new_track(self):
+        if self._name == "podcast":
+            await self.eventTriggerSlideAnimationThenUpdateSmallTrackInfo()
+        else:
+            await self.eventUpdateSmallTrackInfoThenTriggerSlideAnimation()
+
+    async def event_track_id(self):
+        if self._name == "podcast":
+            pass
+        else:
+            await self.eventUpdateTrackInfoThenTriggerBigSlideAnimation()
+
+    async def event_shoutout(
+        self,
+        username: str = "Unknown",
+        message: str = "Unknown",
+        avatar_url: str = "https://loremflickr.com/300/300/twitch",
+    ):
+        if self._name == "podcast":
+            pass
+        else:
+            await self.eventUpdateShoutoutTextThenTriggerSlideAnimation(
+                username=username, message=message, avatar_url=avatar_url
+            )
 
     async def eventUpdateSmallTrackInfoThenTriggerSlideAnimation(self):
         await asyncio.gather(
-            self.callUpdateText(
+            self.call_update_text(
                 inputName="Small track artist",
-                text=SessionData.get_current_track().artist,
+                text=SessionData.current_artist(),
             ),
-            self.callUpdateText(
+            self.call_update_text(
                 inputName="Small track title",
-                text=SessionData.get_current_track().title,
+                text=SessionData.current_title(),
             ),
         )
-        await self.callToggleFilter("Track: Small", "Slide", True)
+        await self.call_toggle_filter("Track: Small", "Slide", True)
         await asyncio.sleep(9)
 
     async def eventTriggerSlideAnimationThenUpdateSmallTrackInfo(self):
-        await self.callToggleFilter("Track: Small", "Slide", True)
+        await self.call_toggle_filter("Track: Small", "Slide", True)
         await asyncio.sleep(1)
         await asyncio.gather(
-            self.callUpdateText(
+            self.call_update_text(
                 inputName="Small track artist",
-                text=SessionData.get_current_track().artist,
+                text=SessionData.current_artist(),
             ),
-            self.callUpdateText(
+            self.call_update_text(
                 inputName="Small track title",
-                text=SessionData.get_current_track().title,
+                text=SessionData.current_title(),
             ),
         )
         await asyncio.sleep(6)
@@ -246,9 +319,24 @@ class OBSModule(BotdeliciousModule):
         avatar_url: str = "https://loremflickr.com/300/300/twitch",
     ):
         await asyncio.gather(
-            self.callUpdateText(inputName="Shoutout username", text=username),
-            self.callUpdateText(inputName="Shoutout message", text=message),
-            self.callUpdateUrl(inputName="Shoutout avatar", url=avatar_url),
+            self.call_update_text(
+                inputName="Shoutout username", text=username
+            ),
+            self.call_update_text(inputName="Shoutout message", text=message),
+            self.call_update_url(inputName="Shoutout avatar", url=avatar_url),
         )
-        await self.callToggleFilter("Shoutout", "Slide", True)
+        await self.call_toggle_filter("Shoutout", "Slide", True)
         await asyncio.sleep(12)
+
+    async def event_update_stats(self):
+        if self._name == "twitch":
+            asyncio.gather(
+                self.call_update_text(
+                    inputName="Stat: Messages",
+                    text=SessionData.number_of_comments(),
+                ),
+                self.call_update_text(
+                    inputName="Stat: Tracks",
+                    text=SessionData.number_of_tracks(),
+                ),
+            )

@@ -5,6 +5,7 @@ import shutil
 from dotmap import DotMap
 from AsyncioThread import AsyncioThread
 from helpers.AbstractModule import BotdeliciousModule
+from helpers.ConfigManager import ConfigManager
 from helpers.Enums import ModuleStatus
 from helpers.SessionData import SessionData
 
@@ -39,12 +40,13 @@ class EventModule(BotdeliciousModule):
 
     async def run(cls):
         logging.debug(f"Starting Event!")
+        loop_sleep = 2 if ConfigManager._config.logging.level == "DEBUG" else 0
         while cls._status == ModuleStatus.RUNNING:
             if not cls._event_queue.empty():
                 await cls.handle_event_queue()
             else:
                 logging.debug(f"Event queue is empty")
-            await asyncio.sleep(2)
+            await asyncio.sleep(loop_sleep)
         while cls._status == ModuleStatus.STOPPING:
             logging.DEBUG(f"Stopping event!")
             await asyncio.sleep(3)
@@ -95,9 +97,11 @@ class EventModule(BotdeliciousModule):
         if not item_data.contains_cover_art:
             cls._copy_fallback_image_to_cover_file()
 
+        logging.debug(f"Storing new track in session data")
         SessionData.set_current_track(
-            {"artist": item_data.artist, "title": item_data.title}
+            artist=item_data.artist, title=item_data.title
         )
+        logging.debug(f"Storing new track in session data")
 
     def obs_event(func, *args, **kwargs):
         async def wrapper(self, *args, **kwargs):
@@ -123,7 +127,7 @@ class EventModule(BotdeliciousModule):
         logging.debug(f"Show small track id:")
         await asyncio.gather(
             *[
-                instance.eventUpdateSmallTrackInfoThenTriggerSlideAnimation()
+                instance.event_new_track()
                 for instance in cls._obs_instances
             ]
         )
@@ -134,7 +138,7 @@ class EventModule(BotdeliciousModule):
         logging.debug(f"Show big track id:")
         await asyncio.gather(
             *[
-                instance.eventUpdateTrackInfoThenTriggerBigSlideAnimation()
+                instance.event_track_id()
                 for instance in cls._obs_instances
             ]
         )
@@ -154,6 +158,23 @@ class EventModule(BotdeliciousModule):
             ]
         )
 
+    @classmethod
+    @obs_event
+    async def handle_new_message(cls, item_data=None, *args, **kwargs):
+        logging.debug(f"Updating messages")
+        SessionData.add_comment()
+        await asyncio.gather(
+            *[instance.event_update_stats() for instance in cls._obs_instances]
+        )
+    
+    @classmethod
+    @obs_event
+    async def handle_sync_recording(cls, item_data=None, *args, **kwargs):
+        logging.debug(f"Synchronizing recording state")
+        await asyncio.gather(
+            *[instance.sync_record_toggle(record_status=item_data.record_status) for instance in cls._obs_instances]
+        )
+
     @staticmethod
     def _copy_fallback_image_to_cover_file():
         from_file = Path("external/djctl/record-vinyl-solid-light.png")
@@ -162,3 +183,4 @@ class EventModule(BotdeliciousModule):
             from_file,
             to_file,
         )
+        logging.debug(f"Using fallback cover art")

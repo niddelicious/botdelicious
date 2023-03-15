@@ -5,9 +5,12 @@ import logging
 from dotmap import DotMap
 from twitchio.ext import commands
 import datetime
+from AsyncioThread import AsyncioThread
 from helpers.AbstractModule import BotdeliciousModule
 from helpers.ConfigManager import ConfigManager
 from helpers.Enums import ModuleStatus
+from helpers.SessionData import SessionData
+from modules.Event import EventModule
 from modules.cogs.Commands import CommandsCog
 
 
@@ -29,6 +32,18 @@ class _TwitchBot(commands.Bot):
     async def event_ready(self):
         print(f"Logged in as | {self.nick}")
         print(f"User id is | {self.user_id}")
+        await self.say_hello()
+
+    async def event_message(self, message):
+        AsyncioThread.run_coroutine(
+            EventModule.queue_event(event="new_message")
+        )
+
+    async def send_message_to_channel(self, channel, message):
+        chan = self.get_channel(channel)
+        self.loop.create_task(chan.send(message))
+
+    async def say_hello(self):
         for channel in self.connected_channels:
             current_time_string = datetime.datetime.now().strftime(
                 "%Y-%m-%d %H:%M:%S"
@@ -37,9 +52,14 @@ class _TwitchBot(commands.Bot):
                 channel.name, f"Hello World! ({current_time_string})"
             )
 
-    async def send_message_to_channel(self, channel, message):
-        chan = self.get_channel(channel)
-        self.loop.create_task(chan.send(message))
+    async def say_bye(self):
+        for channel in self.connected_channels:
+            current_time_string = datetime.datetime.now().strftime(
+                "%Y-%m-%d %H:%M:%S"
+            )
+            await self.send_message_to_channel(
+                channel.name, f"Bye World! ({current_time_string})"
+            )
 
     def find_username(self, message):
         res = re.search("@(\w+)", message)
@@ -74,6 +94,7 @@ class ChatModule(BotdeliciousModule):
 
     async def stop(self):
         self.set_status(ModuleStatus.STOPPING)
+        await self.bot.say_bye()
         await self.bot.close()
         self.set_status(ModuleStatus.IDLE)
 
