@@ -74,7 +74,7 @@ class ChatModule(BotdeliciousModule):
 
     async def stop(self):
         self.set_status(ModuleStatus.STOPPING)
-        self.bot.close()
+        await self.bot.close()
         self.set_status(ModuleStatus.IDLE)
 
     async def _update_tokens(self):

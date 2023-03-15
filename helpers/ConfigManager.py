@@ -16,7 +16,7 @@ class ConfigManager:
 
         with cls._config_file.open("w") as config_file:
             yaml.dump(config, config_file)
-        cls.get_config()
+        cls._config[group][setting] = value
 
     @classmethod
     def get_config(cls):
@@ -24,7 +24,7 @@ class ConfigManager:
             cls._config = DotMap(
                 yaml.load(config_file, Loader=yaml.FullLoader)
             )
-
+            
     @classmethod
     def get(cls, config_name):
         if hasattr(cls._config, config_name):
