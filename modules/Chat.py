@@ -38,6 +38,9 @@ class _TwitchBot(commands.Bot):
         AsyncioThread.run_coroutine(
             EventModule.queue_event(event="new_message")
         )
+        if message.content[0] == self.config.bot_prefix:
+            await self.handle_commands(message)
+            return
 
     async def send_message_to_channel(self, channel, message):
         chan = self.get_channel(channel)

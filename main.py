@@ -42,6 +42,10 @@ def main():
     coloredlogs.install(
         level=ConfigManager._config.logging.level, logger=logger
     )
+    if ConfigManager._config.logging.log_to_file:
+        logging.basicConfig(
+            filename="debug.log", encoding="utf-8", level=logging.DEBUG
+        )
 
     """Main entry point of the app"""
     b = Botdelicious()

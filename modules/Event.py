@@ -101,7 +101,10 @@ class EventModule(BotdeliciousModule):
         SessionData.set_current_track(
             artist=item_data.artist, title=item_data.title
         )
-        logging.debug(f"Storing new track in session data")
+        logging.debug(f"Updating track stat list")
+        await asyncio.gather(
+            *[instance.event_update_stats() for instance in cls._obs_instances]
+        )
 
     def obs_event(func, *args, **kwargs):
         async def wrapper(self, *args, **kwargs):
@@ -149,7 +152,7 @@ class EventModule(BotdeliciousModule):
         logging.debug(f"Show shoutout:")
         await asyncio.gather(
             *[
-                instance.eventUpdateShoutoutTextThenTriggerSlideAnimation(
+                instance.event_shoutout(
                     username=item_data.username,
                     message=item_data.message,
                     avatar_url=item_data.avatar_url,
