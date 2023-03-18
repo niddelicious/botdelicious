@@ -1,9 +1,11 @@
 import logging
 import random
+import re
 from twitchio.ext import commands
 import yaml
 
 from modules.Event import EventModule
+from modules.Twinkly import TwinklyModule
 
 
 class CommandsCog(commands.Cog):
@@ -79,3 +81,30 @@ class CommandsCog(commands.Cog):
         await ctx.send(
             f"I wish I knew who @{ctx.author.name} wanted me to shout out, but they didn't supply a name. #feelsbadman"
         )
+
+    @commands.command(
+        name="lights", aliases=["l", "light", "twink", "twinkly"]
+    )
+    async def lights(self, ctx: commands.Context):
+        splits = ctx.message.content.split()
+        if splits[1] == "effect" and splits[2].isnumeric():
+            await TwinklyModule.effect(effect_id=int(splits[2]))
+        elif splits[1] == "react" and splits[2].isnumeric():
+            await TwinklyModule.react(react_id=int(splits[2]))
+        elif (
+            (splits[1] == "color" or splits[1] == "colour")
+            and splits[2].isnumeric()
+            and splits[3].isnumeric()
+            and splits[4].isnumeric()
+        ):
+            await TwinklyModule.color(
+                red=int(splits[2]), green=int(splits[3]), blue=int(splits[4])
+            )
+        elif splits[1] == "white":
+            await TwinklyModule.color(red=255, green=178, blue=105)
+        elif splits[1] == "black":
+            await TwinklyModule.color(red=0, green=0, blue=0)
+        else:
+            await ctx.send(
+                f"Available lights: react [1-12] | effect [1-5] | color [0-255] [0-255] [0-255]"
+            )
