@@ -3,7 +3,8 @@ import re
 import requests
 import logging
 from dotmap import DotMap
-from twitchio.ext import commands
+import twitchio
+from twitchio.ext import commands, eventsub
 import datetime
 from AsyncioThread import AsyncioThread
 from helpers.AbstractModule import BotdeliciousModule
@@ -27,11 +28,19 @@ class _TwitchBot(commands.Bot):
             case_insensitive=True,
         )
 
+        self.event_subscription = eventsub.EventSubClient(
+            self, self.config.event_sub.secret, self.config.event_sub.callback
+        )
+
         self.add_cog(CommandsCog(self))
 
     async def event_ready(self):
         print(f"Logged in as | {self.nick}")
         print(f"User id is | {self.user_id}")
+        await self.event_subscription.listen(
+            port=self.config.event_sub.listen_port
+        )
+
         await self.say_hello()
 
     async def event_message(self, message):
@@ -41,6 +50,18 @@ class _TwitchBot(commands.Bot):
         if message.content[0] == self.config.bot_prefix:
             await self.handle_commands(message)
             return
+
+    async def event_eventsub_notification_follow(
+        self, payload: eventsub.ChannelFollowData
+    ):
+        logging.debug(f"New follower!")
+        logging.debug(payload)
+
+    async def event_eventsub_notification_raid(
+        self, payload: eventsub.ChannelRaidData
+    ):
+        logging.debug(f"New raid!")
+        logging.debug(payload)
 
     async def send_message_to_channel(self, channel, message):
         chan = self.get_channel(channel)

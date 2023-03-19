@@ -10,6 +10,10 @@ chat:
     - channel_b
   case_insensitive: No
   refresh_token: refreshtoken_123
+  event_sub:
+    callback: https://example.url/eventsub
+    listen_port: 12345
+    secret: event_sub_secret
 webhook:
   port: 12345
 obs:
