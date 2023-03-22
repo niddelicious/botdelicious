@@ -35,12 +35,11 @@ class _TwitchBot(commands.Bot):
         self.add_cog(CommandsCog(self))
 
     async def event_ready(self):
-        print(f"Logged in as | {self.nick}")
-        print(f"User id is | {self.user_id}")
+        logging.info(f"Logged in as | {self.nick}")
+        logging.info(f"User id is | {self.user_id}")
         await self.event_subscription.listen(
             port=self.config.event_sub.listen_port
         )
-
         await self.say_hello()
 
     async def event_message(self, message):
