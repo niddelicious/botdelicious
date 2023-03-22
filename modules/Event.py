@@ -129,10 +129,7 @@ class EventModule(BotdeliciousModule):
     async def handle_show_small_track_id(cls, *args, **kwargs):
         logging.debug(f"Show small track id:")
         await asyncio.gather(
-            *[
-                instance.event_new_track()
-                for instance in cls._obs_instances
-            ]
+            *[instance.event_new_track() for instance in cls._obs_instances]
         )
 
     @classmethod
@@ -140,10 +137,7 @@ class EventModule(BotdeliciousModule):
     async def handle_show_big_track_id(cls, *args, **kwargs):
         logging.debug(f"Show big track id:")
         await asyncio.gather(
-            *[
-                instance.event_track_id()
-                for instance in cls._obs_instances
-            ]
+            *[instance.event_track_id() for instance in cls._obs_instances]
         )
 
     @classmethod
@@ -169,13 +163,29 @@ class EventModule(BotdeliciousModule):
         await asyncio.gather(
             *[instance.event_update_stats() for instance in cls._obs_instances]
         )
-    
+
     @classmethod
     @obs_event
     async def handle_sync_recording(cls, item_data=None, *args, **kwargs):
         logging.debug(f"Synchronizing recording state")
         await asyncio.gather(
-            *[instance.sync_record_toggle(record_status=item_data.record_status) for instance in cls._obs_instances]
+            *[
+                instance.sync_record_toggle(
+                    record_status=item_data.record_status
+                )
+                for instance in cls._obs_instances
+            ]
+        )
+
+    @classmethod
+    @obs_event
+    async def handle_sync_scene(cls, item_data=None, *args, **kwargs):
+        logging.debug(f"Synchronizing scene switch")
+        await asyncio.gather(
+            *[
+                instance.sync_scene_switch(event_data=item_data.event_data)
+                for instance in cls._obs_instances
+            ]
         )
 
     @staticmethod

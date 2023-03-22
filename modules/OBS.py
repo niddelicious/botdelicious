@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from dotmap import DotMap
 import simpleobsws
 from AsyncioThread import AsyncioThread
 
@@ -9,10 +10,19 @@ from helpers.Enums import ModuleStatus
 from helpers.Enums import ModuleRole
 from helpers.SessionData import SessionData
 from modules.Event import EventModule
+from helpers.Dataclasses import OBSText
 
 
 class OBSModule(BotdeliciousModule):
     _running_instances = []
+    _constants = DotMap(
+        {
+            "setlist_line_height": 40,
+            "header_spacing": 10,
+            "item_spacing": 20,
+        }
+    )
+    _item_sizes = DotMap({"setlist": 0})
 
     def __init__(self, name: str = "obs") -> None:
         super().__init__()
@@ -104,6 +114,7 @@ class OBSModule(BotdeliciousModule):
             self.ws.register_event_callback(
                 self.on_record_toggled, "RecordStateChanged"
             )
+            await self.event_clear_credits()
 
     async def disconnect(self):
         logging.info(f"Disconnecting from {self._name}")
@@ -122,12 +133,12 @@ class OBSModule(BotdeliciousModule):
             logging.debug(
                 f"|{self._name}| {type} succeeded! Response data: {ret.responseData}"
             )
-            return True
+            return ret.responseData
         else:
             logging.warn(
                 f"|{self._name}| {type} failed! Response data: {ret.responseData}"
             )
-            return False
+            return ret.responseData
 
     async def on_event(self, eventType, eventData):
         logging.debug(
@@ -148,11 +159,13 @@ class OBSModule(BotdeliciousModule):
         logging.debug(
             f'|{self._name}| Scene switched to {eventData["sceneName"]}'
         )
+        if self._name == "twitch" and eventData["sceneName"] == "Scene: Outro":
+            await self.event_update_credits()
+        await EventModule.queue_event(event="sync_scene", event_data=eventData)
 
     async def sync_scene_switch(self, event_data):
         if self._role == ModuleRole.FOLLOWER:
-            self.call_switch_scene(scene_name=event_data["sceneName"])
-        pass
+            await self.call_switch_scene(scene_name=event_data["sceneName"])
 
     async def on_record_toggled(self, eventData):
         """
@@ -227,6 +240,40 @@ class OBSModule(BotdeliciousModule):
             },
         )
         await self.call(type="Update text", request=request)
+
+    async def call_get_item_id(
+        self, scene_name: str = None, source_name: str = None
+    ):
+        request = simpleobsws.Request(
+            "GetSceneItemId",
+            {"sceneName": f"{scene_name}", "sourceName": f"{source_name}"},
+        )
+        result = await self.call(type="Get SceneItem id", request=request)
+        return result["sceneItemId"]
+
+    async def call_update_position(
+        self,
+        scene_name: str = None,
+        source_name: str = None,
+        position_x: int = 0,
+        position_y: int = 0,
+    ):
+        scene_item_id = await self.call_get_item_id(
+            scene_name=scene_name, source_name=source_name
+        )
+
+        request = simpleobsws.Request(
+            "SetSceneItemTransform",
+            {
+                "sceneName": f"{scene_name}",
+                "sceneItemId": scene_item_id,
+                "sceneItemTransform": {
+                    "positionY": position_y,
+                    "positionX": position_x,
+                },
+            },
+        )
+        await self.call(type="Update item position", request=request)
 
     async def call_update_url(self, inputName: str = None, url: str = None):
         request = simpleobsws.Request(
@@ -333,10 +380,53 @@ class OBSModule(BotdeliciousModule):
             asyncio.gather(
                 self.call_update_text(
                     inputName="Stat: Messages",
-                    text=SessionData.number_of_comments(),
+                    text=SessionData.comments_count(),
                 ),
                 self.call_update_text(
                     inputName="Stat: Tracks",
-                    text=SessionData.number_of_tracks(),
+                    text=SessionData.tracks_count(),
                 ),
             )
+
+    async def event_clear_credits(self):
+        items = ["Setlist", "Followers", "Raids", "Moderators"]
+        for item in items:
+            await self.call_blank_text(input_name=item + ", header")
+            await self.call_blank_text(input_name=item + ", list")
+
+    async def event_update_credits(self):
+        credits = SessionData.process_session_credits()
+        for item in credits:
+            await self.call_update_text_extended(item)
+
+    async def call_update_text_extended(self, item: OBSText = None):
+        await self.call_update_position(
+            scene_name=item.scene,
+            source_name=item.source,
+            position_x=item.position_x,
+            position_y=item.position_y,
+        )
+        request = simpleobsws.Request(
+            "SetInputSettings",
+            {
+                "inputName": item.source,
+                "inputSettings": {
+                    "text": item.text,
+                    "extents_cx": item.width,
+                    "extents_cy": item.height,
+                },
+            },
+        )
+        await self.call(type="Update text extended", request=request)
+
+    async def call_blank_text(self, input_name: str = None):
+        request = simpleobsws.Request(
+            "SetInputSettings",
+            {
+                "inputName": input_name,
+                "inputSettings": {
+                    "text": "",
+                },
+            },
+        )
+        await self.call(type=f"Blanking {input_name}", request=request)

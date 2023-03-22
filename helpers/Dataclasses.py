@@ -16,3 +16,14 @@ class Track:
         if isinstance(other, Track):
             return self.artist == other.artist and self.title == other.title
         return False
+
+
+@dataclass
+class OBSText:
+    scene: str
+    source: str
+    text: str
+    position_x: int
+    position_y: int
+    width: int
+    height: int
