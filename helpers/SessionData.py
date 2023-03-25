@@ -15,6 +15,7 @@ class SessionData:
     _followers = []
     _raids = []
     _moderators = []
+    _vips = []
 
     @classmethod
     def start_session(cls):
@@ -58,6 +59,10 @@ class SessionData:
     @classmethod
     def add_moderator(cls, moderator: str = None):
         cls._moderators.append(moderator)
+
+    @classmethod
+    def add_vip(cls, vip: str = None):
+        cls._vips.append(vip)
 
     @classmethod
     def current_artist(cls):
@@ -104,6 +109,10 @@ class SessionData:
     @classmethod
     def get_moderators(cls) -> List[str]:
         return cls._moderators
+
+    @classmethod
+    def get_vips(cls) -> List[str]:
+        return cls._vips
 
     @classmethod
     def process_session_credits(cls):

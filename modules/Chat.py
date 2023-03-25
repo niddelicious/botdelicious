@@ -46,21 +46,59 @@ class _TwitchBot(commands.Bot):
         AsyncioThread.run_coroutine(
             EventModule.queue_event(event="new_message")
         )
+
+        if message.author.name in self.config.moderators:
+            await self.moderator_active(message.author.name)
+
+        if message.author.name in self.config.vips:
+            await self.vip_active(message.author.name)
+
         if message.content[0] == self.config.bot_prefix:
             await self.handle_commands(message)
             return
+
+    async def moderator_active(self, moderator):
+        if moderator not in SessionData.get_moderators():
+            SessionData.add_moderator(moderator=moderator)
+            AsyncioThread.run_coroutine(
+                EventModule.queue_event(event="moderator", moderator=moderator)
+            )
+
+    async def vip_active(self, vip):
+        if vip not in SessionData.get_vips():
+            SessionData.add_vip(vip=vip)
+            AsyncioThread.run_coroutine(
+                EventModule.queue_event(event="vip", vip=vip)
+            )
 
     async def event_eventsub_notification_follow(
         self, payload: eventsub.ChannelFollowData
     ):
         logging.debug(f"New follower!")
-        logging.debug(payload)
+        logging.debug(payload.data.user.name)
+        SessionData.add_follower(follower=payload.data.user.name)
+        AsyncioThread.run_coroutine(
+            EventModule.queue_event(
+                event="new_follower", username=payload.data.user.name
+            )
+        )
 
     async def event_eventsub_notification_raid(
         self, payload: eventsub.ChannelRaidData
     ):
         logging.debug(f"New raid!")
-        logging.debug(payload)
+        logging.debug(payload.data.raider.name)
+        logging.debug(payload.data.viewer_count)
+        SessionData.add_raid(
+            raider=payload.data.raider.name, size=payload.data.viewer_count
+        )
+        AsyncioThread.run_coroutine(
+            EventModule.queue_event(
+                event="raid",
+                name=payload.data.raider.name,
+                count=payload.data.viewer_count,
+            )
+        )
 
     async def send_message_to_channel(self, channel, message):
         chan = self.get_channel(channel)

@@ -37,7 +37,7 @@ class OBSModule(BotdeliciousModule):
         parameters = simpleobsws.IdentificationParameters()
         parameters.eventSubscriptions = (1 << 0) | (1 << 2) | (1 << 6)
         self.ws = simpleobsws.WebSocketClient(
-            url=f"ws://127.0.0.1:{self.config.port}",
+            url=f"ws://{self.config.ip}:{self.config.port}",
             password=self.config.password,
             identification_parameters=parameters,
         )
@@ -399,6 +399,104 @@ class OBSModule(BotdeliciousModule):
         for item in credits:
             await self.call_update_text_extended(item)
 
+    async def event_moderator(self, moderator: str = None):
+        if self._name == "video":
+            await asyncio.gather(
+                self.call_update_text(
+                    inputName="Text, supertitle", text="MODERATOR"
+                ),
+                self.call_update_text(
+                    inputName="Text, outline", text=moderator
+                ),
+                self.call_update_text(inputName="Text, fill", text=moderator),
+                self.call_update_text(
+                    inputName="Text, subtitle", text="IS IN THE HOUSE"
+                ),
+            )
+            await self.call_toggle_filter(
+                sourceName="Animation",
+                filterName="Start animation",
+                filterEnabled=True,
+            )
+            logging.debug("Animation started...")
+            await asyncio.sleep(10)
+            logging.debug("... animation completed")
+            await self.reset_video_texts()
+
+    async def event_vip(self, vip: str = None):
+        if self._name == "video":
+            await asyncio.gather(
+                self.call_update_text(
+                    inputName="Text, supertitle", text="VIP"
+                ),
+                self.call_update_text(inputName="Text, outline", text=vip),
+                self.call_update_text(inputName="Text, fill", text=vip),
+                self.call_update_text(
+                    inputName="Text, subtitle", text="IN THE BUILDING"
+                ),
+            )
+            await self.call_toggle_filter(
+                sourceName="Animation",
+                filterName="Start animation",
+                filterEnabled=True,
+            )
+            logging.debug("Animation started...")
+            await asyncio.sleep(10)
+            logging.debug("... animation completed")
+            await self.reset_video_texts()
+
+    async def event_new_follower(self, username: str = None):
+        if self._name == "video":
+            await asyncio.gather(
+                self.call_update_text(
+                    inputName="Text, supertitle", text="NEW FOLLOWER"
+                ),
+                self.call_update_text(
+                    inputName="Text, outline", text=username
+                ),
+                self.call_update_text(inputName="Text, fill", text=username),
+            )
+            await self.call_toggle_filter(
+                sourceName="Animation",
+                filterName="Start animation",
+                filterEnabled=True,
+            )
+            logging.debug("Animation started...")
+            await asyncio.sleep(10)
+            logging.debug("... animation completed")
+            await self.reset_video_texts()
+
+    async def event_raid(self, name: str = None, count: int = None):
+        if self._name == "video":
+            raid_text = f"{name} x {count}"
+            await asyncio.gather(
+                self.call_update_text(
+                    inputName="Text, supertitle", text="INCOMING RAID"
+                ),
+                self.call_update_text(
+                    inputName="Text, outline", text=raid_text
+                ),
+                self.call_update_text(inputName="Text, fill", text=raid_text),
+                self.call_update_text(
+                    inputName="Text, subtitle", text="WELCOME EVERYONE"
+                ),
+            )
+            await self.call_toggle_filter(
+                sourceName="Animation",
+                filterName="Start animation",
+                filterEnabled=True,
+            )
+            logging.debug("Animation started...")
+            await asyncio.sleep(10)
+            logging.debug("... animation completed")
+            await self.reset_video_texts()
+
+    async def event_change_video(self, video: str = None):
+        if self._name == "video":
+            await self.call_update_input_source(
+                input_name="Video", input_source=video
+            ),
+
     async def call_update_text_extended(self, item: OBSText = None):
         await self.call_update_position(
             scene_name=item.scene,
@@ -430,3 +528,31 @@ class OBSModule(BotdeliciousModule):
             },
         )
         await self.call(type=f"Blanking {input_name}", request=request)
+
+    async def call_update_input_source(
+        self, input_name: str = None, input_source: str = None
+    ):
+        video_path = (
+            f"C:/Users/micro/Documents/OBS/video-sources/{input_source}"
+        )
+        request = simpleobsws.Request(
+            "SetInputSettings",
+            {
+                "inputName": f"{input_name}",
+                "inputType": "ffmpeg_source",
+                "inputSettings": {
+                    "local_file": f"{video_path}",
+                },
+            },
+        )
+        await self.call(
+            type=f"Changing {input_name}: {input_source}", request=request
+        )
+
+    async def reset_video_texts(self):
+        await asyncio.gather(
+            self.call_blank_text(input_name="Text, supertitle"),
+            self.call_blank_text(input_name="Text, outline"),
+            self.call_blank_text(input_name="Text, fill"),
+            self.call_blank_text(input_name="Text, subtitle"),
+        )

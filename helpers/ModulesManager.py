@@ -15,6 +15,7 @@ class ModulesManager:
         "webhook": WebhookModule(),
         "twitch": OBSModule("twitch"),
         "podcast": OBSModule("podcast"),
+        "video": OBSModule("video"),
         "chat": ChatModule(),
         "djctl": DJctlModule(),
         "twinkly": TwinklyModule(),

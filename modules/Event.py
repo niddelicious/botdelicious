@@ -157,6 +157,61 @@ class EventModule(BotdeliciousModule):
 
     @classmethod
     @obs_event
+    async def handle_new_follower(cls, item_data=None, *args, **kwargs):
+        logging.debug(f"New follower")
+        await asyncio.gather(
+            *[
+                instance.event_new_follower(username=item_data.username)
+                for instance in cls._obs_instances
+            ]
+        )
+
+    @classmethod
+    @obs_event
+    async def handle_raid(cls, item_data=None, *args, **kwargs):
+        logging.debug(f"Raid!")
+        await asyncio.gather(
+            *[
+                instance.event_raid(name=item_data.name, count=item_data.count)
+                for instance in cls._obs_instances
+            ]
+        )
+
+    @classmethod
+    @obs_event
+    async def handle_moderator(cls, item_data=None, *args, **kwargs):
+        logging.debug(f"Moderator check-in")
+        await asyncio.gather(
+            *[
+                instance.event_moderator(moderator=item_data.moderator)
+                for instance in cls._obs_instances
+            ]
+        )
+
+    @classmethod
+    @obs_event
+    async def handle_vip(cls, item_data=None, *args, **kwargs):
+        logging.debug(f"VIP check-in")
+        await asyncio.gather(
+            *[
+                instance.event_vip(vip=item_data.vip)
+                for instance in cls._obs_instances
+            ]
+        )
+
+    @classmethod
+    @obs_event
+    async def handle_change_video(cls, item_data=None, *args, **kwargs):
+        logging.debug(f"Change video")
+        await asyncio.gather(
+            *[
+                instance.event_change_video(video=item_data.video)
+                for instance in cls._obs_instances
+            ]
+        )
+
+    @classmethod
+    @obs_event
     async def handle_new_message(cls, item_data=None, *args, **kwargs):
         logging.debug(f"Updating messages")
         SessionData.add_comment()
