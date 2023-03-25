@@ -37,8 +37,10 @@ class _TwitchBot(commands.Bot):
     async def event_ready(self):
         logging.info(f"Logged in as | {self.nick}")
         logging.info(f"User id is | {self.user_id}")
-        await self.event_subscription.listen(
-            port=self.config.event_sub.listen_port
+        AsyncioThread.run_coroutine(
+            self.event_subscription.listen(
+                port=self.config.event_sub.listen_port
+            )
         )
         await self.say_hello()
 
