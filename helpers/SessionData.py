@@ -3,7 +3,7 @@ import logging
 from typing import List, Tuple
 
 from dotmap import DotMap
-from helpers.Dataclasses import Track, OBSText
+from helpers.Dataclasses import Track, OBSText, Raid
 
 
 class SessionData:
@@ -50,7 +50,7 @@ class SessionData:
 
     @classmethod
     def add_raid(cls, raider: str = None, size: int = 0):
-        cls._raids.append((raider, size))
+        cls._raids.append(Raid(raider, size))
 
     @classmethod
     def add_follower(cls, follower: str = None):
@@ -114,21 +114,31 @@ class SessionData:
     def get_vips(cls) -> List[str]:
         return cls._vips
 
-    @classmethod
-    def process_session_credits(cls):
-        credits = []
-        _marker_y = 0
-        _marker_x = 30
-        _line = 40
-        _header = 50
-        _item = 60
 
-        if cls.get_playlist():
+@classmethod
+def process_session_credits(cls):
+    credits = []
+    _marker_y = 0
+    _marker_x = 30
+    _line = 40
+    _header = 50
+    _item = 60
+
+    list_data = [
+        ("Setlist", "Elements: Credits", "get_playlist"),
+        ("Followers", "Elements: Credits", "get_followers"),
+        ("Raids", "Elements: Credits", "get_raids"),
+        ("Moderators", "Elements: Credits", "get_moderators"),
+    ]
+
+    for list_type, credit_type, method_name in list_data:
+        lst = getattr(cls, method_name)() or []
+        if lst:
             credits.append(
                 OBSText(
-                    "Elements: Credits",
-                    "Setlist, header",
-                    "Setlist:",
+                    credit_type,
+                    f"{list_type}, header",
+                    f"{list_type}:",
                     _marker_x,
                     _marker_y,
                     1400,
@@ -136,121 +146,33 @@ class SessionData:
                 )
             )
             _marker_y += _header
-            setlist_text = ""
-            setlist_height = 0
-            for track in cls.get_playlist():
-                setlist_text = (
-                    setlist_text + f"{track.artist} - {track.title}\n"
-                )
-                setlist_height += _line
+            section_text, section_height = cls.process_list_for_credits(
+                lst, _line
+            )
             credits.append(
                 OBSText(
-                    "Elements: Credits",
-                    "Setlist, list",
-                    setlist_text,
+                    credit_type,
+                    f"{list_type}, list",
+                    section_text,
                     _marker_x,
                     _marker_y,
                     1400,
-                    setlist_height,
+                    section_height,
                 )
             )
-            _marker_y += setlist_height
+            _marker_y += section_height
             _marker_y += _item
 
-        if cls.get_followers():
-            credits.append(
-                OBSText(
-                    "Elements: Credits",
-                    "Followers, header",
-                    "Followers:",
-                    _marker_x,
-                    _marker_y,
-                    1400,
-                    _line,
-                )
-            )
-            _marker_y += _header
-            followers_text = ""
-            followers_height = 0
-            for follower in cls.get_followers():
-                followers_text = followers_text + f"{follower}\n"
-                followers_height += _line
-            credits.append(
-                OBSText(
-                    "Elements: Credits",
-                    "Followers, list",
-                    followers_text,
-                    _marker_x,
-                    _marker_y,
-                    1400,
-                    followers_height,
-                )
-            )
-            _marker_y += followers_height
-            _marker_y += _item
+    return credits
 
-        if cls.get_raids():
-            credits.append(
-                OBSText(
-                    "Elements: Credits",
-                    "Raids, header",
-                    "Raids:",
-                    _marker_x,
-                    _marker_y,
-                    1400,
-                    _line,
-                )
-            )
-            _marker_y += _header
-            raids_text = ""
-            raids_height = 0
-            for raid in cls.get_raids():
-                raids_text = raids_text + f"{raid[0]} x {raid[1]}\n"
-                raids_height += _line
-            credits.append(
-                OBSText(
-                    "Elements: Credits",
-                    "Raids, list",
-                    raids_text,
-                    _marker_x,
-                    _marker_y,
-                    1400,
-                    raids_height,
-                )
-            )
-            _marker_y += raids_height
-            _marker_y += _item
 
-        if cls.get_moderators():
-            credits.append(
-                OBSText(
-                    "Elements: Credits",
-                    "Moderators, header",
-                    "Moderators:",
-                    _marker_x,
-                    _marker_y,
-                    1400,
-                    _line,
-                )
-            )
-            _marker_y += _header
-            moderators_text = ""
-            moderators_height = 0
-            for moderator in cls.get_moderators():
-                moderators_text = moderators_text + f"{moderator}\n"
-                moderators_height += _line
-            credits.append(
-                OBSText(
-                    "Elements: Credits",
-                    "Moderators, list",
-                    moderators_text,
-                    _marker_x,
-                    _marker_y,
-                    1400,
-                    moderators_height,
-                )
-            )
-            _marker_y += moderators_height
-            _marker_y += _item
-
-        return credits
+@classmethod
+def process_list_for_credits(
+    cls, lst: List = None, line_height: int = None
+) -> Tuple[str, int]:
+    text = ""
+    height = 0
+    for item in lst:
+        text = text + f"{item}\n"
+        height += line_height
+    return text, height

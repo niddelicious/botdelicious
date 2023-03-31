@@ -130,27 +130,25 @@ class OBSModule(BotdeliciousModule):
         ret = await self.ws.call(request)  # Perform the request
 
         if ret.ok():  # Check if the request succeeded
-            logging.debug(
-                f"|{self._name}| {type} succeeded! Response data: {ret.responseData}"
-            )
+            logging.debug(f"|{self._name}| {type} succeeded!")
+            logging.debug(f"Response data: {ret.responseData}")
             return ret.responseData
         else:
-            logging.warn(
-                f"|{self._name}| {type} failed! Response data: {ret.responseData}"
-            )
+            logging.warn(f"|{self._name}| {type} failed!")
+            logging.warn(f"Response data: {ret.responseData}")
             return ret.responseData
 
     async def on_event(self, eventType, eventData):
-        logging.debug(
-            f"|{self._name}| New event! Type: {eventType} | Raw Data: {eventData}"
-        )  # Print the event data. Note that `update-type` is also provided in the data
+        logging.debug(f"|{self._name}| New event! Type: {eventType}")
+        logging.debug(f"Raw Data: {eventData}")
 
     async def on_scene_switched(self, eventData):
         """
         This method is called when a scene is switched.
 
-        :param eventData: A dictionary containing information about the scene switch event
-        :type eventData: dict
+        :param eventData:   A dictionary containing information about the scene
+                            switch event
+        :type eventData:    dict
 
         Data Fields:
         Name    Type    Description
@@ -176,8 +174,9 @@ class OBSModule(BotdeliciousModule):
 
         Data Fields:
         - outputActive: Boolean, Whether the output is active
-        - outputState: String, The specific state of the output
-        - outputPath: String, File name for the saved recording, if record stopped. null otherwise.
+        - outputState:  String, The specific state of the output
+        - outputPath:   String, File name for the saved recording,
+                        if record stopped. null otherwise.
         """
         logging.debug(f"|{self._name}| Recording state changed:")
         logging.debug(eventData["outputActive"])

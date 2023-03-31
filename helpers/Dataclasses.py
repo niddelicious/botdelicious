@@ -17,6 +17,9 @@ class Track:
             return self.artist == other.artist and self.title == other.title
         return False
 
+    def __str__(self) -> str:
+        return f"{self.artist} - {self.title}"
+
 
 @dataclass
 class OBSText:
@@ -27,3 +30,12 @@ class OBSText:
     position_y: int
     width: int
     height: int
+
+
+@dataclass
+class Raid:
+    name: str
+    size: int
+
+    def __str__(self) -> str:
+        return f"{self.name} x {self.size}"

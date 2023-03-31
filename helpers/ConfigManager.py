@@ -24,7 +24,7 @@ class ConfigManager:
             cls._config = DotMap(
                 yaml.load(config_file, Loader=yaml.FullLoader)
             )
-            
+
     @classmethod
     def get(cls, config_name):
         if hasattr(cls._config, config_name):
