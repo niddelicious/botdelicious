@@ -112,6 +112,9 @@ class OBSModule(BotdeliciousModule):
                 self.on_scene_switched, "CurrentProgramSceneChanged"
             )
             self.ws.register_event_callback(
+                self.on_stream_toggled, "StreamStateChanged"
+            )
+            self.ws.register_event_callback(
                 self.on_record_toggled, "RecordStateChanged"
             )
             await self.event_clear_credits()
@@ -165,6 +168,26 @@ class OBSModule(BotdeliciousModule):
         if self._role == ModuleRole.FOLLOWER:
             await self.call_switch_scene(scene_name=event_data["sceneName"])
 
+    async def on_stream_toggled(self, eventData):
+        """
+        Handle an event when stream is toggled.
+
+        :param eventData: Dictionary containing data about the event
+        :type eventData: dict
+
+        Data Fields:
+        - outputActive: Boolean, Whether the output is active
+        - outputState: String, The specific state of the output
+        """
+        logging.debug(f"|{self._name}| Stream state changed:")
+        logging.debug(eventData["outputActive"])
+        logging.debug(eventData["outputState"])
+        if (
+            eventData["outputActive"] == True
+            and self._role == ModuleRole.LEADER
+        ):
+            SessionData.start_session()
+
     async def on_record_toggled(self, eventData):
         """
         Handle an event when record is toggled.
@@ -199,6 +222,8 @@ class OBSModule(BotdeliciousModule):
                     "StopRecord",
                 )
             await self.call(type="Toggle recording state", request=request)
+        if self._role == ModuleRole.LEADER:
+            SessionData.write_playlist_to_file()
 
     async def call_toggle_filter(
         self,

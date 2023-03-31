@@ -114,65 +114,72 @@ class SessionData:
     def get_vips(cls) -> List[str]:
         return cls._vips
 
-
-@classmethod
-def process_session_credits(cls):
-    credits = []
-    _marker_y = 0
-    _marker_x = 30
-    _line = 40
-    _header = 50
-    _item = 60
-
-    list_data = [
-        ("Setlist", "Elements: Credits", "get_playlist"),
-        ("Followers", "Elements: Credits", "get_followers"),
-        ("Raids", "Elements: Credits", "get_raids"),
-        ("Moderators", "Elements: Credits", "get_moderators"),
-    ]
-
-    for list_type, credit_type, method_name in list_data:
-        lst = getattr(cls, method_name)() or []
-        if lst:
-            credits.append(
-                OBSText(
-                    credit_type,
-                    f"{list_type}, header",
-                    f"{list_type}:",
-                    _marker_x,
-                    _marker_y,
-                    1400,
-                    _line,
+    @classmethod
+    def write_playlist_to_file(cls):
+        filename = f"playlist, {cls._start.strftime('%Y-%m-%d %H.%M')}.txt"
+        with open(filename, "w") as file:
+            for track in cls._playlist:
+                file.write(
+                    f"[{track.timestamp}] {track.artist} - {track.title}\n"
                 )
-            )
-            _marker_y += _header
-            section_text, section_height = cls.process_list_for_credits(
-                lst, _line
-            )
-            credits.append(
-                OBSText(
-                    credit_type,
-                    f"{list_type}, list",
-                    section_text,
-                    _marker_x,
-                    _marker_y,
-                    1400,
-                    section_height,
+
+    @classmethod
+    def process_session_credits(cls):
+        credits = []
+        _marker_y = 0
+        _marker_x = 30
+        _line = 40
+        _header = 50
+        _item = 60
+
+        list_data = [
+            ("Setlist", "Elements: Credits", "get_playlist"),
+            ("Followers", "Elements: Credits", "get_followers"),
+            ("Raids", "Elements: Credits", "get_raids"),
+            ("Moderators", "Elements: Credits", "get_moderators"),
+        ]
+
+        for list_type, credit_type, method_name in list_data:
+            lst = getattr(cls, method_name)() or []
+            if lst:
+                credits.append(
+                    OBSText(
+                        credit_type,
+                        f"{list_type}, header",
+                        f"{list_type}:",
+                        _marker_x,
+                        _marker_y,
+                        1400,
+                        _line,
+                    )
                 )
-            )
-            _marker_y += section_height
-            _marker_y += _item
+                _marker_y += _header
+                section_text, section_height = cls.process_list_for_credits(
+                    lst, _line
+                )
+                credits.append(
+                    OBSText(
+                        credit_type,
+                        f"{list_type}, list",
+                        section_text,
+                        _marker_x,
+                        _marker_y,
+                        1400,
+                        section_height,
+                    )
+                )
+                _marker_y += section_height
+                _marker_y += _item
 
-    return credits
+        return credits
 
-
-@classmethod
-def process_list_for_credits(
-    cls, lst: List = None, line_height: int = None
-) -> Tuple[str, int]:
-    text = ""
-    height = 0
-    for item in lst:
-        text = text + f"{item}\n"
-        height += line_height
-    return text, height
+    @classmethod
+    def process_list_for_credits(
+        cls, lst: List = None, line_height: int = None
+    ) -> Tuple[str, int]:
+        text = ""
+        height = 0
+        for item in lst:
+            text = text + f"{item}\n"
+            height += line_height
+        return text, height
