@@ -30,6 +30,9 @@ class OBSModule(BotdeliciousModule):
         self._role = ModuleRole.FOLLOWER
         self.config = None
         self._status = ModuleStatus.IDLE
+        self._scenes = []
+        self._inputs = []
+        self._sources = self._inputs
 
     async def start(self):
         self.set_status(ModuleStatus.RUNNING)
@@ -48,22 +51,22 @@ class OBSModule(BotdeliciousModule):
         self.add_running_instance(self._name)
         await asyncio.gather(
             self.call_update_text(
-                inputName="Small track artist",
+                input_name="Small track artist",
                 text=SessionData.current_artist(),
             ),
             self.call_update_text(
-                inputName="Small track title",
+                input_name="Small track title",
                 text=SessionData.current_title(),
             ),
         )
         if self._name == "twitch":
             asyncio.gather(
                 self.call_update_text(
-                    inputName="Big track artist",
+                    input_name="Big track artist",
                     text=SessionData.current_artist(),
                 ),
                 self.call_update_text(
-                    inputName="Big track title",
+                    input_name="Big track title",
                     text=SessionData.current_title(),
                 ),
                 self.event_update_stats(),
@@ -83,6 +86,35 @@ class OBSModule(BotdeliciousModule):
 
     def set_status(self, new_status: ModuleStatus):
         self._status = new_status
+
+    async def gather_instance_data(self):
+        request = simpleobsws.Request("GetSceneList")
+        ret = await self.call(type="Gather scenes", request=request)
+        for scene in ret["scenes"]:
+            self._scenes.append(scene["sceneName"])
+
+        request = simpleobsws.Request("GetInputList")
+        ret = await self.call(type="Gather inputs", request=request)
+        for source in ret["inputs"]:
+            self._inputs.append(source["inputName"])
+
+    def check_obs_sources(func):
+        def wrapper(self, *args, **kwargs):
+            relevant_kwargs = {
+                name: value
+                for name, value in kwargs.items()
+                if any(word in name for word in ("source", "scene", "input"))
+            }
+            for kwarg_name, kwarg_value in relevant_kwargs.items():
+                collection_name = f"_{kwarg_name.split('_')[0]}s"
+                collection = getattr(self, collection_name, [])
+                if kwarg_value not in collection:
+                    raise ValueError(
+                        f"{kwarg_value} is not a valid {kwarg_name.split('_')[0]} in OBS"
+                    )
+            return func(self, *args, **kwargs)
+
+        return wrapper
 
     @classmethod
     def get_running_instances(cls):
@@ -183,7 +215,7 @@ class OBSModule(BotdeliciousModule):
         logging.debug(eventData["outputActive"])
         logging.debug(eventData["outputState"])
         if (
-            eventData["outputActive"] == True
+            eventData["outputActive"] is True
             and self._role == ModuleRole.LEADER
         ):
             SessionData.start_session()
@@ -225,22 +257,24 @@ class OBSModule(BotdeliciousModule):
         if self._role == ModuleRole.LEADER:
             SessionData.write_playlist_to_file()
 
+    @check_obs_sources
     async def call_toggle_filter(
         self,
-        sourceName: str = None,
-        filterName: str = None,
-        filterEnabled: bool = False,
+        source_name: str = None,
+        filter_name: str = None,
+        filter_enabled: bool = False,
     ):
         request = simpleobsws.Request(
             "SetSourceFilterEnabled",
             {
-                "sourceName": f"{sourceName}",
-                "filterName": f"{filterName}",
-                "filterEnabled": filterEnabled,
+                "sourceName": f"{source_name}",
+                "filterName": f"{filter_name}",
+                "filterEnabled": filter_enabled,
             },
         )
         await self.call(type="Toggle filter", request=request)
 
+    @check_obs_sources
     async def call_switch_scene(
         self,
         scene_name: str = None,
@@ -253,11 +287,12 @@ class OBSModule(BotdeliciousModule):
         )
         await self.call(type="Switch scene", request=request)
 
-    async def call_update_text(self, inputName: str = None, text: str = None):
+    @check_obs_sources
+    async def call_update_text(self, input_name: str = None, text: str = None):
         request = simpleobsws.Request(
             "SetInputSettings",
             {
-                "inputName": f"{inputName}",
+                "inputName": f"{input_name}",
                 "inputSettings": {
                     "text": f"{text}",
                 },
@@ -265,6 +300,7 @@ class OBSModule(BotdeliciousModule):
         )
         await self.call(type="Update text", request=request)
 
+    @check_obs_sources
     async def call_get_item_id(
         self, scene_name: str = None, source_name: str = None
     ):
@@ -275,6 +311,7 @@ class OBSModule(BotdeliciousModule):
         result = await self.call(type="Get SceneItem id", request=request)
         return result["sceneItemId"]
 
+    @check_obs_sources
     async def call_update_position(
         self,
         scene_name: str = None,
@@ -299,11 +336,12 @@ class OBSModule(BotdeliciousModule):
         )
         await self.call(type="Update item position", request=request)
 
-    async def call_update_url(self, inputName: str = None, url: str = None):
+    @check_obs_sources
+    async def call_update_url(self, input_name: str = None, url: str = None):
         request = simpleobsws.Request(
             "SetInputSettings",
             {
-                "inputName": f"{inputName}",
+                "inputName": f"{input_name}",
                 "inputSettings": {
                     "url": f"{url}",
                 },
@@ -318,11 +356,11 @@ class OBSModule(BotdeliciousModule):
     async def eventUpdateTrackInfoThenTriggerBigSlideAnimation(self):
         await asyncio.gather(
             self.call_update_text(
-                inputName="Big track artist",
+                input_name="Big track artist",
                 text=SessionData.current_artist(),
             ),
             self.call_update_text(
-                inputName="Big track title",
+                input_name="Big track title",
                 text=SessionData.current_title(),
             ),
         )
@@ -357,11 +395,11 @@ class OBSModule(BotdeliciousModule):
     async def eventUpdateSmallTrackInfoThenTriggerSlideAnimation(self):
         await asyncio.gather(
             self.call_update_text(
-                inputName="Small track artist",
+                input_name="Small track artist",
                 text=SessionData.current_artist(),
             ),
             self.call_update_text(
-                inputName="Small track title",
+                input_name="Small track title",
                 text=SessionData.current_title(),
             ),
         )
@@ -373,11 +411,11 @@ class OBSModule(BotdeliciousModule):
         await asyncio.sleep(1)
         await asyncio.gather(
             self.call_update_text(
-                inputName="Small track artist",
+                input_name="Small track artist",
                 text=SessionData.current_artist(),
             ),
             self.call_update_text(
-                inputName="Small track title",
+                input_name="Small track title",
                 text=SessionData.current_title(),
             ),
         )
@@ -391,10 +429,10 @@ class OBSModule(BotdeliciousModule):
     ):
         await asyncio.gather(
             self.call_update_text(
-                inputName="Shoutout username", text=username
+                input_name="Shoutout username", text=username
             ),
-            self.call_update_text(inputName="Shoutout message", text=message),
-            self.call_update_url(inputName="Shoutout avatar", url=avatar_url),
+            self.call_update_text(input_name="Shoutout message", text=message),
+            self.call_update_url(input_name="Shoutout avatar", url=avatar_url),
         )
         await self.call_toggle_filter("Shoutout", "Slide", True)
         await asyncio.sleep(12)
@@ -403,11 +441,11 @@ class OBSModule(BotdeliciousModule):
         if self._name == "twitch":
             asyncio.gather(
                 self.call_update_text(
-                    inputName="Stat: Messages",
+                    input_name="Stat: Messages",
                     text=SessionData.comments_count(),
                 ),
                 self.call_update_text(
-                    inputName="Stat: Tracks",
+                    input_name="Stat: Tracks",
                     text=SessionData.tracks_count(),
                 ),
             )
@@ -427,20 +465,20 @@ class OBSModule(BotdeliciousModule):
         if self._name == "video":
             await asyncio.gather(
                 self.call_update_text(
-                    inputName="Text, supertitle", text="MODERATOR"
+                    input_name="Text, supertitle", text="MODERATOR"
                 ),
                 self.call_update_text(
-                    inputName="Text, outline", text=moderator
+                    input_name="Text, outline", text=moderator
                 ),
-                self.call_update_text(inputName="Text, fill", text=moderator),
+                self.call_update_text(input_name="Text, fill", text=moderator),
                 self.call_update_text(
-                    inputName="Text, subtitle", text="IS IN THE HOUSE"
+                    input_name="Text, subtitle", text="IS IN THE HOUSE"
                 ),
             )
             await self.call_toggle_filter(
-                sourceName="Animation",
-                filterName="Start animation",
-                filterEnabled=True,
+                source_name="Animation",
+                filter_name="Start animation",
+                filter_enabled=True,
             )
             logging.debug("Animation started...")
             await asyncio.sleep(10)
@@ -451,18 +489,18 @@ class OBSModule(BotdeliciousModule):
         if self._name == "video":
             await asyncio.gather(
                 self.call_update_text(
-                    inputName="Text, supertitle", text="VIP"
+                    input_name="Text, supertitle", text="VIP"
                 ),
-                self.call_update_text(inputName="Text, outline", text=vip),
-                self.call_update_text(inputName="Text, fill", text=vip),
+                self.call_update_text(input_name="Text, outline", text=vip),
+                self.call_update_text(input_name="Text, fill", text=vip),
                 self.call_update_text(
-                    inputName="Text, subtitle", text="IN THE BUILDING"
+                    input_name="Text, subtitle", text="IN THE BUILDING"
                 ),
             )
             await self.call_toggle_filter(
-                sourceName="Animation",
-                filterName="Start animation",
-                filterEnabled=True,
+                source_name="Animation",
+                filter_name="Start animation",
+                filter_enabled=True,
             )
             logging.debug("Animation started...")
             await asyncio.sleep(10)
@@ -473,17 +511,17 @@ class OBSModule(BotdeliciousModule):
         if self._name == "video":
             await asyncio.gather(
                 self.call_update_text(
-                    inputName="Text, supertitle", text="NEW FOLLOWER"
+                    input_name="Text, supertitle", text="NEW FOLLOWER"
                 ),
                 self.call_update_text(
-                    inputName="Text, outline", text=username
+                    input_name="Text, outline", text=username
                 ),
-                self.call_update_text(inputName="Text, fill", text=username),
+                self.call_update_text(input_name="Text, fill", text=username),
             )
             await self.call_toggle_filter(
-                sourceName="Animation",
-                filterName="Start animation",
-                filterEnabled=True,
+                source_name="Animation",
+                filter_name="Start animation",
+                filter_enabled=True,
             )
             logging.debug("Animation started...")
             await asyncio.sleep(10)
@@ -495,20 +533,20 @@ class OBSModule(BotdeliciousModule):
             raid_text = f"{name} x {count}"
             await asyncio.gather(
                 self.call_update_text(
-                    inputName="Text, supertitle", text="INCOMING RAID"
+                    input_name="Text, supertitle", text="INCOMING RAID"
                 ),
                 self.call_update_text(
-                    inputName="Text, outline", text=raid_text
+                    input_name="Text, outline", text=raid_text
                 ),
-                self.call_update_text(inputName="Text, fill", text=raid_text),
+                self.call_update_text(input_name="Text, fill", text=raid_text),
                 self.call_update_text(
-                    inputName="Text, subtitle", text="WELCOME EVERYONE"
+                    input_name="Text, subtitle", text="WELCOME EVERYONE"
                 ),
             )
             await self.call_toggle_filter(
-                sourceName="Animation",
-                filterName="Start animation",
-                filterEnabled=True,
+                source_name="Animation",
+                filter_name="Start animation",
+                filter_enabled=True,
             )
             logging.debug("Animation started...")
             await asyncio.sleep(10)
@@ -541,6 +579,7 @@ class OBSModule(BotdeliciousModule):
         )
         await self.call(type="Update text extended", request=request)
 
+    @check_obs_sources
     async def call_blank_text(self, input_name: str = None):
         request = simpleobsws.Request(
             "SetInputSettings",
@@ -553,6 +592,7 @@ class OBSModule(BotdeliciousModule):
         )
         await self.call(type=f"Blanking {input_name}", request=request)
 
+    @check_obs_sources
     async def call_update_input_source(
         self, input_name: str = None, input_source: str = None
     ):
