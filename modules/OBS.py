@@ -109,9 +109,7 @@ class OBSModule(BotdeliciousModule):
                 collection_name = f"_{kwarg_name.split('_')[0]}s"
                 collection = getattr(self, collection_name, [])
                 if kwarg_value not in collection:
-                    raise ValueError(
-                        f"{kwarg_value} is not a valid {kwarg_name.split('_')[0]} in OBS"
-                    )
+                    logging.debug(f"{self._name} is skipping {kwarg_value}")
             return func(self, *args, **kwargs)
 
         return wrapper
