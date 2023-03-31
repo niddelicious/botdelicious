@@ -115,6 +115,15 @@ class SessionData:
         return cls._vips
 
     @classmethod
+    def write_playlist_to_file(cls):
+        filename = f"playlist, {cls._start.strftime('%Y-%m-%d %H.%M')}.txt"
+        with open(filename, "w") as file:
+            for track in cls._playlist:
+                file.write(
+                    f"[{track.timestamp}] {track.artist} - {track.title}\n"
+                )
+
+    @classmethod
     def process_session_credits(cls):
         credits = []
         _marker_y = 0
@@ -143,6 +152,7 @@ class SessionData:
                     setlist_text + f"{track.artist} - {track.title}\n"
                 )
                 setlist_height += _line
+            setlist_height += _item
             credits.append(
                 OBSText(
                     "Elements: Credits",
@@ -175,6 +185,7 @@ class SessionData:
             for follower in cls.get_followers():
                 followers_text = followers_text + f"{follower}\n"
                 followers_height += _line
+            followers_height += _item
             credits.append(
                 OBSText(
                     "Elements: Credits",
@@ -207,6 +218,7 @@ class SessionData:
             for raid in cls.get_raids():
                 raids_text = raids_text + f"{raid[0]} x {raid[1]}\n"
                 raids_height += _line
+            raids_height += _item
             credits.append(
                 OBSText(
                     "Elements: Credits",
@@ -239,6 +251,7 @@ class SessionData:
             for moderator in cls.get_moderators():
                 moderators_text = moderators_text + f"{moderator}\n"
                 moderators_height += _line
+            moderators_height += _item
             credits.append(
                 OBSText(
                     "Elements: Credits",
