@@ -144,13 +144,13 @@ class SessionData:
             if lst:
                 credits.append(
                     OBSText(
-                        credit_type,
-                        f"{list_type}, header",
-                        f"{list_type}:",
-                        _marker_x,
-                        _marker_y,
-                        1400,
-                        _line,
+                        scene=credit_type,
+                        source=f"{list_type}, header",
+                        text=f"{list_type}:",
+                        position_x=_marker_x,
+                        position_y=_marker_y,
+                        width=1400,
+                        height=_line,
                     )
                 )
                 _marker_y += _header
@@ -159,13 +159,13 @@ class SessionData:
                 )
                 credits.append(
                     OBSText(
-                        credit_type,
-                        f"{list_type}, list",
-                        section_text,
-                        _marker_x,
-                        _marker_y,
-                        1400,
-                        section_height,
+                        scene=credit_type,
+                        source=f"{list_type}, list",
+                        text=section_text,
+                        position_x=_marker_x,
+                        position_y=_marker_y,
+                        width=1400,
+                        height=section_height,
                     )
                 )
                 _marker_y += section_height
