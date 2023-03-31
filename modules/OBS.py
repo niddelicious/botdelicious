@@ -99,6 +99,19 @@ class OBSModule(BotdeliciousModule):
             self._inputs.append(source["inputName"])
 
     def check_obs_sources(func):
+        """
+        Checks if a function that will attempt to interact with an OBS scene,
+        source or input and makes sure it's available on the connected instance
+
+        Example:
+            >>> @check_obs_sources
+            >>> async def call_switch_scene(
+            >>>     self,
+            >>>     scene_name: str = None,
+            >>> ):
+            >>>     # function body here
+        """
+
         def wrapper(self, *args, **kwargs):
             relevant_kwargs = {
                 name: value
