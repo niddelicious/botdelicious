@@ -19,6 +19,7 @@ from helpers.InputCatcher import InputCatcher
 from helpers.ModulesManager import ModulesManager
 from helpers.ConfigManager import ConfigManager
 from helpers.SessionData import SessionData
+from modules.Event import EventModule
 
 
 class Botdelicious:
@@ -50,6 +51,8 @@ def main():
     """Main entry point of the app"""
     b = Botdelicious()
     b.autostart()
+    if ConfigManager._config.logging.level == "DEBUG":
+        EventModule.set_loop_sleep(sleep_time=2)
     SessionData.start_session()
     while InputCatcher.commandline():
         pass

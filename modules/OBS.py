@@ -49,28 +49,9 @@ class OBSModule(BotdeliciousModule):
         )
         await self.connect()
         self.add_running_instance(self._name)
-        await asyncio.gather(
-            self.call_update_text(
-                input_name="Small track artist",
-                text=SessionData.current_artist(),
-            ),
-            self.call_update_text(
-                input_name="Small track title",
-                text=SessionData.current_title(),
-            ),
-        )
-        if self._name == "twitch":
-            asyncio.gather(
-                self.call_update_text(
-                    input_name="Big track artist",
-                    text=SessionData.current_artist(),
-                ),
-                self.call_update_text(
-                    input_name="Big track title",
-                    text=SessionData.current_title(),
-                ),
-                self.event_update_stats(),
-            )
+        await self.gather_instance_data()
+        await self.reset_track_texts()
+        await self.event_clear_credits()
 
     async def stop(self):
         self.set_status(ModuleStatus.STOPPING)
@@ -123,7 +104,8 @@ class OBSModule(BotdeliciousModule):
                 collection = getattr(self, collection_name, [])
                 if kwarg_value not in collection:
                     logging.debug(f"{self._name} is skipping {kwarg_value}")
-            return func(self, *args, **kwargs)
+                else:
+                    return func(self, *args, **kwargs)
 
         return wrapper
 
@@ -160,7 +142,6 @@ class OBSModule(BotdeliciousModule):
             self.ws.register_event_callback(
                 self.on_record_toggled, "RecordStateChanged"
             )
-            await self.event_clear_credits()
 
     async def disconnect(self):
         logging.info(f"Disconnecting from {self._name}")
@@ -457,17 +438,16 @@ class OBSModule(BotdeliciousModule):
         await asyncio.sleep(12)
 
     async def event_update_stats(self):
-        if self._name == "twitch":
-            asyncio.gather(
-                self.call_update_text(
-                    input_name="Stat: Messages",
-                    text=SessionData.comments_count(),
-                ),
-                self.call_update_text(
-                    input_name="Stat: Tracks",
-                    text=SessionData.tracks_count(),
-                ),
-            )
+        asyncio.gather(
+            self.call_update_text(
+                input_name="Stat: Messages",
+                text=SessionData.comments_count(),
+            ),
+            self.call_update_text(
+                input_name="Stat: Tracks",
+                text=SessionData.tracks_count(),
+            ),
+        )
 
     async def event_clear_credits(self):
         items = ["Setlist", "Followers", "Raids", "Moderators"]
@@ -630,6 +610,27 @@ class OBSModule(BotdeliciousModule):
         )
         await self.call(
             type=f"Changing {input_name}: {input_source}", request=request
+        )
+
+    async def reset_track_texts(self):
+        await asyncio.gather(
+            self.call_update_text(
+                input_name="Small track artist",
+                text=SessionData.current_artist(),
+            ),
+            self.call_update_text(
+                input_name="Small track title",
+                text=SessionData.current_title(),
+            ),
+            self.call_update_text(
+                input_name="Big track artist",
+                text=SessionData.current_artist(),
+            ),
+            self.call_update_text(
+                input_name="Big track title",
+                text=SessionData.current_title(),
+            ),
+            # self.event_update_stats(),
         )
 
     async def reset_video_texts(self):

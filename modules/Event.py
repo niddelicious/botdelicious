@@ -13,7 +13,7 @@ from helpers.SessionData import SessionData
 class EventModule(BotdeliciousModule):
     _event_queue = asyncio.Queue()
     _obs_instances = []
-    _loop_sleep = 2 if ConfigManager._config.logging.level == "DEBUG" else 0
+    _loop_sleep = 0
 
     def __init__(self):
         super().__init__()
@@ -28,7 +28,7 @@ class EventModule(BotdeliciousModule):
         self.set_status(ModuleStatus.IDLE)
 
     @classmethod
-    async def set_loop_sleep(cls, sleep_time: int = 0):
+    def set_loop_sleep(cls, sleep_time: int = 0):
         cls._loop_sleep = sleep_time
 
     @classmethod
