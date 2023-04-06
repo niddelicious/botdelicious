@@ -3,6 +3,7 @@ from AsyncioThread import AsyncioThread
 
 from helpers.ModulesManager import ModulesManager
 from modules.Event import EventModule
+import logging
 
 
 class InputCatcher:
@@ -33,4 +34,29 @@ class InputCatcher:
             AsyncioThread.run_coroutine(
                 EventModule.queue_event(event=command[6:])
             )
+        if command == "help":
+            logging.info(f"Commands:")
+            logging.info(f"exit")
+            logging.info(f"status")
+            logging.info(f"start <module>")
+            logging.info(f"stop <module>")
+            logging.info(f"restart <module>")
+            logging.info(f"event <event>")
+        if command.startswith("log "):
+            level = command[4:]
+            if level == "debug":
+                logging.getLogger().setLevel(logging.DEBUG)
+                EventModule.set_loop_sleep(sleep_time=2)
+            if level == "info":
+                logging.getLogger().setLevel(logging.INFO)
+                EventModule.set_loop_sleep()
+            if level == "warning":
+                logging.getLogger().setLevel(logging.WARNING)
+                EventModule.set_loop_sleep()
+            if level == "error":
+                logging.getLogger().setLevel(logging.ERROR)
+                EventModule.set_loop_sleep()
+            if level == "critical":
+                logging.getLogger().setLevel(logging.CRITICAL)
+                EventModule.set_loop_sleep()
         return 1

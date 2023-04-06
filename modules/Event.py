@@ -13,6 +13,7 @@ from helpers.SessionData import SessionData
 class EventModule(BotdeliciousModule):
     _event_queue = asyncio.Queue()
     _obs_instances = []
+    _loop_sleep = 2 if ConfigManager._config.logging.level == "DEBUG" else 0
 
     def __init__(self):
         super().__init__()
@@ -25,6 +26,10 @@ class EventModule(BotdeliciousModule):
         self.set_status(ModuleStatus.STOPPING)
         AsyncioThread.stop_loop()
         self.set_status(ModuleStatus.IDLE)
+
+    @classmethod
+    async def set_loop_sleep(cls, sleep_time: int = 0):
+        cls._loop_sleep = sleep_time
 
     @classmethod
     async def get_event_queue(cls):
@@ -40,13 +45,12 @@ class EventModule(BotdeliciousModule):
 
     async def run(cls):
         logging.debug(f"Starting Event!")
-        loop_sleep = 2 if ConfigManager._config.logging.level == "DEBUG" else 0
         while cls._status == ModuleStatus.RUNNING:
             if not cls._event_queue.empty():
                 await cls.handle_event_queue()
             else:
                 logging.debug(f"Event queue is empty")
-            await asyncio.sleep(loop_sleep)
+            await asyncio.sleep(cls._loop_sleep)
         while cls._status == ModuleStatus.STOPPING:
             logging.DEBUG(f"Stopping event!")
             await asyncio.sleep(3)
@@ -153,6 +157,14 @@ class EventModule(BotdeliciousModule):
                 )
                 for instance in cls._obs_instances
             ]
+        )
+
+    @classmethod
+    @obs_event
+    async def handle_fire(cls, item_data=None, *args, **kwargs):
+        logging.debug(f"Fire:")
+        await asyncio.gather(
+            *[instance.event_fire() for instance in cls._obs_instances]
         )
 
     @classmethod

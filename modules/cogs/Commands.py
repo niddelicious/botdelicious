@@ -109,6 +109,14 @@ class CommandsCog(commands.Cog):
                 f"Available lights: react [1-12] | effect [1-5] | color [0-255] [0-255] [0-255]"
             )
 
+    @commands.command(
+        name="fire", aliases=["flame", "flames", "lit", "tune", "jam"]
+    )
+    async def fire(self, ctx: commands.Context):
+        await EventModule.queue_event(
+            event="fire",
+        )
+
     @commands.command(name="video", aliases=["v", "beeple", "beeple_crap"])
     async def video(self, ctx: commands.Context):
         video_id = False

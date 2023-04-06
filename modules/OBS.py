@@ -378,6 +378,14 @@ class OBSModule(BotdeliciousModule):
         await self.call_toggle_filter("Track: Big", "Slide", True)
         await asyncio.sleep(9)
 
+    async def event_fire(self):
+        await self.call_toggle_filter(
+            source_name="Overlay: Fire",
+            filter_name="Show",
+            filter_enabled=True,
+        )
+        await asyncio.sleep(10)
+
     async def event_new_track(self):
         if self._name == "podcast":
             await self.eventTriggerSlideAnimationThenUpdateSmallTrackInfo()
