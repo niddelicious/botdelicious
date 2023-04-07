@@ -24,12 +24,15 @@ class InputCatcher:
         if command.startswith("start "):
             ModulesManager.start_module(module_name=command[6:])
         if command.startswith("stop "):
-            ModulesManager.stop_module(module_name=command[5:])
+            if command[5:] == "event":
+                logging.info(
+                    f"Cannot stop event loop. Exit application instead"
+                )
+            else:
+                ModulesManager.stop_module(module_name=command[5:])
         if command.startswith("restart "):
             ModulesManager.stop_module(module_name=command[8:])
             ModulesManager.start_module(module_name=command[6:])
-        if command == "stop event":
-            logging.info(f"Cannot stop event loop. Exit application instead")
         if command.startswith("event "):
             AsyncioThread.run_coroutine(
                 EventModule.queue_event(event=command[6:])
