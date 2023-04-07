@@ -224,6 +224,17 @@ class EventModule(BotdeliciousModule):
 
     @classmethod
     @obs_event
+    async def handle_change_scene(cls, item_data=None, *args, **kwargs):
+        logging.debug(f"Change video")
+        await asyncio.gather(
+            *[
+                instance.call_switch_scene(scene_name=item_data.scene_name)
+                for instance in cls._obs_instances
+            ]
+        )
+
+    @classmethod
+    @obs_event
     async def handle_new_message(cls, item_data=None, *args, **kwargs):
         logging.debug(f"Updating messages")
         SessionData.add_comment()

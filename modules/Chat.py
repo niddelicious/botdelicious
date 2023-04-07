@@ -45,6 +45,9 @@ class _TwitchBot(commands.Bot):
         await self.say_hello()
 
     async def event_message(self, message):
+        if message.echo:
+            return
+        
         AsyncioThread.run_coroutine(
             EventModule.queue_event(event="new_message")
         )

@@ -117,6 +117,20 @@ class CommandsCog(commands.Cog):
             event="fire",
         )
 
+    @commands.command(name="main", aliases=["home", "back", "dj"])
+    async def main(self, ctx: commands.Context):
+        await EventModule.queue_event(
+            event="change_scene",
+            scene_name="Scene: Main",
+        )
+
+    @commands.command(name="midjourney", aliases=["ai", "mj", "imagine"])
+    async def midjourney(self, ctx: commands.Context):
+        await EventModule.queue_event(
+            event="change_scene",
+            scene_name="Scene: Midjourney",
+        )
+
     @commands.command(name="video", aliases=["v", "beeple", "beeple_crap"])
     async def video(self, ctx: commands.Context):
         video_id = False
