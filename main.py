@@ -51,8 +51,10 @@ def main():
     """Main entry point of the app"""
     b = Botdelicious()
     b.autostart()
-    if ConfigManager._config.logging.level == "DEBUG":
-        EventModule.set_loop_sleep(sleep_time=2)
+    sleep_time = (
+        2 if logging.getLogger().getEffectiveLevel() == logging.DEBUG else 0
+    )
+    EventModule.set_loop_sleep(sleep_time=sleep_time)
     SessionData.start_session()
     while InputCatcher.commandline():
         pass

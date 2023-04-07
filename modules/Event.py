@@ -45,11 +45,16 @@ class EventModule(BotdeliciousModule):
 
     async def run(cls):
         logging.debug(f"Starting Event!")
+        queue_logged = False
         while cls._status == ModuleStatus.RUNNING:
             if not cls._event_queue.empty():
+                logging.debug(f"Event queue size: {cls._event_queue.qsize()}")
+                queue_logged = False
                 await cls.handle_event_queue()
             else:
-                logging.debug(f"Event queue is empty")
+                if not queue_logged:
+                    logging.debug(f"Event queue is empty")
+                    queue_logged = True
             await asyncio.sleep(cls._loop_sleep)
         while cls._status == ModuleStatus.STOPPING:
             logging.DEBUG(f"Stopping event!")
@@ -80,9 +85,9 @@ class EventModule(BotdeliciousModule):
     @classmethod
     async def queue_event(cls, event: str = None, *args, **kwargs):
         logging.debug(f"Event received:")
-        logging.debug(f"{event}")
-        logging.debug(f"{args}")
-        logging.debug(f"{kwargs}")
+        logging.debug(f"event: {event}")
+        logging.debug(f"args: {args}")
+        logging.debug(f"kwargs: {kwargs}")
         item_to_queue = DotMap(
             {
                 "event_type": event,
@@ -110,13 +115,6 @@ class EventModule(BotdeliciousModule):
             *[instance.event_update_stats() for instance in cls._obs_instances]
         )
 
-    def obs_event(func, *args, **kwargs):
-        async def wrapper(self, *args, **kwargs):
-            EventModule.update_obs_instances()
-            await func(self, *args, **kwargs)
-
-        return wrapper
-
     @classmethod
     def update_obs_instances(cls, *args, **kwargs):
         from helpers.ModulesManager import ModulesManager
@@ -129,7 +127,6 @@ class EventModule(BotdeliciousModule):
             )
 
     @classmethod
-    @obs_event
     async def handle_show_small_track_id(cls, *args, **kwargs):
         logging.debug(f"Show small track id:")
         await asyncio.gather(
@@ -137,7 +134,6 @@ class EventModule(BotdeliciousModule):
         )
 
     @classmethod
-    @obs_event
     async def handle_show_big_track_id(cls, *args, **kwargs):
         logging.debug(f"Show big track id:")
         await asyncio.gather(
@@ -145,7 +141,6 @@ class EventModule(BotdeliciousModule):
         )
 
     @classmethod
-    @obs_event
     async def handle_shoutout(cls, item_data=None, *args, **kwargs):
         logging.debug(f"Show shoutout:")
         await asyncio.gather(
@@ -160,15 +155,13 @@ class EventModule(BotdeliciousModule):
         )
 
     @classmethod
-    @obs_event
-    async def handle_fire(cls, item_data=None, *args, **kwargs):
+    async def handle_fire(cls, *args, **kwargs):
         logging.debug(f"Fire:")
         await asyncio.gather(
             *[instance.event_fire() for instance in cls._obs_instances]
         )
 
     @classmethod
-    @obs_event
     async def handle_new_follower(cls, item_data=None, *args, **kwargs):
         logging.debug(f"New follower")
         await asyncio.gather(
@@ -179,7 +172,6 @@ class EventModule(BotdeliciousModule):
         )
 
     @classmethod
-    @obs_event
     async def handle_raid(cls, item_data=None, *args, **kwargs):
         logging.debug(f"Raid!")
         await asyncio.gather(
@@ -190,7 +182,6 @@ class EventModule(BotdeliciousModule):
         )
 
     @classmethod
-    @obs_event
     async def handle_moderator(cls, item_data=None, *args, **kwargs):
         logging.debug(f"Moderator check-in")
         await asyncio.gather(
@@ -201,7 +192,6 @@ class EventModule(BotdeliciousModule):
         )
 
     @classmethod
-    @obs_event
     async def handle_vip(cls, item_data=None, *args, **kwargs):
         logging.debug(f"VIP check-in")
         await asyncio.gather(
@@ -212,7 +202,6 @@ class EventModule(BotdeliciousModule):
         )
 
     @classmethod
-    @obs_event
     async def handle_change_video(cls, item_data=None, *args, **kwargs):
         logging.debug(f"Change video")
         await asyncio.gather(
@@ -223,19 +212,17 @@ class EventModule(BotdeliciousModule):
         )
 
     @classmethod
-    @obs_event
-    async def handle_change_scene(cls, item_data=None, *args, **kwargs):
-        logging.debug(f"Change video")
+    async def handle_switch_scene(cls, item_data=None, *args, **kwargs):
+        logging.debug(f"Switch scene")
         await asyncio.gather(
             *[
-                instance.call_switch_scene(scene_name=item_data.scene_name)
+                instance.switch_scene(scene_name=item_data.scene_name)
                 for instance in cls._obs_instances
             ]
         )
 
     @classmethod
-    @obs_event
-    async def handle_new_message(cls, item_data=None, *args, **kwargs):
+    async def handle_new_message(cls, *args, **kwargs):
         logging.debug(f"Updating messages")
         SessionData.add_comment()
         await asyncio.gather(
@@ -243,7 +230,6 @@ class EventModule(BotdeliciousModule):
         )
 
     @classmethod
-    @obs_event
     async def handle_sync_recording(cls, item_data=None, *args, **kwargs):
         logging.debug(f"Synchronizing recording state")
         await asyncio.gather(
@@ -256,7 +242,6 @@ class EventModule(BotdeliciousModule):
         )
 
     @classmethod
-    @obs_event
     async def handle_sync_scene(cls, item_data=None, *args, **kwargs):
         logging.debug(f"Synchronizing scene switch")
         await asyncio.gather(

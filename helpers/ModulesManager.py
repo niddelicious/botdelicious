@@ -43,5 +43,4 @@ class ModulesManager:
     def get_module_status(cls):
         logging.info(f"Module status:")
         for name, module in cls._modules.items():
-            logging.info(name)
-            logging.info(module.get_status())
+            logging.info(f"Module: {name} - Status: {module.get_status()}")

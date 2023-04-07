@@ -47,10 +47,11 @@ class _TwitchBot(commands.Bot):
     async def event_message(self, message):
         if message.echo:
             return
-        
+
         AsyncioThread.run_coroutine(
             EventModule.queue_event(event="new_message")
         )
+        logging.info(f"{message.author.name}: {message.content}")
 
         if message.author.name in self.config.moderators:
             await self.moderator_active(message.author.name)
@@ -156,7 +157,7 @@ class ChatModule(BotdeliciousModule):
         self.config = ConfigManager.get("chat")
         await self._update_tokens()
         self.bot = _TwitchBot(self.config)
-        self.bot.run()
+        await self.bot.start()
 
     async def stop(self):
         self.set_status(ModuleStatus.STOPPING)

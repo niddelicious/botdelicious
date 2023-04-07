@@ -83,6 +83,20 @@ class CommandsCog(commands.Cog):
         )
 
     @commands.command(
+        name="lurk", aliases=["lurking", "lurker", "wurk", "wurking"]
+    )
+    async def lurk(self, ctx: commands.Context):
+        lurk_variations = [
+            f"@{ctx.author.name} is here, but they're not here; know what I mean?",
+            f"If you happen to see @{ctx.author.name}, do not disturb them, they're lurking",
+            f"Is it worth it? Let me lurk it. @{ctx.author.name} put their thing down, flip it and reverse it",
+            f"'verb | be or remain hidden so as to wait in ambush for someone or something.' So, @{ctx.author.name}, who's the lucky one?",
+            f"@{ctx.author.name} likes this so much they've decided to start twerking! No, wait, I read that wrong...",
+        ]
+
+        await ctx.send(random.choice(lurk_variations))
+
+    @commands.command(
         name="lights", aliases=["l", "light", "twink", "twinkly"]
     )
     async def lights(self, ctx: commands.Context):
@@ -117,17 +131,17 @@ class CommandsCog(commands.Cog):
             event="fire",
         )
 
-    @commands.command(name="main", aliases=["home", "back", "dj"])
-    async def main(self, ctx: commands.Context):
+    @commands.command(name="home", aliases=["primary", "back", "dj"])
+    async def home(self, ctx: commands.Context):
         await EventModule.queue_event(
-            event="change_scene",
+            event="switch_scene",
             scene_name="Scene: Main",
         )
 
     @commands.command(name="midjourney", aliases=["ai", "mj", "imagine"])
     async def midjourney(self, ctx: commands.Context):
         await EventModule.queue_event(
-            event="change_scene",
+            event="switch_scene",
             scene_name="Scene: Midjourney",
         )
 

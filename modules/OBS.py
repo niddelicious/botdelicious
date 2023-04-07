@@ -32,7 +32,8 @@ class OBSModule(BotdeliciousModule):
         self._status = ModuleStatus.IDLE
         self._scenes = []
         self._inputs = []
-        self._sources = self._inputs
+        self._input_sources = self._inputs
+        self._scene_sources = self._scenes
 
     async def start(self):
         self.set_status(ModuleStatus.RUNNING)
@@ -49,6 +50,7 @@ class OBSModule(BotdeliciousModule):
         )
         await self.connect()
         self.add_running_instance(self._name)
+        EventModule.update_obs_instances()
         await self.gather_instance_data()
         await self.reset_track_texts()
         await self.event_clear_credits()
@@ -57,6 +59,7 @@ class OBSModule(BotdeliciousModule):
         self.set_status(ModuleStatus.STOPPING)
         await self.disconnect()
         self.remove_running_instance(self._name)
+        EventModule.update_obs_instances()
         self.set_status(ModuleStatus.IDLE)
 
     def status(self):
@@ -93,19 +96,26 @@ class OBSModule(BotdeliciousModule):
             >>>     # function body here
         """
 
-        def wrapper(self, *args, **kwargs):
+        async def wrapper(self, *args, **kwargs):
             relevant_kwargs = {
                 name: value
                 for name, value in kwargs.items()
                 if any(word in name for word in ("source", "scene", "input"))
             }
             for kwarg_name, kwarg_value in relevant_kwargs.items():
-                collection_name = f"_{kwarg_name.split('_')[0]}s"
-                collection = getattr(self, collection_name, [])
+                if "source" in kwarg_name:
+                    input_sources = getattr(self, "_input_sources", [])
+                    scene_sources = getattr(self, "_scene_sources", [])
+                    collection = input_sources + scene_sources
+                else:
+                    collection_name = f"_{kwarg_name.split('_')[0]}s"
+                    collection = getattr(self, collection_name, [])
+
                 if kwarg_value not in collection:
                     logging.debug(f"{self._name} is skipping {kwarg_value}")
                 else:
-                    return func(self, *args, **kwargs)
+                    logging.debug(f"{self._name} is calling {kwarg_value}")
+                    return await func(self, *args, **kwargs)
 
         return wrapper
 
@@ -265,6 +275,12 @@ class OBSModule(BotdeliciousModule):
             },
         )
         await self.call(type="Toggle filter", request=request)
+
+    async def switch_scene(
+        self,
+        scene_name: str = None,
+    ):
+        await self.call_switch_scene(scene_name=scene_name)
 
     @check_obs_sources
     async def call_switch_scene(
@@ -438,14 +454,14 @@ class OBSModule(BotdeliciousModule):
         await asyncio.sleep(12)
 
     async def event_update_stats(self):
-        asyncio.gather(
+        await asyncio.gather(
             self.call_update_text(
                 input_name="Stat: Messages",
-                text=SessionData.comments_count(),
+                text=str(SessionData.comments_count()),
             ),
             self.call_update_text(
                 input_name="Stat: Tracks",
-                text=SessionData.tracks_count(),
+                text=str(SessionData.tracks_count()),
             ),
         )
 
@@ -630,7 +646,6 @@ class OBSModule(BotdeliciousModule):
                 input_name="Big track title",
                 text=SessionData.current_title(),
             ),
-            # self.event_update_stats(),
         )
 
     async def reset_video_texts(self):

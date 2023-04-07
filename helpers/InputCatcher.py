@@ -32,7 +32,7 @@ class InputCatcher:
                 ModulesManager.stop_module(module_name=command[5:])
         if command.startswith("restart "):
             ModulesManager.stop_module(module_name=command[8:])
-            ModulesManager.start_module(module_name=command[6:])
+            ModulesManager.start_module(module_name=command[8:])
         if command.startswith("event "):
             AsyncioThread.run_coroutine(
                 EventModule.queue_event(event=command[6:])
@@ -62,4 +62,8 @@ class InputCatcher:
             if level == "critical":
                 logging.getLogger().setLevel(logging.CRITICAL)
                 EventModule.set_loop_sleep()
+            set_level = logging.getLevelName(
+                logging.getLogger().getEffectiveLevel()
+            )
+            logging.info(f"Log level set to {set_level}")
         return 1
