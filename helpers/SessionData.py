@@ -133,10 +133,10 @@ class SessionData:
         _item = 60
 
         list_data = [
-            ("Setlist", "Elements: Credits", "get_playlist"),
-            ("Followers", "Elements: Credits", "get_followers"),
-            ("Raids", "Elements: Credits", "get_raids"),
-            ("Moderators", "Elements: Credits", "get_moderators"),
+            ("Setlist", "Elements: Credits texts", "get_playlist"),
+            ("Followers", "Elements: Credits texts", "get_followers"),
+            ("Raids", "Elements: Credits texts", "get_raids"),
+            ("Moderators", "Elements: Credits texts", "get_moderators"),
         ]
 
         for list_type, credit_type, method_name in list_data:
