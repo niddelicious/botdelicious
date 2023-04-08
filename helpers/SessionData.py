@@ -24,7 +24,7 @@ class SessionData:
     @classmethod
     def get_session_start(cls):
         if not cls._start:
-            cls._start
+            cls.start_session()
         return cls._start
 
     @classmethod

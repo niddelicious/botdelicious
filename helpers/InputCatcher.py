@@ -66,4 +66,36 @@ class InputCatcher:
                 logging.getLogger().getEffectiveLevel()
             )
             logging.info(f"Log level set to {set_level}")
+        if command.startswith("test"):
+            if command[5:] == "moderator":
+                AsyncioThread.run_coroutine(
+                    EventModule.queue_event(
+                        event="moderator", moderator="moderator_name"
+                    )
+                )
+            if command[5:] == "shoutout":
+                AsyncioThread.run_coroutine(
+                    EventModule.queue_event(
+                        event="shoutout",
+                        username="shoutout_username",
+                        message="Shoutout message to be displayed",
+                        avatar_url="https://static-cdn.jtvnw.net/jtv_user_pictures/e6bb8945-a942-498c-9ce3-6fa5b6367085-profile_image-300x300.png",
+                    )
+                )
+            if command[5:] == "track":
+                AsyncioThread.run_coroutine(
+                    EventModule.queue_event(
+                        event="new_track",
+                        artist="Test Artist",
+                        title="Test Title",
+                        contains_cover_art=False,
+                    )
+                )
+                AsyncioThread.run_coroutine(
+                    EventModule.queue_event(event="show_small_track_id")
+                )
+            if command[5:] == "fire":
+                AsyncioThread.run_coroutine(
+                    EventModule.queue_event(event="fire")
+                )
         return 1

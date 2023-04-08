@@ -45,11 +45,9 @@ class OBSModule(BotdeliciousModule):
             password=self.config.password,
             identification_parameters=parameters,
         )
-        self._role = (
-            ModuleRole.LEADER if self.config.callbacks else ModuleRole.FOLLOWER
-        )
+        self._role = ModuleRole.function(self.config.role)
         await self.connect()
-        self.add_running_instance(self._name)
+        self.add_running_instance(instance_name=self._name)
         EventModule.update_obs_instances()
         await self.gather_instance_data()
         await self.reset_track_texts()
@@ -96,7 +94,7 @@ class OBSModule(BotdeliciousModule):
             >>>     # function body here
         """
 
-        async def wrapper(self, *args, **kwargs):
+        async def check_obs_wrapper(self, *args, **kwargs):
             relevant_kwargs = {
                 name: value
                 for name, value in kwargs.items()
@@ -117,7 +115,7 @@ class OBSModule(BotdeliciousModule):
                     logging.debug(f"{self._name} is calling {kwarg_value}")
                     return await func(self, *args, **kwargs)
 
-        return wrapper
+        return check_obs_wrapper
 
     @classmethod
     def get_running_instances(cls):
@@ -358,7 +356,11 @@ class OBSModule(BotdeliciousModule):
         await self.call(type="Update url", request=request)
 
     async def eventTriggerSlideAnimation(self):
-        await self.call_toggle_filter("Track: Small", "Slide", True)
+        await self.call_toggle_filter(
+            source_name="Track: Small",
+            filter_name="Slide",
+            filter_enabled=True,
+        )
         await asyncio.sleep(9)
 
     async def eventUpdateTrackInfoThenTriggerBigSlideAnimation(self):
@@ -372,7 +374,9 @@ class OBSModule(BotdeliciousModule):
                 text=SessionData.current_title(),
             ),
         )
-        await self.call_toggle_filter("Track: Big", "Slide", True)
+        await self.call_toggle_filter(
+            source_name="Track: Big", filter_name="Slide", filter_enabled=True
+        )
         await asyncio.sleep(9)
 
     async def event_fire(self):
@@ -419,11 +423,19 @@ class OBSModule(BotdeliciousModule):
                 text=SessionData.current_title(),
             ),
         )
-        await self.call_toggle_filter("Track: Small", "Slide", True)
+        await self.call_toggle_filter(
+            source_name="Track: Small",
+            filter_name="Slide",
+            filter_enabled=True,
+        )
         await asyncio.sleep(9)
 
     async def eventTriggerSlideAnimationThenUpdateSmallTrackInfo(self):
-        await self.call_toggle_filter("Track: Small", "Slide", True)
+        await self.call_toggle_filter(
+            source_name="Track: Small",
+            filter_name="Slide",
+            filter_enabled=True,
+        )
         await asyncio.sleep(1)
         await asyncio.gather(
             self.call_update_text(
@@ -450,7 +462,9 @@ class OBSModule(BotdeliciousModule):
             self.call_update_text(input_name="Shoutout message", text=message),
             self.call_update_url(input_name="Shoutout avatar", url=avatar_url),
         )
-        await self.call_toggle_filter("Shoutout", "Slide", True)
+        await self.call_toggle_filter(
+            source_name="Shoutout", filter_name="Slide", filter_enabled=True
+        )
         await asyncio.sleep(12)
 
     async def event_update_stats(self):
