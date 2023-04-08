@@ -98,4 +98,18 @@ class InputCatcher:
                 AsyncioThread.run_coroutine(
                     EventModule.queue_event(event="fire")
                 )
+            if command[5:] == "midjourney":
+                AsyncioThread.run_coroutine(
+                    EventModule.queue_event(
+                        event="switch_scene",
+                        scene_name="Scene: Midjourney",
+                    )
+                )
+            if command[5:] == "follower":
+                AsyncioThread.run_coroutine(
+                    EventModule.queue_event(
+                        event="new_follower", username="new_follower_name"
+                    )
+                )
+
         return 1
