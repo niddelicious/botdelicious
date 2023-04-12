@@ -1,10 +1,11 @@
 logging:
   level: INFO
 chat:
+  bot_name: chatbot
   access_token: accesstoken_123
   client_id: client_id_123
   client_secret: client_secret_123
-  prefix: "!"
+  bot_prefix: "!"
   channels:
     - channel_a
     - channel_b
@@ -23,3 +24,6 @@ obs:
 twinkly:
   - http://192.168.0.101/xled/v1/
   - http://192.168.0.102/xled/v1/
+openai:
+  key: openai_key
+  org: openai_organization

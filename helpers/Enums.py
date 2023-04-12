@@ -29,3 +29,8 @@ class ModuleRole(enum.Enum):
             return ModuleRole[role_name.upper()]
         except KeyError:
             raise ValueError(f"Invalid function value: {role_name}")
+
+
+class ConversationStatus(enum.Enum):
+    IDLE = 0
+    OCCUPIED = 1

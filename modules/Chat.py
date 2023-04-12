@@ -13,6 +13,7 @@ from helpers.Enums import ModuleStatus
 from helpers.SessionData import SessionData
 from modules.Event import EventModule
 from modules.cogs.Commands import CommandsCog
+from modules.Openai import OpenaiModule
 
 
 class _TwitchBot(commands.Bot):
@@ -32,7 +33,9 @@ class _TwitchBot(commands.Bot):
             self, self.config.event_sub.secret, self.config.event_sub.callback
         )
 
+        self._pattern = f"@{self.config.bot_name}[:; ]"
         self.add_cog(CommandsCog(self))
+        self.openAI = OpenaiModule(ConfigManager.get("openai"))
 
     async def event_ready(self):
         logging.info(f"Logged in as | {self.nick}")
@@ -43,6 +46,7 @@ class _TwitchBot(commands.Bot):
             )
         )
         await self.say_hello()
+        await self.openAI.start()
 
     async def event_message(self, message):
         if message.echo:
@@ -58,6 +62,13 @@ class _TwitchBot(commands.Bot):
 
         if message.author.name in self.config.vips:
             await self.vip_active(message.author.name)
+
+        if re.match(self._pattern, message.content):
+            reply = await self.openAI.chat(
+                username=message.author.name, message=message.content
+            )
+            if reply:
+                await self.send_message_to_channel(message.channel.name, reply)
 
         if message.content[0] == self.config.bot_prefix:
             await self.handle_commands(message)

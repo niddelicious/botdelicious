@@ -39,3 +39,9 @@ class Raid:
 
     def __str__(self) -> str:
         return f"{self.name} x {self.size}"
+
+
+@dataclass
+class ConversationEntry:
+    role: str
+    content: str
