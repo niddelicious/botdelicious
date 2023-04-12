@@ -477,6 +477,22 @@ class OBSModule(BotdeliciousModule):
                 input_name="Stat: Tracks",
                 text=str(SessionData.tracks_count()),
             ),
+            self.call_update_text(
+                input_name="Stat: Raids",
+                text=str(SessionData.raids_count()),
+            ),
+            self.call_update_text(
+                input_name="Stat: Follows",
+                text=str(SessionData.followers_count()),
+            ),
+            self.call_update_text(
+                input_name="Stat: Moderators",
+                text=str(SessionData.moderators_count()),
+            ),
+            self.call_update_text(
+                input_name="Stat: VIPs",
+                text=str(SessionData.vips_count()),
+            ),
         )
 
     async def event_clear_credits(self):

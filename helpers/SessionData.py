@@ -45,6 +45,22 @@ class SessionData:
         return cls._comments_count
 
     @classmethod
+    def followers_count(cls):
+        return len(cls._followers)
+
+    @classmethod
+    def raids_count(cls):
+        return len(cls._raids)
+
+    @classmethod
+    def moderators_count(cls):
+        return len(cls._moderators)
+
+    @classmethod
+    def vips_count(cls):
+        return len(cls._vips)
+
+    @classmethod
     def add_comment(cls):
         cls._comments_count += 1
 
