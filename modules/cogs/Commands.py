@@ -3,6 +3,7 @@ import random
 import re
 from twitchio.ext import commands
 import yaml
+from SessionData import SessionData
 
 from modules.Event import EventModule
 from modules.Twinkly import TwinklyModule
@@ -215,4 +216,13 @@ class CommandsCog(commands.Cog):
         await EventModule.queue_event(
             event="change_video",
             video=video_file,
+        )
+
+    @commands.command(name="tokens", aliases=["openai", "ticks", "tick"])
+    async def tokens(self, ctx: commands.Context):
+        token_count = SessionData.tokens_count()
+        token_cost = token_count * 0.000002
+        display_cost = max(token_cost, 0.01) if token_cost > 0 else 0
+        await ctx.send(
+            f"This session has used {token_count} tokens (${display_cost:.2f})"
         )

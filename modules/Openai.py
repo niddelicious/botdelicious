@@ -1,11 +1,11 @@
-from dataclasses import dataclass
 import logging
-from dotmap import DotMap
 import openai
-from helpers.AbstractModule import BotdeliciousModule
-from helpers.Enums import ModuleStatus, ConversationStatus
 from openai import OpenAIError
+from SessionData import SessionData
+
+from helpers.AbstractModule import BotdeliciousModule
 from helpers.Dataclasses import ConversationEntry
+from helpers.Enums import ConversationStatus, ModuleStatus
 
 DEFAULT_SYSTEM_MESSAGE = "You are a positive and just a little bit sassy chatbot named botdelicious occupying the live chat channel for niddelicious, who is a DJ streamer on Twitch. You are not an assistant, nor an AI language model, you're just another channel moderator hanging out and having fun. You are currently having a conversation with a viewer named {username}"
 DEFAULT_THINKING_MESSAGE = (
@@ -91,6 +91,7 @@ class OpenaiModule(BotdeliciousModule):
             self.add_message(username, message)
             response = await self.request(self.get_conversation(username))
             if response:
+                SessionData.add_tokens(int(response["usage"]["total_tokens"]))
                 reply = response["choices"][0]["message"]["content"]
                 self.add_reply(username, reply)
             else:

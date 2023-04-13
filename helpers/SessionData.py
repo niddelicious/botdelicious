@@ -16,6 +16,7 @@ class SessionData:
     _raids = []
     _moderators = []
     _vips = []
+    _tokens_count = 0
 
     @classmethod
     def start_session(cls):
@@ -61,6 +62,10 @@ class SessionData:
         return len(cls._vips)
 
     @classmethod
+    def tokens_count(cls):
+        return cls.tokens_count
+
+    @classmethod
     def add_comment(cls):
         cls._comments_count += 1
 
@@ -79,6 +84,11 @@ class SessionData:
     @classmethod
     def add_vip(cls, vip: str = None):
         cls._vips.append(vip)
+
+    @classmethod
+    def add_tokens(cls, tokens: int = 0):
+        cls._tokens_count += tokens
+        logging.debug(f"Used tokens: {tokens} - Total: {cls._tokens_count}")
 
     @classmethod
     def current_artist(cls):
