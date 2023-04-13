@@ -63,7 +63,7 @@ class SessionData:
 
     @classmethod
     def tokens_count(cls):
-        return cls.tokens_count
+        return cls._tokens_count
 
     @classmethod
     def add_comment(cls):

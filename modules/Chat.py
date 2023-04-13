@@ -30,7 +30,9 @@ class _TwitchBot(commands.Bot):
         )
 
         self.event_subscription = eventsub.EventSubClient(
-            self, self.config.event_sub.secret, self.config.event_sub.callback
+            client=self,
+            webhook_secret=self.config.event_sub.secret,
+            callback_route=self.config.event_sub.callback,
         )
 
         self._pattern = f"@{self.config.bot_name}[:; ]"
@@ -119,7 +121,30 @@ class _TwitchBot(commands.Bot):
 
     async def send_message_to_channel(self, channel, message):
         chan = self.get_channel(channel)
-        self.loop.create_task(chan.send(message))
+
+        # Split the message into chunks of up to 500 characters
+        message_chunks = []
+        while message:
+            if len(message) > 500:
+                last_space_or_punctuation = re.search(
+                    r"[\s\.,;!?-]{1,}[^\s\.,;!?-]*$", message[:500]
+                )
+                if last_space_or_punctuation:
+                    split_at = last_space_or_punctuation.start()
+                else:
+                    split_at = 500
+
+                chunk = message[:split_at]
+                message = message[split_at:].lstrip()
+            else:
+                chunk = message
+                message = ""
+
+            message_chunks.append(chunk)
+
+        # Send each chunk as a separate message
+        for chunk in message_chunks:
+            self.loop.create_task(chan.send(chunk))
 
     async def say_hello(self):
         for channel in self.connected_channels:
