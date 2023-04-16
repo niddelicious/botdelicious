@@ -1,3 +1,4 @@
+import asyncio
 import json
 import re
 import requests
@@ -35,7 +36,7 @@ class _TwitchBot(commands.Bot):
             callback_route=self.config.event_sub.callback,
         )
 
-        self._pattern = f"@{self.config.bot_name}[:; ]"
+        self._pattern = f"@?{self.config.bot_name}[:;, ]"
         self.add_cog(CommandsCog(self))
         self.openAI = OpenaiModule(ConfigManager.get("openai"))
 
@@ -119,6 +120,12 @@ class _TwitchBot(commands.Bot):
             )
         )
 
+    async def chat(self, channel, message):
+        if len(message) > 500:
+            await self.send_message_to_channel(channel, message)
+        else:
+            await self.get_channel(channel).send(message)
+
     async def send_message_to_channel(self, channel, message):
         chan = self.get_channel(channel)
 
@@ -145,6 +152,7 @@ class _TwitchBot(commands.Bot):
         # Send each chunk as a separate message
         for chunk in message_chunks:
             self.loop.create_task(chan.send(chunk))
+            await asyncio.sleep(2)
 
     async def say_hello(self):
         for channel in self.connected_channels:
@@ -163,16 +171,6 @@ class _TwitchBot(commands.Bot):
             await self.send_message_to_channel(
                 channel.name, f"Bye World! ({current_time_string})"
             )
-
-    def find_username(self, message):
-        res = re.search("@(\w+)", message)
-        if not res:
-            res = message.split(" ")
-            try:
-                return res[1]
-            except IndexError:
-                return False
-        return res.group(1)
 
     async def fetch_user_info(self, username):
         fetch_url = f"https://api.twitch.tv/helix/users?login={username}"

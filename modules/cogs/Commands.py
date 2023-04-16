@@ -1,10 +1,13 @@
 import logging
 import random
 import re
-from twitchio.ext import commands
-import yaml
-from helpers.SessionData import SessionData
 
+import openai
+import yaml
+from twitchio.ext import commands
+
+from helpers.SessionData import SessionData
+from helpers.Utilities import Utilities
 from modules.Event import EventModule
 from modules.Twinkly import TwinklyModule
 
@@ -52,14 +55,6 @@ class CommandsCog(commands.Cog):
             func.__name__ = name
             func = commands.command(name=name, aliases=aliases)(func)
             setattr(self, name, func)
-
-    @commands.command(name="shoutout", aliases=["so", "shout"])
-    async def shoutout(self, ctx: commands.Context):
-        username = self.bot.find_username(ctx.message.content)
-        if not username:
-            await self.not_found_shoutout(ctx)
-        else:
-            await self.generic_shoutout(ctx, username)
 
     async def generic_shoutout(self, ctx, username):
         shoutout_variations = [
@@ -226,3 +221,16 @@ class CommandsCog(commands.Cog):
         await ctx.send(
             f"This session has used {token_count} tokens (${display_cost:.2f})"
         )
+
+    @commands.command(name="aiso", aliases=["aishoutout", "so", "shoutout"])
+    async def aiso(self, ctx: commands.Context):
+        username, message, avatar_url = await self.bot.openAI.shoutout(
+            content=ctx.message.content, author=ctx.author.name
+        )
+        await EventModule.queue_event(
+            event="shoutout",
+            username=username,
+            message=message,
+            avatar_url=avatar_url,
+        )
+        await self.bot.chat(ctx.channel.name, message)

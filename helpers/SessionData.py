@@ -190,7 +190,7 @@ class SessionData:
                         text=section_text,
                         position_x=_marker_x,
                         position_y=_marker_y,
-                        width=1400,
+                        width=1500,
                         height=section_height,
                     )
                 )

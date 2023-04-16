@@ -27,3 +27,6 @@ twinkly:
 openai:
   key: openai_key
   org: openai_organization
+  error_message: Sorry, I'm a bit distracted right now. Try again later.
+  prompt: The role that the AI is supposed to act as
+  thinking_message: "I'm still thinking"
