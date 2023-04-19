@@ -9,6 +9,7 @@ from twitchio.ext import commands
 from helpers.SessionData import SessionData
 from helpers.Utilities import Utilities
 from modules.Event import EventModule
+from modules.Openai import OpenaiModule
 from modules.Twinkly import TwinklyModule
 
 
@@ -224,13 +225,29 @@ class CommandsCog(commands.Cog):
 
     @commands.command(name="aiso", aliases=["aishoutout", "so", "shoutout"])
     async def aiso(self, ctx: commands.Context):
-        username, message, avatar_url = await self.bot.openAI.shoutout(
+        (
+            success,
+            username,
+            message,
+            avatar_url,
+        ) = await OpenaiModule.shoutout(
             content=ctx.message.content, author=ctx.author.name
         )
-        await EventModule.queue_event(
-            event="shoutout",
-            username=username,
-            message=message,
-            avatar_url=avatar_url,
-        )
-        await self.bot.chat(ctx.channel.name, message)
+        if success:
+            await EventModule.queue_event(
+                event="shoutout",
+                username=username,
+                message=message,
+                avatar_url=avatar_url,
+            )
+        if message:
+            await self.bot.chat(ctx.channel.name, message)
+        else:
+            await self.fallback_shoutout(ctx)
+
+    async def fallback_shoutout(self, ctx: commands.Context):
+        username = Utilities.find_username(ctx.message.content)
+        if username:
+            await self.generic_shoutout(ctx, username)
+        else:
+            await self.not_found_shoutout(ctx)

@@ -175,13 +175,13 @@ class SessionData:
                         text=f"{list_type}:",
                         position_x=_marker_x,
                         position_y=_marker_y,
-                        width=1400,
+                        width=1500,
                         height=_line,
                     )
                 )
                 _marker_y += _header
                 section_text, section_height = cls.process_list_for_credits(
-                    lst, _line
+                    lst, _line, _item
                 )
                 credits.append(
                     OBSText(
@@ -195,17 +195,17 @@ class SessionData:
                     )
                 )
                 _marker_y += section_height
-                _marker_y += _item
 
         return credits
 
     @classmethod
     def process_list_for_credits(
-        cls, lst: List = None, line_height: int = None
+        cls, lst: List = None, line_height: int = None, bottom_margin: int = 0
     ) -> Tuple[str, int]:
         text = ""
         height = 0
         for item in lst:
             text = text + f"{item}\n"
             height += line_height
+        height += bottom_margin
         return text, height

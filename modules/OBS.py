@@ -15,14 +15,6 @@ from helpers.Dataclasses import OBSText
 
 class OBSModule(BotdeliciousModule):
     _running_instances = []
-    _constants = DotMap(
-        {
-            "setlist_line_height": 40,
-            "header_spacing": 10,
-            "item_spacing": 20,
-        }
-    )
-    _item_sizes = DotMap({"setlist": 0})
 
     def __init__(self, name: str = "obs") -> None:
         super().__init__()
@@ -317,18 +309,40 @@ class OBSModule(BotdeliciousModule):
         result = await self.call(type="Get SceneItem id", request=request)
         return result["sceneItemId"]
 
+    async def call_get_scene_items(self, scene_name: str = None):
+        request = simpleobsws.Request(
+            "GetSceneItemList",
+            {"sceneName": f"{scene_name}"},
+        )
+        result = await self.call(type="Get SceneItems", request=request)
+        scene_items = []
+        for scene_item in result["sceneItems"]:
+            if scene_item["isGroup"]:
+                group_items = await self.call_get_group_items(
+                    group_name=scene_item["sourceName"]
+                )
+                for item in group_items:
+                    scene_items.append(item)
+            else:
+                scene_items.append(scene_item)
+        return scene_items
+
+    async def call_get_group_items(self, group_name: str = None):
+        request = simpleobsws.Request(
+            "GetGroupSceneItemList",
+            {"sceneName": f"{group_name}"},
+        )
+        result = await self.call(type="Get GroupItems", request=request)
+        return result["sceneItems"]
+
     @check_obs_sources
     async def call_update_position(
         self,
         scene_name: str = None,
-        source_name: str = None,
         position_x: int = 0,
         position_y: int = 0,
+        scene_item_id: int = None,
     ):
-        scene_item_id = await self.call_get_item_id(
-            scene_name=scene_name, source_name=source_name
-        )
-
         request = simpleobsws.Request(
             "SetSceneItemTransform",
             {
@@ -507,8 +521,16 @@ class OBSModule(BotdeliciousModule):
 
     async def event_update_credits(self):
         credits = SessionData.process_session_credits()
+        scene_items = await self.call_get_scene_items(
+            scene_name="Elements: Credits texts"
+        )
         for item in credits:
-            await self.call_update_text_extended(item)
+            for scene_item in scene_items:
+                if item["source"] == scene_item["source_name"]:
+                    scene_item_id = scene_item["SceneItemid"]
+            await self.call_update_text_extended(
+                item, scene_item_id=scene_item_id
+            )
 
     async def event_moderator(self, moderator: str = None):
         if self._name == "video":
@@ -608,12 +630,14 @@ class OBSModule(BotdeliciousModule):
                 input_name="Video", input_source=video
             ),
 
-    async def call_update_text_extended(self, item: OBSText = None):
+    async def call_update_text_extended(
+        self, item: OBSText = None, scene_item_id: int = None
+    ):
         await self.call_update_position(
             scene_name=item.scene,
-            source_name=item.source,
             position_x=item.position_x,
             position_y=item.position_y,
+            scene_item_id=scene_item_id,
         )
         request = simpleobsws.Request(
             "SetInputSettings",

@@ -38,7 +38,6 @@ class _TwitchBot(commands.Bot):
 
         self._pattern = f"@?{self.config.bot_name}[:;, ]"
         self.add_cog(CommandsCog(self))
-        self.openAI = OpenaiModule(ConfigManager.get("openai"))
 
     async def event_ready(self):
         logging.info(f"Logged in as | {self.nick}")
@@ -49,7 +48,6 @@ class _TwitchBot(commands.Bot):
             )
         )
         await self.say_hello()
-        await self.openAI.start()
 
     async def event_message(self, message):
         if message.echo:
@@ -67,7 +65,7 @@ class _TwitchBot(commands.Bot):
             await self.vip_active(message.author.name)
 
         if re.match(self._pattern, message.content):
-            reply = await self.openAI.chat(
+            reply = await OpenaiModule.chat(
                 username=message.author.name, message=message.content
             )
             if reply:

@@ -3,6 +3,7 @@ from AsyncioThread import AsyncioThread
 from modules.Chat import ChatModule
 from modules.Event import EventModule
 from modules.OBS import OBSModule
+from modules.Openai import OpenaiModule
 from modules.Webhook import WebhookModule
 from modules.DJctl import DJctlModule
 from modules.Twinkly import TwinklyModule
@@ -19,6 +20,7 @@ class ModulesManager:
         "chat": ChatModule(),
         "djctl": DJctlModule(),
         "twinkly": TwinklyModule(),
+        "openai": OpenaiModule(),
     }
 
     @classmethod
