@@ -153,10 +153,11 @@ class SessionData:
     def process_session_credits(cls):
         credits = []
         _marker_y = 0
-        _marker_x = 30
+        _marker_x = 0
         _line = 40
         _header = 50
         _item = 60
+        _width = 1500
 
         list_data = [
             ("Setlist", "Elements: Credits texts", "get_playlist"),
@@ -175,7 +176,7 @@ class SessionData:
                         text=f"{list_type}:",
                         position_x=_marker_x,
                         position_y=_marker_y,
-                        width=1500,
+                        width=_width,
                         height=_line,
                     )
                 )
@@ -190,7 +191,7 @@ class SessionData:
                         text=section_text,
                         position_x=_marker_x,
                         position_y=_marker_y,
-                        width=1500,
+                        width=_width,
                         height=section_height,
                     )
                 )

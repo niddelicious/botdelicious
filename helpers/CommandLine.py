@@ -6,9 +6,9 @@ from modules.Event import EventModule
 import logging
 
 
-class InputCatcher:
+class CommandLine:
     @classmethod
-    def commandline(cls):
+    def cli(cls):
         command = input("Command: \n")
         if command == "exit":
             ModulesManager.stop_module(module_name="chat")
@@ -111,5 +111,10 @@ class InputCatcher:
                         event="new_follower", username="new_follower_name"
                     )
                 )
+            if command[5:] == "credits":
+                from Tests.test_session_data import test_session_data
+                test_session_data()
+                
+                
 
         return 1

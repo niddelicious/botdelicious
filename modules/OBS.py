@@ -342,7 +342,10 @@ class OBSModule(BotdeliciousModule):
         position_x: int = 0,
         position_y: int = 0,
         scene_item_id: int = None,
+        scene_group_name: str = None,
     ):
+        if scene_group_name:
+            scene_name = scene_group_name
         request = simpleobsws.Request(
             "SetSceneItemTransform",
             {
@@ -526,8 +529,8 @@ class OBSModule(BotdeliciousModule):
         )
         for item in credits:
             for scene_item in scene_items:
-                if item["source"] == scene_item["source_name"]:
-                    scene_item_id = scene_item["SceneItemid"]
+                if item.source == scene_item["sourceName"]:
+                    scene_item_id = scene_item["sceneItemId"]
             await self.call_update_text_extended(
                 item, scene_item_id=scene_item_id
             )
@@ -638,6 +641,7 @@ class OBSModule(BotdeliciousModule):
             position_x=item.position_x,
             position_y=item.position_y,
             scene_item_id=scene_item_id,
+            scene_group_name="Credit texts group",
         )
         request = simpleobsws.Request(
             "SetInputSettings",

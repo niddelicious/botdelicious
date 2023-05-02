@@ -14,7 +14,7 @@ import logging
 import coloredlogs
 
 from AsyncioThread import AsyncioThread
-from helpers.InputCatcher import InputCatcher
+from helpers.CommandLine import CommandLine
 
 from helpers.ModulesManager import ModulesManager
 from helpers.ConfigManager import ConfigManager
@@ -56,7 +56,7 @@ def main():
     )
     EventModule.set_loop_sleep(sleep_time=sleep_time)
     SessionData.start_session()
-    while InputCatcher.commandline():
+    while CommandLine.cli():
         pass
     AsyncioThread.stop_loop()
     logger.info(f"Application ended\n")
