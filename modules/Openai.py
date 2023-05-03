@@ -40,59 +40,67 @@ class OpenaiModule(BotdeliciousModule):
         self.set_status(ModuleStatus.IDLE)
 
     @classmethod
-    def start_conversation(cls, username):
-        cls._conversations[username] = [
-            ConversationEntry("system", cls._prompt.format(username=username))
+    def start_conversation(cls, conversation_group):
+        cls._conversations[conversation_group] = [
+            ConversationEntry(
+                "system",
+                cls._prompt.format(conversation_group=conversation_group),
+                "niddelicious",
+            )
         ]
-        cls._conversation_status[username] = ConversationStatus.IDLE
+        cls._conversation_status[conversation_group] = ConversationStatus.IDLE
 
     @classmethod
-    def reprompt_conversation(cls, username, prompt: str = None):
-        cls.clean_conversation(username)
+    def reprompt_conversation(cls, conversation_group, prompt: str = None):
+        cls.clean_conversation(conversation_group)
         conversation_prompt = (
-            prompt if prompt else cls._prompt.format(username=username)
+            prompt
+            if prompt
+            else cls._prompt.format(conversation_group=conversation_group)
         )
-        cls._conversations[username] = [
-            ConversationEntry("system", conversation_prompt)
+        cls._conversations[conversation_group] = [
+            ConversationEntry("system", conversation_prompt, "niddelicious")
         ]
-        cls._conversation_status[username] = ConversationStatus.IDLE
+        cls._conversation_status[conversation_group] = ConversationStatus.IDLE
 
     @classmethod
-    def clean_conversation(cls, username):
-        if username in cls._conversations:
-            del cls._conversations[username]
-        if username in cls._conversation_status:
-            del cls._conversation_status[username]
+    def clean_conversation(cls, conversation_group):
+        if conversation_group in cls._conversations:
+            del cls._conversations[conversation_group]
+        if conversation_group in cls._conversation_status:
+            del cls._conversation_status[conversation_group]
 
     @classmethod
-    def add_message(cls, username, message):
-        cls._conversations[username].append(ConversationEntry("user", message))
-        if len(cls._conversations[username]) > 9:
-            del cls._conversations[username][1:3]
+    def add_message(cls, conversation_group, username, message):
+        cls._conversations[conversation_group].append(
+            ConversationEntry("user", message, username)
+        )
+        if len(cls._conversations[conversation_group]) > 15:
+            del cls._conversations[conversation_group][1:3]
 
     @classmethod
-    def add_reply(cls, username, reply):
-        cls._conversations[username].append(
-            ConversationEntry("assistant", reply)
+    def add_reply(cls, conversation_group, reply):
+        cls._conversations[conversation_group].append(
+            ConversationEntry("assistant", reply, "botdelicious")
         )
 
     @classmethod
-    def get_conversation(cls, username):
-        logging.debug(cls._conversations[username])
-        return cls._conversations[username]
+    def get_conversation(cls, conversation_group):
+        logging.debug(cls._conversations[conversation_group])
+        return cls._conversations[conversation_group]
 
     @classmethod
-    def get_conversation_status(cls, username):
-        if username not in cls._conversation_status:
-            cls.start_conversation(username)
+    def get_conversation_status(cls, conversation_group):
+        if conversation_group not in cls._conversation_status:
+            cls.start_conversation(conversation_group)
         logging.debug(
-            f"Conversation status for {username} is {cls._conversation_status[username]}"
+            f"Conversation status for {conversation_group} is {cls._conversation_status[conversation_group]}"
         )
-        return cls._conversation_status[username]
+        return cls._conversation_status[conversation_group]
 
     @classmethod
-    def set_conversation_status(cls, username, status):
-        cls._conversation_status[username] = status
+    def set_conversation_status(cls, conversation_group, status):
+        cls._conversation_status[conversation_group] = status
 
     @classmethod
     async def request_chat(cls, messages):
@@ -134,22 +142,24 @@ class OpenaiModule(BotdeliciousModule):
             return False
 
     @classmethod
-    async def chat(cls, username: str = None, message: str = None):
+    async def chat(
+        cls, channel: str = None, username: str = None, message: str = None
+    ):
         if cls.get_status() != ModuleStatus.RUNNING:
             return False
-        if cls.get_conversation_status(username) == ConversationStatus.IDLE:
-            cls.set_conversation_status(username, ConversationStatus.OCCUPIED)
-            cls.add_message(username, message)
-            response = await cls.request_chat(cls.get_conversation(username))
+        if cls.get_conversation_status(channel) == ConversationStatus.IDLE:
+            cls.set_conversation_status(channel, ConversationStatus.OCCUPIED)
+            cls.add_message(channel, username, message)
+            response = await cls.request_chat(cls.get_conversation(channel))
             if response:
                 SessionData.add_tokens(
                     tokens=int(response["usage"]["total_tokens"])
                 )
                 reply = response["choices"][0]["message"]["content"]
-                cls.add_reply(username, reply)
+                cls.add_reply(channel, reply)
             else:
                 reply = cls._error_message.format(username=username)
-            cls.set_conversation_status(username, ConversationStatus.IDLE)
+            cls.set_conversation_status(channel, ConversationStatus.IDLE)
         else:
             reply = cls._thinking_message.format(username=username)
         return reply
@@ -212,7 +222,7 @@ class OpenaiModule(BotdeliciousModule):
 
         # If using chat instead of completion
         cls.reprompt_conversation(system_name, system_prompt)
-        cls.add_message(system_name, system_message)
+        cls.add_message(system_name, "niddelicious", system_message)
         response = await cls.request_chat(cls.get_conversation(system_name))
         reply = response["choices"][0]["message"]["content"]
 

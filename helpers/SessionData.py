@@ -16,6 +16,7 @@ class SessionData:
     _raids = []
     _moderators = []
     _vips = []
+    _chatters = []
     _tokens_count = 0
 
     @classmethod
@@ -86,6 +87,10 @@ class SessionData:
         cls._vips.append(vip)
 
     @classmethod
+    def add_chatter(cls, chatter: str = None):
+        cls._chatters.append(chatter)
+
+    @classmethod
     def add_tokens(cls, tokens: int = 0):
         cls._tokens_count += tokens
         logging.debug(f"Used tokens: {tokens} - Total: {cls._tokens_count}")
@@ -139,6 +144,10 @@ class SessionData:
     @classmethod
     def get_vips(cls) -> List[str]:
         return cls._vips
+
+    @classmethod
+    def get_chatters(cls) -> List[str]:
+        return cls._chatters
 
     @classmethod
     def write_playlist_to_file(cls):

@@ -2,6 +2,7 @@ import logging
 from AsyncioThread import AsyncioThread
 
 from helpers.ModulesManager import ModulesManager
+from modules.Chat import _TwitchBot
 from modules.Event import EventModule
 import logging
 
@@ -105,16 +106,35 @@ class CommandLine:
                         scene_name="Scene: Midjourney",
                     )
                 )
+            if command[5:] == "vip":
+                AsyncioThread.run_coroutine(
+                    EventModule.queue_event(event="vip", vip="vip_name")
+                )
+            if command[5:12] == "chatter":
+                chatter_name = command[13:]
+                AsyncioThread.run_coroutine(
+                    _TwitchBot.chatter_active(chatter=chatter_name)
+                )
             if command[5:] == "follower":
                 AsyncioThread.run_coroutine(
                     EventModule.queue_event(
-                        event="new_follower", username="new_follower_name"
+                        event="new_follower",
+                        username="new_follower_name",
+                        avatar_url="https://static-cdn.jtvnw.net/jtv_user_pictures/e6bb8945-a942-498c-9ce3-6fa5b6367085-profile_image-300x300.png",
+                    )
+                )
+            if command[5:] == "raid":
+                AsyncioThread.run_coroutine(
+                    EventModule.queue_event(
+                        event="raid",
+                        name="new_follower_name",
+                        count=256,
+                        avatar_url="https://static-cdn.jtvnw.net/jtv_user_pictures/e6bb8945-a942-498c-9ce3-6fa5b6367085-profile_image-300x300.png",
                     )
                 )
             if command[5:] == "credits":
                 from Tests.test_session_data import test_session_data
+
                 test_session_data()
-                
-                
 
         return 1

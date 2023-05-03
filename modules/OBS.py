@@ -581,7 +581,32 @@ class OBSModule(BotdeliciousModule):
             logging.debug("... animation completed")
             await self.reset_video_texts()
 
-    async def event_new_follower(self, username: str = None):
+    async def event_chatter(self, chatter: str = None):
+        if self._name == "video":
+            await asyncio.gather(
+                self.call_update_text(input_name="Text, supertitle", text=""),
+                self.call_update_text(
+                    input_name="Text, outline", text=chatter
+                ),
+                self.call_update_text(input_name="Text, fill", text=chatter),
+                self.call_update_text(
+                    input_name="Text, subtitle", text="WELCOME TO THE CHAT"
+                ),
+            )
+            await self.call_toggle_filter(
+                source_name="Animation",
+                filter_name="Start animation",
+                filter_enabled=True,
+            )
+            logging.debug("Animation started...")
+            await asyncio.sleep(10)
+            logging.debug("... animation completed")
+            await self.reset_video_texts()
+
+    async def event_new_follower(
+        self, username: str = None, avatar_url: str = None
+    ):
+        logging.debug(f"{self._name} | Animation started...")
         if self._name == "video":
             await asyncio.gather(
                 self.call_update_text(
@@ -597,14 +622,39 @@ class OBSModule(BotdeliciousModule):
                 filter_name="Start animation",
                 filter_enabled=True,
             )
-            logging.debug("Animation started...")
-            await asyncio.sleep(10)
-            logging.debug("... animation completed")
-            await self.reset_video_texts()
-
-    async def event_raid(self, name: str = None, count: int = None):
+        if self._name == "twitch":
+            await asyncio.gather(
+                self.call_update_text(
+                    input_name="Bump text", text=f"{username}"
+                ),
+            )
+            if avatar_url:
+                await asyncio.gather(
+                    self.call_update_url(
+                        input_name="Bump image", url=avatar_url
+                    ),
+                    self.call_toggle_filter(
+                        source_name="Bumps",
+                        filter_name="Show: Image",
+                        filter_enabled=True,
+                    ),
+                )
+            await self.call_toggle_filter(
+                source_name="Bumps",
+                filter_name="Slide",
+                filter_enabled=True,
+            )
+        await asyncio.sleep(10)
         if self._name == "video":
-            raid_text = f"{name} x {count}"
+            await self.reset_video_texts()
+        logging.debug(f"{self._name} | ... animation completed")
+
+    async def event_raid(
+        self, name: str = None, count: int = None, avatar_url: str = None
+    ):
+        logging.debug("Animation started...")
+        raid_text = f"{name} x {count}"
+        if self._name == "video":
             await asyncio.gather(
                 self.call_update_text(
                     input_name="Text, supertitle", text="INCOMING RAID"
@@ -622,10 +672,32 @@ class OBSModule(BotdeliciousModule):
                 filter_name="Start animation",
                 filter_enabled=True,
             )
-            logging.debug("Animation started...")
-            await asyncio.sleep(10)
-            logging.debug("... animation completed")
+        if self._name == "twitch":
+            await asyncio.gather(
+                self.call_update_text(
+                    input_name="Bump text", text=f"{raid_text}"
+                ),
+            )
+            if avatar_url:
+                await asyncio.gather(
+                    self.call_update_url(
+                        input_name="Bump image", url=avatar_url
+                    ),
+                    self.call_toggle_filter(
+                        source_name="Bumps",
+                        filter_name="Show: Image",
+                        filter_enabled=True,
+                    ),
+                )
+            await self.call_toggle_filter(
+                source_name="Bumps",
+                filter_name="Slide",
+                filter_enabled=True,
+            )
+        await asyncio.sleep(10)
+        if self._name == "video":
             await self.reset_video_texts()
+        logging.debug("... animation completed")
 
     async def event_change_video(self, video: str = None):
         if self._name == "video":

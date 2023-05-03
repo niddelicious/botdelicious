@@ -1,10 +1,11 @@
+import asyncio
 import logging
 import random
 import string
 import requests
 
 from helpers.AbstractModule import BotdeliciousModule
-from helpers.Enums import ModuleStatus
+from helpers.Enums import ModuleStatus, TwinklyEffect
 from helpers.ConfigManager import ConfigManager
 
 
@@ -12,6 +13,7 @@ class TwinklyController:
     def __init__(self, twinkly_light_url):
         self.unit_url = twinkly_light_url
         self.headers = {}
+        self._settings = {}
 
     def _handshake(func):
         async def wrapper(self, *args, **kwargs):
@@ -46,18 +48,35 @@ class TwinklyController:
     async def _logout_of_twinkly_unit(self, **kwargs):
         requests.post(self.unit_url + "logout", headers=self.headers)
 
-    @_handshake
-    async def run_twinkly_effect(self, effect_id: int = 0):
-        if 0 < effect_id < 6:
-            effect_id -= 1
-        else:
-            effect_id = random.randint(0, 4)
+    def get_settings(self):
+        return self._settings
 
+    def set_settings(self, mode, options):
+        self._settings = {
+            "mode": mode,
+            "options": options,
+        }
+
+    async def reset_lights(self):
+        reset = self.get_settings()
+        await getattr(self, f"run_twinkly_{reset['mode']}")(**reset["options"])
+
+    @_handshake
+    async def run_twinkly_effect(
+        self, effect: TwinklyEffect = TwinklyEffect.RAINBOW, time: int = None
+    ):
+        effect_id = effect.value
         logging.debug(f"Effect: {effect_id}")
         effect = {"mode": "effect", "effect_id": effect_id}
         requests.post(
             self.unit_url + "led/mode", json=effect, headers=self.headers
         )
+
+        if time is not None:
+            await asyncio.sleep(time)
+            await self.reset_lights()
+        else:
+            self.set_settings("effect", effect_id)
 
     @_handshake
     async def run_twinkly_react(self, react_id: int = 0):
@@ -98,6 +117,7 @@ class TwinklyController:
             json=react_mode,
             headers=self.headers,
         )
+        self.set_settings("react", react_id)
 
     @_handshake
     async def run_twinkly_color(
@@ -121,6 +141,7 @@ class TwinklyController:
         requests.post(
             self.unit_url + "led/mode", json=effect, headers=self.headers
         )
+        self.set_settings("color", rgb_values)
 
 
 class TwinklyModule(BotdeliciousModule):
@@ -150,18 +171,27 @@ class TwinklyModule(BotdeliciousModule):
         cls._lights.append(instance)
 
     @classmethod
-    async def effect(cls, effect_id: int = 0, *args, **kwargs):
-        for light in cls.get_lights():
-            await light.run_twinkly_effect(effect_id)
+    async def effect(cls, effect: TwinklyEffect = TwinklyEffect.RAINBOW, time: int = None, *args, **kwargs):
+        await asyncio.gather(
+            *[
+                light.run_twinkly_effect(effect, time)
+                for light in cls.get_lights()
+            ],
+        )
 
     @classmethod
     async def react(cls, react_id: int = 0, *args, **kwargs):
-        for light in cls.get_lights():
-            await light.run_twinkly_react(react_id)
+        await asyncio.gather(
+            *[light.run_twinkly_react(react_id) for light in cls.get_lights()],
+        )
 
     @classmethod
     async def color(
         cls, red: int = 255, green: int = 255, blue: int = 255, *args, **kwargs
     ):
-        for light in cls.get_lights():
-            await light.run_twinkly_color(red, green, blue)
+        await asyncio.gather(
+            *[
+                light.run_twinkly_color(red, green, blue)
+                for light in cls.get_lights()
+            ],
+        )

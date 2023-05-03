@@ -1,24 +1,24 @@
-import enum
+from enum import Enum
 
 
-class ThreadState(enum.Enum):
+class ThreadState(Enum):
     IDLE = 0
     RUNNING = 1
     STOPPING = 2
 
 
-class ModuleStatus(enum.Enum):
+class ModuleStatus(Enum):
     IDLE = 0
     RUNNING = 1
     STOPPING = 2
 
 
-class QueueStatus(enum.Enum):
+class QueueStatus(Enum):
     IDLE = 0
     PROCESSING = 1
 
 
-class ModuleRole(enum.Enum):
+class ModuleRole(Enum):
     LEADER = 0
     FOLLOWER = 1
     DISPLAY = 2
@@ -31,6 +31,29 @@ class ModuleRole(enum.Enum):
             raise ValueError(f"Invalid function value: {role_name}")
 
 
-class ConversationStatus(enum.Enum):
+class ConversationStatus(Enum):
     IDLE = 0
     OCCUPIED = 1
+
+
+class TwinklyEffect(Enum):
+    RAINBOW = 0
+    SNOW = 1
+    COLLIDE = 2
+    FIREWORK = 3
+    USA = 4
+
+
+class TwinklyReact(Enum):
+    VU_METER = "00000000-0000-0000-0000-000000000001"
+    BEAT_HUE = "00000000-0000-0000-0000-000000000002"
+    PSYCHEDELICA = "00000000-0000-0000-0000-000000000003"
+    RED_VERTIGO = "00000000-0000-0000-0000-000000000004"
+    DANCING_BANDS = "00000000-0000-0000-0000-000000000005"
+    DIAMOND_SWIRL = "00000000-0000-0000-0000-000000000006"
+    JOYFUL_STRIPES = "00000000-0000-0000-0000-000000000007"
+    ELEVATOR = "00000000-0000-0000-0000-000000000008"
+    ANGEL_FADE = "00000000-0000-0000-0000-000000000009"
+    CLOCKWORK = "00000000-0000-0000-0000-00000000000A"
+    SIPARIO = "00000000-0000-0000-0000-00000000000B"
+    SUNSET = "00000000-0000-0000-0000-00000000000C"

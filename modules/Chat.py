@@ -58,35 +58,47 @@ class _TwitchBot(commands.Bot):
         )
         logging.info(f"{message.author.name}: {message.content}")
 
-        if message.author.name in self.config.moderators:
+        if message.author.is_mod:
             await self.moderator_active(message.author.name)
-
-        if message.author.name in self.config.vips:
+        elif message.author.is_vip:
             await self.vip_active(message.author.name)
+        else:
+            await self.chatter_active(message.author.name)
 
         if re.match(self._pattern, message.content):
             reply = await OpenaiModule.chat(
-                username=message.author.name, message=message.content
+                channel=message.channel.name, username=message.author.name, message=message.content
             )
             if reply:
                 await self.send_message_to_channel(message.channel.name, reply)
+            return
 
         if message.content[0] == self.config.bot_prefix:
             await self.handle_commands(message)
             return
 
-    async def moderator_active(self, moderator):
+    @classmethod
+    async def moderator_active(cls, moderator):
         if moderator not in SessionData.get_moderators():
             SessionData.add_moderator(moderator=moderator)
             AsyncioThread.run_coroutine(
                 EventModule.queue_event(event="moderator", moderator=moderator)
             )
 
-    async def vip_active(self, vip):
+    @classmethod
+    async def vip_active(cls, vip):
         if vip not in SessionData.get_vips():
             SessionData.add_vip(vip=vip)
             AsyncioThread.run_coroutine(
                 EventModule.queue_event(event="vip", vip=vip)
+            )
+
+    @classmethod
+    async def chatter_active(cls, chatter):
+        if chatter not in SessionData.get_chatters():
+            SessionData.add_chatter(chatter=chatter)
+            AsyncioThread.run_coroutine(
+                EventModule.queue_event(event="chatter", chatter=chatter)
             )
 
     async def event_eventsub_notification_follow(
@@ -95,9 +107,12 @@ class _TwitchBot(commands.Bot):
         logging.debug(f"New follower!")
         logging.debug(payload.data.user.name)
         SessionData.add_follower(follower=payload.data.user.name)
+        avatar_url = await self.fetch_user_info(payload.data.user.name)
         AsyncioThread.run_coroutine(
             EventModule.queue_event(
-                event="new_follower", username=payload.data.user.name
+                event="new_follower",
+                username=payload.data.user.name,
+                avatar_url=avatar_url,
             )
         )
 
@@ -110,11 +125,13 @@ class _TwitchBot(commands.Bot):
         SessionData.add_raid(
             raider=payload.data.raider.name, size=payload.data.viewer_count
         )
+        avatar_url = await self.fetch_user_info(payload.data.user.name)
         AsyncioThread.run_coroutine(
             EventModule.queue_event(
                 event="raid",
                 name=payload.data.raider.name,
                 count=payload.data.viewer_count,
+                avatar_url=avatar_url,
             )
         )
 

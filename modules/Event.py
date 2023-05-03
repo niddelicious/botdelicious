@@ -6,8 +6,9 @@ from dotmap import DotMap
 from AsyncioThread import AsyncioThread
 from helpers.AbstractModule import BotdeliciousModule
 from helpers.ConfigManager import ConfigManager
-from helpers.Enums import ModuleStatus
+from helpers.Enums import ModuleStatus, TwinklyEffect
 from helpers.SessionData import SessionData
+from modules.Twinkly import TwinklyModule
 
 
 class EventModule(BotdeliciousModule):
@@ -166,9 +167,13 @@ class EventModule(BotdeliciousModule):
         logging.debug(f"New follower")
         await asyncio.gather(
             *[
-                instance.event_new_follower(username=item_data.username)
+                instance.event_new_follower(
+                    username=item_data.username,
+                    avatar_url=item_data.avatar_url or None,
+                )
                 for instance in cls._obs_instances
-            ]
+            ],
+            TwinklyModule.effect(TwinklyEffect.RAINBOW, 8),
         )
 
     @classmethod
@@ -176,7 +181,11 @@ class EventModule(BotdeliciousModule):
         logging.debug(f"Raid!")
         await asyncio.gather(
             *[
-                instance.event_raid(name=item_data.name, count=item_data.count)
+                instance.event_raid(
+                    name=item_data.name,
+                    count=item_data.count,
+                    avatar_url=item_data.avatar_url or None,
+                )
                 for instance in cls._obs_instances
             ]
         )
@@ -197,6 +206,16 @@ class EventModule(BotdeliciousModule):
         await asyncio.gather(
             *[
                 instance.event_vip(vip=item_data.vip)
+                for instance in cls._obs_instances
+            ]
+        )
+
+    @classmethod
+    async def handle_chatter(cls, item_data=None, *args, **kwargs):
+        logging.debug(f"Chatter check-in")
+        await asyncio.gather(
+            *[
+                instance.event_chatter(chatter=item_data.chatter)
                 for instance in cls._obs_instances
             ]
         )

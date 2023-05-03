@@ -45,3 +45,5 @@ class Raid:
 class ConversationEntry:
     role: str
     content: str
+    name: str = None
+

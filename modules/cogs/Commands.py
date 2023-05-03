@@ -99,7 +99,12 @@ class CommandsCog(commands.Cog):
     async def lights(self, ctx: commands.Context):
         splits = ctx.message.content.split()
         if splits[1] == "effect" and splits[2].isnumeric():
-            await TwinklyModule.effect(effect_id=int(splits[2]))
+            effect_id = int(splits[2]) - 1
+            if 0 <= effect_id < len(TwinklyEffect):
+                effect = TwinklyEffect(effect_id)
+            else:
+                effect = random.choice(list(TwinklyEffect))
+            await TwinklyModule.effect(effect=effect)
         elif splits[1] == "react" and splits[2].isnumeric():
             await TwinklyModule.react(react_id=int(splits[2]))
         elif (
