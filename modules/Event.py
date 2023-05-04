@@ -5,7 +5,6 @@ import shutil
 from dotmap import DotMap
 from AsyncioThread import AsyncioThread
 from helpers.AbstractModule import BotdeliciousModule
-from helpers.ConfigManager import ConfigManager
 from helpers.Enums import ModuleStatus, TwinklyEffect
 from helpers.SessionData import SessionData
 from modules.Twinkly import TwinklyModule
@@ -45,7 +44,7 @@ class EventModule(BotdeliciousModule):
         await cls._event_queue.put(data)
 
     async def run(cls):
-        logging.debug(f"Starting Event!")
+        logging.debug("Starting Event!")
         queue_logged = False
         while cls._status == ModuleStatus.RUNNING:
             if not cls._event_queue.empty():
@@ -54,19 +53,19 @@ class EventModule(BotdeliciousModule):
                 await cls.handle_event_queue()
             else:
                 if not queue_logged:
-                    logging.debug(f"Event queue is empty")
+                    logging.debug("Event queue is empty")
                     queue_logged = True
             await asyncio.sleep(cls._loop_sleep)
         while cls._status == ModuleStatus.STOPPING:
-            logging.DEBUG(f"Stopping event!")
+            logging.debug("Stopping event!")
             await asyncio.sleep(3)
         while cls._status == ModuleStatus.IDLE:
-            logging.debug(f"Event stopped")
+            logging.debug("Event stopped")
             await asyncio.sleep(3)
 
     @classmethod
     async def handle_event_queue(cls):
-        logging.debug(f"Event queue not empty!")
+        logging.debug("Event queue not empty!")
         event_item = await cls._event_queue.get()
         logging.debug(f"{event_item}")
         event_type_handler_method = "handle_" + event_item.event_type
@@ -79,13 +78,13 @@ class EventModule(BotdeliciousModule):
         try:
             loop = asyncio.get_running_loop()
         except RuntimeError:
-            logging.error(f"No running event loop!")
+            logging.error("No running event loop!")
         else:
             logging.debug(f"Running event loop found: {loop}")
 
     @classmethod
     async def queue_event(cls, event: str = None, *args, **kwargs):
-        logging.debug(f"Event received:")
+        logging.debug("Event received:")
         logging.debug(f"event: {event}")
         logging.debug(f"args: {args}")
         logging.debug(f"kwargs: {kwargs}")
@@ -100,18 +99,18 @@ class EventModule(BotdeliciousModule):
 
     @classmethod
     async def handle_new_track(cls, item_data=None, *args, **kwargs):
-        logging.debug(f"Handle new track:")
+        logging.debug("Handle new track:")
         logging.debug(f"Artist: {item_data.artist} | Title: {item_data.title}")
         logging.debug(f"Cover art: {item_data.contains_cover_art}")
 
         if not item_data.contains_cover_art:
             cls._copy_fallback_image_to_cover_file()
 
-        logging.debug(f"Storing new track in session data")
+        logging.debug("Storing new track in session data")
         SessionData.set_current_track(
             artist=item_data.artist, title=item_data.title
         )
-        logging.debug(f"Updating track stat list")
+        logging.debug("Updating track stat list")
         await asyncio.gather(
             *[instance.event_update_stats() for instance in cls._obs_instances]
         )
@@ -129,21 +128,21 @@ class EventModule(BotdeliciousModule):
 
     @classmethod
     async def handle_show_small_track_id(cls, *args, **kwargs):
-        logging.debug(f"Show small track id:")
+        logging.debug("Show small track id:")
         await asyncio.gather(
             *[instance.event_new_track() for instance in cls._obs_instances]
         )
 
     @classmethod
     async def handle_show_big_track_id(cls, *args, **kwargs):
-        logging.debug(f"Show big track id:")
+        logging.debug("Show big track id:")
         await asyncio.gather(
             *[instance.event_track_id() for instance in cls._obs_instances]
         )
 
     @classmethod
     async def handle_shoutout(cls, item_data=None, *args, **kwargs):
-        logging.debug(f"Show shoutout:")
+        logging.debug("Show shoutout:")
         await asyncio.gather(
             *[
                 instance.event_shoutout(
@@ -157,14 +156,14 @@ class EventModule(BotdeliciousModule):
 
     @classmethod
     async def handle_fire(cls, *args, **kwargs):
-        logging.debug(f"Fire:")
+        logging.debug("Fire:")
         await asyncio.gather(
             *[instance.event_fire() for instance in cls._obs_instances]
         )
 
     @classmethod
     async def handle_new_follower(cls, item_data=None, *args, **kwargs):
-        logging.debug(f"New follower")
+        logging.debug("New follower")
         await asyncio.gather(
             *[
                 instance.event_new_follower(
@@ -178,7 +177,7 @@ class EventModule(BotdeliciousModule):
 
     @classmethod
     async def handle_raid(cls, item_data=None, *args, **kwargs):
-        logging.debug(f"Raid!")
+        logging.debug("Raid!")
         await asyncio.gather(
             *[
                 instance.event_raid(
@@ -187,12 +186,13 @@ class EventModule(BotdeliciousModule):
                     avatar_url=item_data.avatar_url or None,
                 )
                 for instance in cls._obs_instances
-            ]
+            ],
+            TwinklyModule.effect(TwinklyEffect.COLLIDE, 8),
         )
 
     @classmethod
     async def handle_moderator(cls, item_data=None, *args, **kwargs):
-        logging.debug(f"Moderator check-in")
+        logging.debug("Moderator check-in")
         await asyncio.gather(
             *[
                 instance.event_moderator(moderator=item_data.moderator)
@@ -202,7 +202,7 @@ class EventModule(BotdeliciousModule):
 
     @classmethod
     async def handle_vip(cls, item_data=None, *args, **kwargs):
-        logging.debug(f"VIP check-in")
+        logging.debug("VIP check-in")
         await asyncio.gather(
             *[
                 instance.event_vip(vip=item_data.vip)
@@ -212,7 +212,7 @@ class EventModule(BotdeliciousModule):
 
     @classmethod
     async def handle_chatter(cls, item_data=None, *args, **kwargs):
-        logging.debug(f"Chatter check-in")
+        logging.debug("Chatter check-in")
         await asyncio.gather(
             *[
                 instance.event_chatter(chatter=item_data.chatter)
@@ -222,7 +222,7 @@ class EventModule(BotdeliciousModule):
 
     @classmethod
     async def handle_change_video(cls, item_data=None, *args, **kwargs):
-        logging.debug(f"Change video")
+        logging.debug("Change video")
         await asyncio.gather(
             *[
                 instance.event_change_video(video=item_data.video)
@@ -232,7 +232,7 @@ class EventModule(BotdeliciousModule):
 
     @classmethod
     async def handle_switch_scene(cls, item_data=None, *args, **kwargs):
-        logging.debug(f"Switch scene")
+        logging.debug("Switch scene")
         await asyncio.gather(
             *[
                 instance.switch_scene(scene_name=item_data.scene_name)
@@ -242,7 +242,7 @@ class EventModule(BotdeliciousModule):
 
     @classmethod
     async def handle_new_message(cls, *args, **kwargs):
-        logging.debug(f"Updating messages")
+        logging.debug("Updating messages")
         SessionData.add_comment()
         await asyncio.gather(
             *[instance.event_update_stats() for instance in cls._obs_instances]
@@ -250,7 +250,7 @@ class EventModule(BotdeliciousModule):
 
     @classmethod
     async def handle_sync_recording(cls, item_data=None, *args, **kwargs):
-        logging.debug(f"Synchronizing recording state")
+        logging.debug("Synchronizing recording state")
         await asyncio.gather(
             *[
                 instance.sync_record_toggle(
@@ -262,7 +262,7 @@ class EventModule(BotdeliciousModule):
 
     @classmethod
     async def handle_sync_scene(cls, item_data=None, *args, **kwargs):
-        logging.debug(f"Synchronizing scene switch")
+        logging.debug("Synchronizing scene switch")
         await asyncio.gather(
             *[
                 instance.sync_scene_switch(event_data=item_data.event_data)
@@ -278,4 +278,4 @@ class EventModule(BotdeliciousModule):
             from_file,
             to_file,
         )
-        logging.debug(f"Using fallback cover art")
+        logging.debug("Using fallback cover art")
