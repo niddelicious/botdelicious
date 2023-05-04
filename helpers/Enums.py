@@ -57,3 +57,7 @@ class TwinklyReact(Enum):
     CLOCKWORK = "00000000-0000-0000-0000-00000000000A"
     SIPARIO = "00000000-0000-0000-0000-00000000000B"
     SUNSET = "00000000-0000-0000-0000-00000000000C"
+
+    @classmethod
+    def index(cls, member):
+        return list(cls).index(member)

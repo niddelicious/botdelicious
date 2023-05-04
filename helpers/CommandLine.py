@@ -1,9 +1,9 @@
 import logging
 from AsyncioThread import AsyncioThread
 
-from helpers.ModulesManager import ModulesManager
-from modules.Chat import _TwitchBot
-from modules.Event import EventModule
+from Controllers.ModulesController import ModulesController
+from Modules.ChatModule import _TwitchBot
+from Modules.EventModule import EventModule
 import logging
 
 
@@ -12,28 +12,28 @@ class CommandLine:
     def cli(cls):
         command = input("Command: \n")
         if command == "exit":
-            ModulesManager.stop_module(module_name="chat")
-            ModulesManager.stop_module(module_name="djctl")
-            ModulesManager.stop_module(module_name="webhook")
-            ModulesManager.stop_module(module_name="twitch")
-            ModulesManager.stop_module(module_name="podcast")
-            ModulesManager.stop_module(module_name="twinkly")
+            ModulesController.stop_module(module_name="chat")
+            ModulesController.stop_module(module_name="djctl")
+            ModulesController.stop_module(module_name="webhook")
+            ModulesController.stop_module(module_name="twitch")
+            ModulesController.stop_module(module_name="podcast")
+            ModulesController.stop_module(module_name="twinkly")
             logging.info(f"Exiting...\n")
             return 0
         if command == "status":
-            ModulesManager.get_module_status()
+            ModulesController.get_module_status()
         if command.startswith("start "):
-            ModulesManager.start_module(module_name=command[6:])
+            ModulesController.start_module(module_name=command[6:])
         if command.startswith("stop "):
             if command[5:] == "event":
                 logging.info(
                     f"Cannot stop event loop. Exit application instead"
                 )
             else:
-                ModulesManager.stop_module(module_name=command[5:])
+                ModulesController.stop_module(module_name=command[5:])
         if command.startswith("restart "):
-            ModulesManager.stop_module(module_name=command[8:])
-            ModulesManager.start_module(module_name=command[8:])
+            ModulesController.stop_module(module_name=command[8:])
+            ModulesController.start_module(module_name=command[8:])
         if command.startswith("event "):
             AsyncioThread.run_coroutine(
                 EventModule.queue_event(event=command[6:])

@@ -1,16 +1,14 @@
 import logging
 import random
-import re
-
-import openai
 import yaml
 from twitchio.ext import commands
+from Helpers.Enums import TwinklyEffect, TwinklyReact
 
-from helpers.SessionData import SessionData
-from helpers.Utilities import Utilities
-from modules.Event import EventModule
-from modules.Openai import OpenaiModule
-from modules.Twinkly import TwinklyModule
+from Helpers.SessionData import SessionData
+from Helpers.Utilities import Utilities
+from Modules.EventModule import EventModule
+from Modules.OpenaiModule import OpenaiModule
+from Modules.TwinklyModule import TwinklyModule
 
 
 class CommandsCog(commands.Cog):
@@ -106,7 +104,12 @@ class CommandsCog(commands.Cog):
                 effect = random.choice(list(TwinklyEffect))
             await TwinklyModule.effect(effect=effect)
         elif splits[1] == "react" and splits[2].isnumeric():
-            await TwinklyModule.react(react_id=int(splits[2]))
+            react_id = int(splits[2]) - 1
+            if 0 <= react_id < len(TwinklyReact):
+                react = TwinklyReact(react_id)
+            else:
+                react = random.choice(list(TwinklyReact))
+            await TwinklyModule.react(react)
         elif (
             (splits[1] == "color" or splits[1] == "colour")
             and splits[2].isnumeric()

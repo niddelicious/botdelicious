@@ -5,10 +5,10 @@ import webhook_listener
 from dotmap import DotMap
 from AsyncioThread import AsyncioThread
 
-from helpers.AbstractModule import BotdeliciousModule
-from helpers.ConfigManager import ConfigManager
-from helpers.Enums import ModuleStatus
-from modules.Event import EventModule
+from Modules.BotdeliciousModule import BotdeliciousModule
+from Controllers.ConfigController import ConfigController
+from Helpers.Enums import ModuleStatus
+from Modules.EventModule import EventModule
 
 
 class WebhookModule(BotdeliciousModule):
@@ -21,7 +21,7 @@ class WebhookModule(BotdeliciousModule):
         self.set_status(ModuleStatus.RUNNING)
         self._webhook_listener = webhook_listener.Listener(
             handlers={"POST": self.incoming_webhook},
-            port=ConfigManager._config.webhook.port,
+            port=ConfigController._config.webhook.port,
         )
         self._webhook_listener.start()
 

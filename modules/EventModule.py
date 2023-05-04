@@ -4,10 +4,10 @@ from pathlib import Path
 import shutil
 from dotmap import DotMap
 from AsyncioThread import AsyncioThread
-from helpers.AbstractModule import BotdeliciousModule
-from helpers.Enums import ModuleStatus, TwinklyEffect
-from helpers.SessionData import SessionData
-from modules.Twinkly import TwinklyModule
+from Modules.BotdeliciousModule import BotdeliciousModule
+from Helpers.Enums import ModuleStatus, TwinklyEffect
+from Helpers.SessionData import SessionData
+from Modules.TwinklyModule import TwinklyModule
 
 
 class EventModule(BotdeliciousModule):
@@ -117,13 +117,13 @@ class EventModule(BotdeliciousModule):
 
     @classmethod
     def update_obs_instances(cls, *args, **kwargs):
-        from helpers.ModulesManager import ModulesManager
-        from modules.OBS import OBSModule
+        from Controllers.ModulesController import ModulesController
+        from Modules.OBSModule import OBSModule
 
         cls._obs_instances = []
         for instance in OBSModule.get_running_instances():
             cls._obs_instances.append(
-                ModulesManager.get_module(module_name=instance)
+                ModulesController.get_module(module_name=instance)
             )
 
     @classmethod

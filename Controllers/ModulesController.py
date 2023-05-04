@@ -1,16 +1,16 @@
 import logging
 from AsyncioThread import AsyncioThread
-from modules.Chat import ChatModule
-from modules.Event import EventModule
-from modules.OBS import OBSModule
-from modules.Openai import OpenaiModule
-from modules.Webhook import WebhookModule
-from modules.DJctl import DJctlModule
-from modules.Twinkly import TwinklyModule
-from helpers.Enums import ModuleStatus
+from Modules.ChatModule import ChatModule
+from Modules.EventModule import EventModule
+from Modules.OBSModule import OBSModule
+from Modules.OpenaiModule import OpenaiModule
+from Modules.WebhookModule import WebhookModule
+from Modules.DJctlModule import DJctlModule
+from Modules.TwinklyModule import TwinklyModule
+from Helpers.Enums import ModuleStatus
 
 
-class ModulesManager:
+class ModulesController:
     _modules = {
         "event": EventModule(),
         "webhook": WebhookModule(),

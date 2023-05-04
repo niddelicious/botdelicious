@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from helpers.Enums import ModuleStatus
+from Helpers.Enums import ModuleStatus
 
 
 class BotdeliciousModule(ABC):

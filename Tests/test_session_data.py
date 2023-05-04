@@ -1,8 +1,8 @@
 import logging
 from datetime import timedelta
 
-from helpers.Dataclasses import OBSText
-from helpers.SessionData import SessionData
+from Helpers.Dataclasses import OBSText
+from Helpers.SessionData import SessionData
 
 
 def test_session_data():
@@ -83,4 +83,3 @@ def test_session_data():
     updated_credits = SessionData.process_session_credits()
     for credit in updated_credits:
         print(credit)
-

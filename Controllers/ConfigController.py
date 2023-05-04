@@ -3,7 +3,7 @@ import yaml
 from dotmap import DotMap
 
 
-class ConfigManager:
+class ConfigController:
     _config = None
     _config_file = Path("config.yml")
 

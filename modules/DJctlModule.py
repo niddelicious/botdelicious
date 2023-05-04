@@ -3,8 +3,8 @@ from pathlib import Path
 import subprocess
 import logging
 
-from helpers.AbstractModule import BotdeliciousModule
-from helpers.Enums import ModuleStatus
+from Modules.BotdeliciousModule import BotdeliciousModule
+from Helpers.Enums import ModuleStatus
 
 
 class DJctlModule(BotdeliciousModule):

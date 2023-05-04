@@ -4,17 +4,16 @@ import re
 import requests
 import logging
 from dotmap import DotMap
-import twitchio
 from twitchio.ext import commands, eventsub
 import datetime
 from AsyncioThread import AsyncioThread
-from helpers.AbstractModule import BotdeliciousModule
-from helpers.ConfigManager import ConfigManager
-from helpers.Enums import ModuleStatus
-from helpers.SessionData import SessionData
-from modules.Event import EventModule
-from modules.cogs.Commands import CommandsCog
-from modules.Openai import OpenaiModule
+from Modules.BotdeliciousModule import BotdeliciousModule
+from Controllers.ConfigController import ConfigController
+from Helpers.Enums import ModuleStatus
+from Helpers.SessionData import SessionData
+from Modules.EventModule import EventModule
+from Modules.cogs.CommandsCog import CommandsCog
+from Modules.OpenaiModule import OpenaiModule
 
 
 class _TwitchBot(commands.Bot):
@@ -67,7 +66,9 @@ class _TwitchBot(commands.Bot):
 
         if re.match(self._pattern, message.content):
             reply = await OpenaiModule.chat(
-                channel=message.channel.name, username=message.author.name, message=message.content
+                channel=message.channel.name,
+                username=message.author.name,
+                message=message.content,
             )
             if reply:
                 await self.send_message_to_channel(message.channel.name, reply)
@@ -203,7 +204,7 @@ class ChatModule(BotdeliciousModule):
 
     async def start(self):
         self.set_status(ModuleStatus.RUNNING)
-        self.config = ConfigManager.get("chat")
+        self.config = ConfigController.get("chat")
         await self._update_tokens()
         self.bot = _TwitchBot(self.config)
         await self.bot.start()
@@ -226,12 +227,12 @@ class ChatModule(BotdeliciousModule):
         refresh = DotMap(requests.post(twitch_refresh_url).json())
         logging.debug(f"Refresh response: {refresh}")
         if self.config.access_token != refresh.access_token:
-            ConfigManager.update_config(
+            ConfigController.update_config(
                 "chat", "access_token", refresh.access_token
             )
 
         if self.config.refresh_token != refresh.refresh_token:
-            ConfigManager.update_config(
+            ConfigController.update_config(
                 "chat", "refresh_token", refresh.refresh_token
             )
 

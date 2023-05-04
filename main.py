@@ -14,12 +14,12 @@ import logging
 import coloredlogs
 
 from AsyncioThread import AsyncioThread
-from helpers.CommandLine import CommandLine
+from Helpers.CommandLine import CommandLine
 
-from helpers.ModulesManager import ModulesManager
-from helpers.ConfigManager import ConfigManager
-from helpers.SessionData import SessionData
-from modules.Event import EventModule
+from Controllers.ModulesController import ModulesController
+from Controllers.ConfigController import ConfigController
+from Helpers.SessionData import SessionData
+from Modules.EventModule import EventModule
 
 
 class Botdelicious:
@@ -27,13 +27,13 @@ class Botdelicious:
         with open("autostart.yml", "r") as autostart:
             autostarts = DotMap(yaml.load(autostart, Loader=yaml.FullLoader))
         for module in autostarts.modules:
-            ModulesManager.start_module(module_name=module.name)
+            ModulesController.start_module(module_name=module.name)
 
 
 def main():
-    ConfigManager.get_config()
+    ConfigController.get_config()
     logger = logging.getLogger()
-    logger.setLevel(ConfigManager._config.logging.level)
+    logger.setLevel(ConfigController._config.logging.level)
     formatter = logging.Formatter(
         "%(asctime)s | %(levelname)s | %(message)s", "%m-%d-%Y %H:%M:%S"
     )
@@ -41,9 +41,9 @@ def main():
     stdout_handler.setFormatter(formatter)
     logger.addHandler(stdout_handler)
     coloredlogs.install(
-        level=ConfigManager._config.logging.level, logger=logger
+        level=ConfigController._config.logging.level, logger=logger
     )
-    if ConfigManager._config.logging.log_to_file:
+    if ConfigController._config.logging.log_to_file:
         logging.basicConfig(
             filename="debug.log", encoding="utf-8", level=logging.DEBUG
         )

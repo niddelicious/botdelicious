@@ -1,15 +1,13 @@
 import logging
 import openai
 from openai import OpenAIError
-import requests
-from helpers.ConfigManager import ConfigManager
-from helpers.SessionData import SessionData
+from Controllers.ConfigController import ConfigController
+from Helpers.SessionData import SessionData
 
-from helpers.AbstractModule import BotdeliciousModule
-from helpers.Dataclasses import ConversationEntry
-from helpers.Enums import ConversationStatus, ModuleStatus
-from helpers.Utilities import Utilities
-from modules.Event import EventModule
+from Modules.BotdeliciousModule import BotdeliciousModule
+from Helpers.Dataclasses import ConversationEntry
+from Helpers.Enums import ConversationStatus, ModuleStatus
+from Helpers.Utilities import Utilities
 
 
 class OpenaiModule(BotdeliciousModule):
@@ -29,7 +27,7 @@ class OpenaiModule(BotdeliciousModule):
         cls.error_message = config.error_message
 
     async def start(self):
-        config = ConfigManager.get("openai")
+        config = ConfigController.get("openai")
         openai.organization = config.org
         openai.api_key = config.key
         self.set_config(config)
@@ -175,7 +173,7 @@ class OpenaiModule(BotdeliciousModule):
 
         system_name = "ai_shoutout_generator"
         system_prompt = "Hype Twitch Streamer Shoutout Generator"
-        twitch_config = ConfigManager.get("chat")
+        twitch_config = ConfigController.get("chat")
         username = Utilities.find_username(content)
         if username:
             user = await Utilities.get_user_info(

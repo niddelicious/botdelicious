@@ -1,16 +1,15 @@
 import asyncio
 import logging
-from dotmap import DotMap
 import simpleobsws
 from AsyncioThread import AsyncioThread
 
-from helpers.AbstractModule import BotdeliciousModule
-from helpers.ConfigManager import ConfigManager
-from helpers.Enums import ModuleStatus
-from helpers.Enums import ModuleRole
-from helpers.SessionData import SessionData
-from modules.Event import EventModule
-from helpers.Dataclasses import OBSText
+from Modules.BotdeliciousModule import BotdeliciousModule
+from Controllers.ConfigController import ConfigController
+from Helpers.Enums import ModuleStatus
+from Helpers.Enums import ModuleRole
+from Helpers.SessionData import SessionData
+from Modules.EventModule import EventModule
+from Helpers.Dataclasses import OBSText
 
 
 class OBSModule(BotdeliciousModule):
@@ -29,7 +28,7 @@ class OBSModule(BotdeliciousModule):
 
     async def start(self):
         self.set_status(ModuleStatus.RUNNING)
-        self.config = getattr(ConfigManager._config, self._name)
+        self.config = getattr(ConfigController._config, self._name)
         parameters = simpleobsws.IdentificationParameters()
         parameters.eventSubscriptions = (1 << 0) | (1 << 2) | (1 << 6)
         self.ws = simpleobsws.WebSocketClient(
