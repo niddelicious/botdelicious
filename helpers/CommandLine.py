@@ -99,6 +99,10 @@ class CommandLine:
                 AsyncioThread.run_coroutine(
                     EventModule.queue_event(event="fire")
                 )
+            if command[5:] == "tune":
+                AsyncioThread.run_coroutine(
+                    EventModule.queue_event(event="tune")
+                )
             if command[5:] == "midjourney":
                 AsyncioThread.run_coroutine(
                     EventModule.queue_event(

@@ -128,12 +128,16 @@ class CommandsCog(commands.Cog):
                 f"Available lights: react [1-12] | effect [1-5] | color [0-255] [0-255] [0-255]"
             )
 
-    @commands.command(
-        name="fire", aliases=["flame", "flames", "lit", "tune", "jam"]
-    )
+    @commands.command(name="fire", aliases=["flame", "flames", "lit"])
     async def fire(self, ctx: commands.Context):
         await EventModule.queue_event(
             event="fire",
+        )
+
+    @commands.command(name="tune", aliases=["tune", "jam"])
+    async def tune(self, ctx: commands.Context):
+        await EventModule.queue_event(
+            event="tune",
         )
 
     @commands.command(name="home", aliases=["primary", "back", "dj"])
@@ -143,7 +147,14 @@ class CommandsCog(commands.Cog):
             scene_name="Scene: Main",
         )
 
-    @commands.command(name="midjourney", aliases=["ai", "mj", "imagine"])
+    @commands.command(name="collab", aliases=["duo", "collaboration", "duet"])
+    async def home(self, ctx: commands.Context):
+        await EventModule.queue_event(
+            event="switch_scene",
+            scene_name="Scene: Collab",
+        )
+
+    @commands.command(name="midjourney", aliases=["aiphoto", "mj", "imagine"])
     async def midjourney(self, ctx: commands.Context):
         await EventModule.queue_event(
             event="switch_scene",
@@ -259,3 +270,37 @@ class CommandsCog(commands.Cog):
             await self.generic_shoutout(ctx, username)
         else:
             await self.not_found_shoutout(ctx)
+
+    @commands.command(name="hug", aliases=["squeeze", "pounce"])
+    async def hug(self, ctx: commands.Context):
+        target = Utilities.find_username(ctx.message.content)
+        if target:
+            hug_variations = [
+                f"🤗 Hey @{target}, @{ctx.author.name} is sending you a warm virtual hug! Embrace the love and pass it on to someone else in chat! 💕",
+                f"Awww, @{ctx.author.name} wants to give you a cozy hug, @{target}! 🥰 Don't forget to return the favor and share some positive vibes in the chat! 🌟",
+                f"😊 Look at that, @{target}! @{ctx.author.name} is wrapping their virtual arms around you for a big ol' hug! Feel the love and keep the good times rolling! 🎉",
+                f"@{target}, you've just been hugged by @{ctx.author.name}! 🤗 Enjoy the embrace and remember, it's a hug-it-forward kind of day in chat! 💖",
+                f"What a lovely moment, @{ctx.author.name} just sent a warm hug your way, @{target}! 🥰 Cherish the kindness and make sure to spread it around! ✨",
+            ]
+
+            await ctx.send(random.choice(hug_variations))
+        else:
+            await ctx.send(
+                f"🤗 @{ctx.author.name} wraps their arms around themselves 🤗"
+            )
+
+    @commands.command(name="lick", aliases=["lickitylick"])
+    async def lick(self, ctx: commands.Context):
+        target = self.bot.findUsername(ctx.message.content)
+        if target:
+            lickVariations = [
+                f"👅 @{ctx.author.name} puts their tongue on @{target}. Yuck.",
+                f"@{ctx.author.name} is cosplaying 🐶, and @{target} gets a slobbering",
+                f"Are we sure @{target} consents to @{ctx.author.name} licking them 🤔",
+                f"Don't ask us why, but @{ctx.author.name} is trying to taste @{target} 😝",
+            ]
+            await ctx.send(random.choice(lickVariations))
+        else:
+            await ctx.send(
+                f"@{ctx.author.name} just wants a taste. Best we can offer is themselves. Knock yourself out."
+            )

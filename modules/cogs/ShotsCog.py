@@ -114,7 +114,7 @@ class ShotsCog(commands.Cog):
                 f"✅ ACCEPTED! @{ctx.author.name} IS IN! LESSGO! 🥃 Shots all around! 🥃 20 seconds!"
             )
             await asyncio.sleep(10)
-            await ctx.send(f"🥃 10 cons")
+            await ctx.send(f"🥃 10 seconds")
             await asyncio.sleep(5)
             await ctx.send(f"🥃 5 seconds")
             await asyncio.sleep(2)
@@ -124,7 +124,9 @@ class ShotsCog(commands.Cog):
             await asyncio.sleep(1)
             await ctx.send(f"🥃 1")
             await asyncio.sleep(1)
-            await ctx.send(f"🍻🥃 CHEERS! 🥃 🍻{' '.join([f'@{name} 🍻' for name in self._drinkers])}")
+            await ctx.send(
+                f"🍻🥃 CHEERS! 🥃 🍻{' '.join([f'@{name} 🍻' for name in self._drinkers])}"
+            )
             self._shots += 1
             self._shot_taken = True
             self.move_drinkers()
@@ -168,19 +170,22 @@ class ShotsCog(commands.Cog):
 
     @commands.command(name="timertest")
     async def timertest(self, ctx: commands.Context):
-        await ctx.send(f"Test timer started!")
-        await Timer.start("Test", 3, self._test, ctx=ctx)
+        if ctx.author.is_broadcaster:
+            await ctx.send(f"Test timer started!")
+            await Timer.start("Test", 3, self._test, ctx=ctx)
 
     @commands.command(name="canceltest")
     async def canceltest(self, ctx: commands.Context):
-        await ctx.send(f"Cancel timer started!")
-        await Timer.start("Cancel test", 10, self._test, ctx=ctx)
-        await asyncio.sleep(2)
-        Timer.cancel("Cancel test")
-        await ctx.send(f"Cancel timer canceled!")
+        if ctx.author.is_broadcaster:
+            await ctx.send(f"Cancel timer started!")
+            await Timer.start("Cancel test", 10, self._test, ctx=ctx)
+            await asyncio.sleep(2)
+            Timer.cancel("Cancel test")
+            await ctx.send(f"Cancel timer canceled!")
 
     async def _test(self, ctx: commands.Context):
-        await ctx.send(f"Test timer done!")
+        if ctx.author.is_broadcaster:
+            await ctx.send(f"Test timer done!")
 
     @commands.command(
         name="reopenbar", aliases=["reopen", "thirsty", "alcoholic"]

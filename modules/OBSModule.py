@@ -403,6 +403,14 @@ class OBSModule(BotdeliciousModule):
         )
         await asyncio.sleep(10)
 
+    async def event_tune(self):
+        await self.call_toggle_filter(
+            source_name="Overlay: Tune",
+            filter_name="Show",
+            filter_enabled=True,
+        )
+        await asyncio.sleep(10)
+
     async def event_new_track(self):
         if self._name == "podcast":
             await self.eventTriggerSlideAnimationThenUpdateSmallTrackInfo()

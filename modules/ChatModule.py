@@ -1,5 +1,6 @@
 import asyncio
 import json
+import random
 import re
 import requests
 import logging
@@ -118,6 +119,16 @@ class _TwitchBot(commands.Bot):
                 avatar_url=avatar_url,
             )
         )
+        follow_variations = [
+            f"Thank you for following, @{payload.data.user.name}. I hope you enjoy your stay. Welcome!",
+            f"@{payload.data.user.name} rolled to smash that follow button and got a Nat.20.",
+            f"Seems like @{payload.data.user.name} is moving and grooving. Welcome in!",
+            f"Hey @{payload.data.user.name}! Appreciate that follow. Hopefully it'll be worth it.",
+            f"We're all just gonna assume that @{payload.data.user.name} hit the wrong button.",
+        ]
+        await self.send_message_to_channel(
+            "niddelicious", random.choice(follow_variations)
+        )
 
     async def event_eventsub_notification_raid(
         self, payload: eventsub.ChannelRaidData
@@ -136,6 +147,10 @@ class _TwitchBot(commands.Bot):
                 count=payload.data.viewer_count,
                 avatar_url=avatar_url,
             )
+        )
+        await self.send_message_to_channel(
+            "niddelicious",
+            f"A raid has arrived! @{payload.data.raider.name} and {payload.data.viewer_count} of their friends just joined in. Welcome everyone, I trust you had a good stream and I hope we can provide continued good times. Enjoy!",
         )
 
     async def chat(self, channel, message):

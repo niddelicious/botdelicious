@@ -156,9 +156,16 @@ class EventModule(BotdeliciousModule):
 
     @classmethod
     async def handle_fire(cls, *args, **kwargs):
-        logging.debug("Fire:")
+        logging.debug("Fire!")
         await asyncio.gather(
             *[instance.event_fire() for instance in cls._obs_instances]
+        )
+
+    @classmethod
+    async def handle_tune(cls, *args, **kwargs):
+        logging.debug("Tune!")
+        await asyncio.gather(
+            *[instance.event_tune() for instance in cls._obs_instances]
         )
 
     @classmethod
