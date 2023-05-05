@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from typing import Callable, Dict, List
 import time
 
@@ -8,12 +9,19 @@ class Timer:
     _timer_start_times: Dict[str, float] = {}
 
     @classmethod
-    async def _timer_task(cls, name: str, duration: float, callback: Callable):
+    async def _timer_task(
+        cls, name: str, duration: float, callback: Callable, *args, **kwargs
+    ):
         cls._timer_start_times[name] = time.time()
-        await asyncio.sleep(duration)
-        callback()
-        del cls._timers[name]
-        del cls._timer_start_times[name]
+        try:
+            await asyncio.sleep(duration)
+        except asyncio.CancelledError:
+            logging.debug(f"Timer '{name}' was cancelled.")
+            pass
+        else:
+            await callback(*args, **kwargs)
+            del cls._timers[name]
+            del cls._timer_start_times[name]
 
     @classmethod
     async def start(
@@ -21,14 +29,18 @@ class Timer:
         name: str,
         duration: float,
         callback: Callable,
+        *args,
         denied_callback: Callable = None,
+        **kwargs,
     ):
         if name in cls._timers:
             if denied_callback:
                 denied_callback()
             return
 
-        task = asyncio.create_task(cls._timer_task(name, duration, callback))
+        task = asyncio.create_task(
+            cls._timer_task(name, duration, callback, *args, **kwargs)
+        )
         cls._timers[name] = task
 
     @classmethod
@@ -71,3 +83,12 @@ class Timer:
             )
 
         return running_timers
+
+    @classmethod
+    def cancel(cls, name: str) -> None:
+        if name in cls._timers:
+            cls._timers[name].cancel()
+            del cls._timers[name]
+            del cls._timer_start_times[name]
+        else:
+            raise ValueError(f"No timer with the name '{name}' is running.")

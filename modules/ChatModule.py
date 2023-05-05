@@ -12,9 +12,9 @@ from Controllers.ConfigController import ConfigController
 from Helpers.Enums import ModuleStatus
 from Helpers.SessionData import SessionData
 from Modules.EventModule import EventModule
-from Modules.cogs.CommandsCog import CommandsCog
+from Modules.Cogs.CommandsCog import CommandsCog
 from Modules.OpenaiModule import OpenaiModule
-from Modules.cogs.TimersCog import TimersCog
+from Modules.Cogs.ShotsCog import ShotsCog
 
 
 class _TwitchBot(commands.Bot):
@@ -38,7 +38,7 @@ class _TwitchBot(commands.Bot):
 
         self._pattern = f"@?{self.config.bot_name}[:;, ]"
         self.add_cog(CommandsCog(self))
-        self.add_cog(TimersCog(self))
+        self.add_cog(ShotsCog(self))
 
     async def event_ready(self):
         logging.info(f"Logged in as | {self.nick}")
