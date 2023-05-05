@@ -4,9 +4,7 @@ import random
 import string
 
 import requests
-from Enums import TwinklyReact
-
-from Helpers.Enums import TwinklyEffect
+from Helpers.Enums import TwinklyEffect, TwinklyReact
 
 
 class TwinklyController:

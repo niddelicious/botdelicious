@@ -1,9 +1,8 @@
 import asyncio
 import logging
-from Enums import TwinklyReact
 
 from Modules.BotdeliciousModule import BotdeliciousModule
-from Helpers.Enums import ModuleStatus, TwinklyEffect
+from Helpers.Enums import ModuleStatus, TwinklyEffect, TwinklyReact
 from Controllers.ConfigController import ConfigController
 from Controllers.TwinklyController import TwinklyController
 
