@@ -2,7 +2,12 @@ import asyncio
 import logging
 
 from Modules.BotdeliciousModule import BotdeliciousModule
-from Helpers.Enums import ModuleStatus, TwinklyEffect, TwinklyReact
+from Helpers.Enums import (
+    ModuleStatus,
+    TwinklyEffect,
+    TwinklyReact,
+    TwinklyPlaylist,
+)
 from Controllers.ConfigController import ConfigController
 from Controllers.TwinklyController import TwinklyController
 
@@ -44,6 +49,21 @@ class TwinklyModule(BotdeliciousModule):
         await asyncio.gather(
             *[
                 light.run_twinkly_effect(effect, time)
+                for light in cls.get_lights()
+            ],
+        )
+
+    @classmethod
+    async def playlist(
+        cls,
+        effect: TwinklyPlaylist = TwinklyPlaylist.RAINBOW_WAVES,
+        time: int = 10,
+        *args,
+        **kwargs,
+    ):
+        await asyncio.gather(
+            *[
+                light.run_twinkly_playlist(effect, time)
                 for light in cls.get_lights()
             ],
         )

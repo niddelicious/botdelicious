@@ -484,7 +484,7 @@ class OBSModule(BotdeliciousModule):
                 input_name="Shoutout username", text=username
             ),
             self.call_update_text(input_name="Shoutout message", text=message),
-            self.call_update_url(input_name="Shoutout avatar", url=avatar_url),
+            self.call_update_url(input_name="Image avatar", url=avatar_url),
         )
         await self.call_toggle_filter(
             source_name="Shoutout", filter_name="Slide", filter_enabled=True

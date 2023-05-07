@@ -5,7 +5,7 @@ import shutil
 from dotmap import DotMap
 from AsyncioThread import AsyncioThread
 from Modules.BotdeliciousModule import BotdeliciousModule
-from Helpers.Enums import ModuleStatus, TwinklyEffect
+from Helpers.Enums import ModuleStatus, TwinklyEffect, TwinklyPlaylist
 from Helpers.SessionData import SessionData
 from Modules.TwinklyModule import TwinklyModule
 
@@ -158,14 +158,16 @@ class EventModule(BotdeliciousModule):
     async def handle_fire(cls, *args, **kwargs):
         logging.debug("Fire!")
         await asyncio.gather(
-            *[instance.event_fire() for instance in cls._obs_instances]
+            *[instance.event_fire() for instance in cls._obs_instances],
+            TwinklyModule.playlist(TwinklyPlaylist.FIRE, 10),
         )
 
     @classmethod
     async def handle_tune(cls, *args, **kwargs):
         logging.debug("Tune!")
         await asyncio.gather(
-            *[instance.event_tune() for instance in cls._obs_instances]
+            *[instance.event_tune() for instance in cls._obs_instances],
+            TwinklyModule.playlist(TwinklyPlaylist.RAINBOW_WAVES, 10),
         )
 
     @classmethod
@@ -179,7 +181,7 @@ class EventModule(BotdeliciousModule):
                 )
                 for instance in cls._obs_instances
             ],
-            TwinklyModule.effect(TwinklyEffect.RAINBOW, 8),
+            TwinklyModule.playlist(TwinklyPlaylist.LOVE, 8),
         )
 
     @classmethod
@@ -194,7 +196,7 @@ class EventModule(BotdeliciousModule):
                 )
                 for instance in cls._obs_instances
             ],
-            TwinklyModule.effect(TwinklyEffect.COLLIDE, 8),
+            TwinklyModule.playlist(TwinklyPlaylist.GREEN_WAVES, 8),
         )
 
     @classmethod

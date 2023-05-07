@@ -106,7 +106,7 @@ class CommandsCog(commands.Cog):
         elif splits[1] == "react" and splits[2].isnumeric():
             react_id = int(splits[2]) - 1
             if 0 <= react_id < len(TwinklyReact):
-                react = TwinklyReact(react_id)
+                react = TwinklyReact.id(react_id)
             else:
                 react = random.choice(list(TwinklyReact))
             await TwinklyModule.react(react)
@@ -134,7 +134,7 @@ class CommandsCog(commands.Cog):
             event="fire",
         )
 
-    @commands.command(name="tune", aliases=["tune", "jam"])
+    @commands.command(name="tune", aliases=["tuna", "jam"])
     async def tune(self, ctx: commands.Context):
         await EventModule.queue_event(
             event="tune",
@@ -304,3 +304,9 @@ class CommandsCog(commands.Cog):
             await ctx.send(
                 f"@{ctx.author.name} just wants a taste. Best we can offer is themselves. Knock yourself out."
             )
+
+    @commands.command(name="lineup", aliases=["schedule", "times"])
+    async def lineup(self, ctx: commands.Context):
+        await ctx.send(
+            f"Just Because Raid Train (CET TIME) 🎧 10:00 twitch.tv/alienisadj 🎧 11:00 twitch.tv/steossi_beats 🎧 13:00 twitch.tv/tweora 🎧 15:00 twitch.tv/adrienLT_DJ 🎧 17:00 twitch.tv/niddelicious 🎧 19:00 twitch.tv/kamikazemixtape 🎧 21:00 twitch.tv/Mookittyy 🎧 23:00 twitch.tv/Antipode51 🎧 01:00 twitch.tv/DJGregElliott 🎧"
+        )

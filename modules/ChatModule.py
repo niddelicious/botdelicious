@@ -35,6 +35,7 @@ class _TwitchBot(commands.Bot):
             client=self,
             webhook_secret=self.config.event_sub.secret,
             callback_route=self.config.event_sub.callback,
+            token=self.config.event_sub.token,
         )
 
         self._pattern = f"@?{self.config.bot_name}[:;, ]"
@@ -111,7 +112,7 @@ class _TwitchBot(commands.Bot):
         logging.debug(f"New follower!")
         logging.debug(payload.data.user.name)
         SessionData.add_follower(follower=payload.data.user.name)
-        avatar_url = await self.fetch_user_info(payload.data.user.name)
+        avatar_url = await self.fetch_user_avatar(payload.data.user.name)
         AsyncioThread.run_coroutine(
             EventModule.queue_event(
                 event="new_follower",
@@ -130,6 +131,11 @@ class _TwitchBot(commands.Bot):
             "niddelicious", random.choice(follow_variations)
         )
 
+    async def event_eventsub_notification_followV2(
+        self, payload: eventsub.ChannelFollowData
+    ):
+        await self.event_eventsub_notification_follow(payload)
+
     async def event_eventsub_notification_raid(
         self, payload: eventsub.ChannelRaidData
     ):
@@ -139,7 +145,7 @@ class _TwitchBot(commands.Bot):
         SessionData.add_raid(
             raider=payload.data.raider.name, size=payload.data.viewer_count
         )
-        avatar_url = await self.fetch_user_info(payload.data.user.name)
+        avatar_url = await self.fetch_user_avatar(payload.data.raider.name)
         AsyncioThread.run_coroutine(
             EventModule.queue_event(
                 event="raid",
@@ -205,13 +211,19 @@ class _TwitchBot(commands.Bot):
                 channel.name, f"Bye World! ({current_time_string})"
             )
 
-    async def fetch_user_info(self, username):
+    async def fetch_user_avatar(self, username):
         fetch_url = f"https://api.twitch.tv/helix/users?login={username}"
         headers = {
             "Client-Id": f"{self.config.client_id}",
             "Authorization": f"Bearer {self.config.access_token}",
         }
         response = requests.get(url=fetch_url, headers=headers)
+        content = json.loads(response.content)
+        if len(content["data"]) < 1:
+            logging.warning(
+                f"Could not fetch avatar for user {username}. Response: {content}"
+            )
+            return await self.fetch_user_avatar("botdelicious")
         return json.loads(response.content)["data"][0]["profile_image_url"]
 
 

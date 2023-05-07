@@ -61,3 +61,14 @@ class TwinklyReact(Enum):
     @classmethod
     def index(cls, member):
         return list(cls).index(member)
+
+    @classmethod
+    def id(cls, index: int = 0):
+        return list(cls)[index]
+
+
+class TwinklyPlaylist(Enum):
+    FIRE = 0
+    LOVE = 1
+    GREEN_WAVES = 2
+    RAINBOW_WAVES = 3

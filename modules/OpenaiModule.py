@@ -43,7 +43,7 @@ class OpenaiModule(BotdeliciousModule):
             ConversationEntry(
                 "system",
                 cls._prompt.format(conversation_group=conversation_group),
-                "niddelicious",
+                "Twitch",
             )
         ]
         cls._conversation_status[conversation_group] = ConversationStatus.IDLE
@@ -54,7 +54,7 @@ class OpenaiModule(BotdeliciousModule):
         conversation_prompt = (
             prompt
             if prompt
-            else cls._prompt.format(conversation_group=conversation_group)
+            else cls._prompt.format(username=conversation_group)
         )
         cls._conversations[conversation_group] = [
             ConversationEntry("system", conversation_prompt, "niddelicious")
@@ -101,7 +101,7 @@ class OpenaiModule(BotdeliciousModule):
         cls._conversation_status[conversation_group] = status
 
     @classmethod
-    async def request_chat(cls, messages):
+    async def request_chat(cls, messages, assistant_message: str = None):
         """
         $0.002 per 1000 tokens using gpt-3.5-turbo
         Which is 1/10th of the cost of text-davinci-003
@@ -109,6 +109,8 @@ class OpenaiModule(BotdeliciousModule):
         """
         try:
             json_messages = [message.__dict__ for message in messages]
+            if assistant_message:
+                json_messages.append(assistant_message.__dict__)
             response = await openai.ChatCompletion.acreate(
                 model="gpt-3.5-turbo",
                 messages=json_messages,
@@ -148,7 +150,15 @@ class OpenaiModule(BotdeliciousModule):
         if cls.get_conversation_status(channel) == ConversationStatus.IDLE:
             cls.set_conversation_status(channel, ConversationStatus.OCCUPIED)
             cls.add_message(channel, username, message)
-            response = await cls.request_chat(cls.get_conversation(channel))
+            assistant_message = ConversationEntry(
+                "assistant",
+                f"Please respond to @{username}'s last message: '{message}'. Consider the context and adress them directly. Do not use hashtags",
+                "Twitch",
+            )
+            response = await cls.request_chat(
+                cls.get_conversation(channel),
+                assistant_message=assistant_message,
+            )
             if response:
                 SessionData.add_tokens(
                     tokens=int(response["usage"]["total_tokens"])

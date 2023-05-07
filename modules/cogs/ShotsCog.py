@@ -129,6 +129,7 @@ class ShotsCog(commands.Cog):
             )
             self._shots += 1
             self._shot_taken = True
+            self._shot_accepted = False
             self.move_drinkers()
             await Timer.start(
                 "Reopen the bar", 15 * 60, self._reopen_the_bar, ctx=ctx

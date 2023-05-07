@@ -4,7 +4,7 @@ import random
 import string
 
 import requests
-from Helpers.Enums import TwinklyEffect, TwinklyReact
+from Helpers.Enums import TwinklyEffect, TwinklyReact, TwinklyPlaylist
 
 
 class TwinklyController:
@@ -75,6 +75,26 @@ class TwinklyController:
             await self.reset_lights()
         else:
             self.set_settings("effect", {"effect": effect})
+
+    @_handshake
+    async def run_twinkly_playlist(
+        self,
+        effect: TwinklyPlaylist = TwinklyPlaylist.RAINBOW_WAVES,
+        time: int = 10,
+    ):
+        playlist_item = {"id": effect.value}
+        effect = {"mode": "playlist"}
+        requests.post(
+            self.unit_url + "led/mode", json=effect, headers=self.headers
+        )
+        requests.post(
+            self.unit_url + "playlist/current",
+            json=playlist_item,
+            headers=self.headers,
+        )
+
+        await asyncio.sleep(time)
+        await self.reset_lights()
 
     @_handshake
     async def run_twinkly_react(
