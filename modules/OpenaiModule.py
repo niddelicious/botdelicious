@@ -69,9 +69,11 @@ class OpenaiModule(BotdeliciousModule):
             del cls._conversation_status[conversation_group]
 
     @classmethod
-    def add_message(cls, conversation_group, username, message):
+    def add_message(
+        cls, conversation_group, username, message, role: str = "user"
+    ):
         cls._conversations[conversation_group].append(
-            ConversationEntry("user", message, username)
+            ConversationEntry(role, message, username)
         )
         if len(cls._conversations[conversation_group]) > 15:
             del cls._conversations[conversation_group][1:3]
@@ -101,7 +103,9 @@ class OpenaiModule(BotdeliciousModule):
         cls._conversation_status[conversation_group] = status
 
     @classmethod
-    async def request_chat(cls, messages, assistant_message: str = None):
+    async def request_chat(
+        cls, messages, assistant_message: str = None, chaos: float = 1.0
+    ):
         """
         $0.002 per 1000 tokens using gpt-3.5-turbo
         Which is 1/10th of the cost of text-davinci-003
@@ -114,6 +118,7 @@ class OpenaiModule(BotdeliciousModule):
             response = await openai.ChatCompletion.acreate(
                 model="gpt-3.5-turbo",
                 messages=json_messages,
+                temperature=chaos,
             )
             logging.info(response)
             return response
@@ -236,3 +241,55 @@ class OpenaiModule(BotdeliciousModule):
 
         SessionData.add_tokens(tokens=int(response["usage"]["total_tokens"]))
         return success, username, reply, avatar_url
+
+    @classmethod
+    async def rgb_intepretor(cls, content: str = None, author: str = None):
+        if cls.get_status() != ModuleStatus.RUNNING:
+            return None
+
+        system_name = "ai_rgb_color_converter"
+        system_prompt = "You are a RGB color converting bot, taking a description and translating it to a json format: {'red': value_red, 'green': value_green, 'blue': value_blue}. Do not answer in any other way. If no color is appropriate, pick a random one. Do not include anything else in your reply."
+        color_prompt = f"Convert the following: {content}"
+        cls.reprompt_conversation(system_name, system_prompt)
+        cls.add_message(system_name, "niddelicious", color_prompt)
+        response = await cls.request_chat(
+            cls.get_conversation(system_name), chaos=0
+        )
+        reply = response["choices"][0]["message"]["content"]
+        SessionData.add_tokens(tokens=int(response["usage"]["total_tokens"]))
+
+        colors = Utilities.extract_colors(reply)
+        return colors
+
+    @classmethod
+    async def command_intepretor(cls, content: str = None, author: str = None):
+        if cls.get_status() != ModuleStatus.RUNNING:
+            return None
+
+        system_name = "ai_command_generator"
+        system_prompt = "You are a Twitch Command Message Generator named botdelicious. You are working for niddelicious, a DJ streamer. Your job is to reply to !commands from users in chat. You will create excited and engaging messages appropriate for the !command that is provided to you. Keep messages sassy and below 490 characters."
+        cls.reprompt_conversation(system_name, system_prompt)
+        command_prompt = f"@{author}: {content}"
+        cls.add_message(system_name, author, command_prompt)
+        response = await cls.request_chat(cls.get_conversation(system_name))
+        reply = response["choices"][0]["message"]["content"]
+        SessionData.add_tokens(tokens=int(response["usage"]["total_tokens"]))
+
+        reply = Utilities.clean_ai_replies(reply)
+        return reply
+
+    @classmethod
+    async def event_intepretor(cls, content: str = None):
+        if cls.get_status() != ModuleStatus.RUNNING:
+            return None
+
+        system_name = "ai_event_generator"
+        system_prompt = "You are a Twitch Event Message Generator in the chat of niddelicious, a DJ streamer. You will create extensive, elaborate and hyped messages appropriate for the event that is provided to you. Keep messages sassy and below 490 characters."
+        cls.reprompt_conversation(system_name, system_prompt)
+        event_prompt = f"{content}"
+        cls.add_message(system_name, "Twitch", event_prompt)
+        response = await cls.request_chat(cls.get_conversation(system_name))
+        reply = response["choices"][0]["message"]["content"]
+        SessionData.add_tokens(tokens=int(response["usage"]["total_tokens"]))
+        reply = Utilities.clean_ai_replies(reply)
+        return reply

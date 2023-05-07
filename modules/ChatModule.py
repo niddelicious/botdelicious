@@ -12,6 +12,8 @@ from Modules.BotdeliciousModule import BotdeliciousModule
 from Controllers.ConfigController import ConfigController
 from Helpers.Enums import ModuleStatus
 from Helpers.SessionData import SessionData
+from Modules.Cogs.EventCog import EventCog
+from Modules.Cogs.LightsCog import LightsCog
 from Modules.EventModule import EventModule
 from Modules.Cogs.CommandsCog import CommandsCog
 from Modules.OpenaiModule import OpenaiModule
@@ -39,8 +41,10 @@ class _TwitchBot(commands.Bot):
         )
 
         self._pattern = f"@?{self.config.bot_name}[:;, ]"
-        self.add_cog(CommandsCog(self))
-        self.add_cog(ShotsCog(self))
+        self.add_cog(CommandsCog(bot=self))
+        self.add_cog(ShotsCog())
+        self.add_cog(LightsCog())
+        self.add_cog(EventCog())
 
     async def event_ready(self):
         logging.info(f"Logged in as | {self.nick}")
@@ -120,15 +124,12 @@ class _TwitchBot(commands.Bot):
                 avatar_url=avatar_url,
             )
         )
-        follow_variations = [
-            f"Thank you for following, @{payload.data.user.name}. I hope you enjoy your stay. Welcome!",
-            f"@{payload.data.user.name} rolled to smash that follow button and got a Nat.20.",
-            f"Seems like @{payload.data.user.name} is moving and grooving. Welcome in!",
-            f"Hey @{payload.data.user.name}! Appreciate that follow. Hopefully it'll be worth it.",
-            f"We're all just gonna assume that @{payload.data.user.name} hit the wrong button.",
-        ]
+        message = await OpenaiModule.event_intepretor(
+            f"@{payload.data.user.name} followed"
+        )
         await self.send_message_to_channel(
-            "niddelicious", random.choice(follow_variations)
+            channel="niddelicious",
+            message=message,
         )
 
     async def event_eventsub_notification_followV2(
@@ -154,9 +155,12 @@ class _TwitchBot(commands.Bot):
                 avatar_url=avatar_url,
             )
         )
+        message = await OpenaiModule.event_intepretor(
+            f"@{payload.data.raider.name} raided with {payload.data.viewer_count} friends"
+        )
         await self.send_message_to_channel(
-            "niddelicious",
-            f"A raid has arrived! @{payload.data.raider.name} and {payload.data.viewer_count} of their friends just joined in. Welcome everyone, I trust you had a good stream and I hope we can provide continued good times. Enjoy!",
+            channel="niddelicious",
+            message=message,
         )
 
     async def chat(self, channel, message):

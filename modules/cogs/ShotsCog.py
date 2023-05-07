@@ -6,9 +6,8 @@ from Helpers.Timer import Timer
 
 
 class ShotsCog(commands.Cog):
-    def __init__(self, bot: commands.Bot):
+    def __init__(self):
         logging.debug(f"Adding shots/cogs")
-        self.bot = bot
         self._bar_open = False
         self._shots = 0
         self._shot_requested = False
@@ -48,15 +47,13 @@ class ShotsCog(commands.Cog):
     @commands.command(name="shot", aliases=["shots", "drink", "drinks"])
     async def shot(self, ctx: commands.Context):
         if not self._bar_open:
+            self._knocks += 1
             if self._knocks >= 3:
                 await ctx.send(
                     f"@{ctx.author.name} Listen, the bar isn't open. Have some water 🚰 Get help. Call AA! 🚑"
                 )
                 self._knocks = 0
-                return
-            else:
-                self._knocks += 1
-                return
+            return
         if self._shot_requested:
             await ctx.send(
                 f"Hold your horses, @{ctx.author.name}! The last challenge from @{self._shot_requested} has not been answered yet!"
@@ -77,6 +74,8 @@ class ShotsCog(commands.Cog):
 
     @commands.command(name="deny", aliases=["denied", "nope", "no"])
     async def deny(self, ctx: commands.Context):
+        if not self._bar_open:
+            return
         if not self._shot_requested:
             await ctx.send(
                 f"Sure @{ctx.author.name}, but there is no challenge to deny. 👎 What's with the negativity? 👎"
@@ -101,6 +100,8 @@ class ShotsCog(commands.Cog):
 
     @commands.command(name="accept", aliases=["accepted", "yes", "yep"])
     async def accept(self, ctx: commands.Context):
+        if not self._bar_open:
+            return
         if not self._shot_requested:
             await ctx.send(
                 f"Sure @{ctx.author.name}, but there is no challenge to accept. 🥴 So eager, you drunkard 🥴"
@@ -198,6 +199,21 @@ class ShotsCog(commands.Cog):
             await ctx.send(f"🔓 I'm not gonna carry you home 🥃")
             Timer.cancel("Reopen the bar")
             self._shot_taken = False
+        elif self._bar_open:
+            await ctx.send(
+                f"@{ctx.author.name} It's already open 🥃 Maybe you just shouldn't have more? 🥴 "
+            )
+
+    @commands.command(name="resetbar", aliases=["walkstraight"])
+    async def reopenbar(self, ctx: commands.Context):
+        if not ctx.author.is_broadcaster:
+            return
+        if self._shot_taken:
+            Timer.cancel("Reopen the bar")
+            self._shot_taken = False
+            self._shots = 0
+            self._shot_accepted = False
+            self._shot_requested = False
         elif self._bar_open:
             await ctx.send(
                 f"@{ctx.author.name} It's already open 🥃 Maybe you just shouldn't have more? 🥴 "
