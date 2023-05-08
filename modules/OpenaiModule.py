@@ -194,11 +194,7 @@ class OpenaiModule(BotdeliciousModule):
         twitch_config = ConfigController.get("chat")
         username = Utilities.find_username(content)
         if username:
-            user = await Utilities.get_user_info(
-                username=username,
-                client_id=twitch_config.client_id,
-                access_token=twitch_config.access_token,
-            )
+            user = await Utilities.get_twitch_user_info(username=username)
         else:
             user = None
             username = None
@@ -214,18 +210,14 @@ class OpenaiModule(BotdeliciousModule):
             user_id = user["id"]
             avatar_url = user["profile_image_url"]
             user_description = user["description"]
-            channel_info = await Utilities.get_channel_info(
-                user_id=user_id,
-                client_id=twitch_config.client_id,
-                access_token=twitch_config.access_token,
+            channel_info = await Utilities.get_twitch_channel_info(
+                user_id=user_id
             )
             game_name = channel_info["game_name"]
             title = channel_info["title"]
             tags = channel_info["tags"]
-            stream_info = await Utilities.get_live_stream_info(
-                user_id=user_id,
-                client_id=twitch_config.client_id,
-                access_token=twitch_config.access_token,
+            stream_info = await Utilities.get_twitch_live_stream_info(
+                user_id=user_id
             )
             live_message = (
                 "is currently live and is"

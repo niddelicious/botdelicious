@@ -1,6 +1,8 @@
 import re
 import requests
 
+from Controllers.ConfigController import ConfigController
+
 
 class Utilities:
     @classmethod
@@ -16,12 +18,16 @@ class Utilities:
         return res.group(1)
 
     @classmethod
-    async def get_user_info(
+    def get_twitch_config(cls):
+        config = ConfigController.get_config("chat")
+        return config.client_id, config.client_secret, config.access_token
+
+    @classmethod
+    async def get_twitch_user_info(
         cls,
         username: str = None,
-        client_id: str = None,
-        access_token: str = None,
     ):
+        client_id, client_secret, access_token = cls.get_twitch_config()
         url = "https://api.twitch.tv/helix/users"
         headers = {
             "Client-ID": client_id,
@@ -34,12 +40,11 @@ class Utilities:
         return response.json()["data"][0]
 
     @classmethod
-    async def get_channel_info(
+    async def get_twitch_channel_info(
         cls,
         user_id: str = None,
-        client_id: str = None,
-        access_token: str = None,
     ):
+        client_id, client_secret, access_token = cls.get_twitch_config()
         url = f"https://api.twitch.tv/helix/channels?broadcaster_id={user_id}"
         headers = {
             "Client-ID": client_id,
@@ -49,12 +54,11 @@ class Utilities:
         return response.json()["data"][0]
 
     @classmethod
-    async def get_live_stream_info(
+    async def get_twitch_live_stream_info(
         cls,
         user_id: str = None,
-        client_id: str = None,
-        access_token: str = None,
     ):
+        client_id, client_secret, access_token = cls.get_twitch_config()
         url = "https://api.twitch.tv/helix/streams"
         headers = {
             "Client-ID": client_id,
