@@ -94,7 +94,8 @@ class OpenaiModule(BotdeliciousModule):
         if conversation_group not in cls._conversation_status:
             cls.start_conversation(conversation_group)
         logging.debug(
-            f"Conversation status for {conversation_group} is {cls._conversation_status[conversation_group]}"
+            f"Conversation status for {conversation_group}"
+            f" is {cls._conversation_status[conversation_group]}"
         )
         return cls._conversation_status[conversation_group]
 
@@ -157,7 +158,9 @@ class OpenaiModule(BotdeliciousModule):
             cls.add_message(channel, username, message)
             assistant_message = ConversationEntry(
                 "assistant",
-                f"Please respond to @{username}'s last message: '{message}'. Consider the context and adress them directly. Do not use hashtags",
+                f"Please respond to @{username}'s last message: '{message}'."
+                f" Consider the context and adress them directly."
+                f" Do not use hashtags",
                 "Twitch",
             )
             response = await cls.request_chat(
@@ -201,7 +204,10 @@ class OpenaiModule(BotdeliciousModule):
             username = None
         if not user:
             system_prompt = "Hype Twitch Streamer Shoutout Generator"
-            system_message = f"Give a snarky reply about how @{author} tried to shoutout @{username}, but that user doesn't exist."
+            system_message = (
+                f"Give a snarky reply about how @{author}"
+                f" tried to shoutout @{username}, but that user doesn't exist."
+            )
             avatar_url = None
             success = False
         else:
@@ -226,7 +232,17 @@ class OpenaiModule(BotdeliciousModule):
                 if stream_info
                 else "is currently not live, but was last seen"
             )
-            system_message = f"Write a shoutout for a Twitch streamer named {username} who {live_message} playing {game_name} with the stream title {title}. This is their description: {user_description}.  These are their tags: {tags}. Do not list the tags in the reply. Make sure to end the reply with their url: https://twitch.tv/{username}. Keep the reply under 490 characters."
+            system_message = (
+                f"Write a shoutout for a Twitch streamer named {username}"
+                f"who {live_message} playing {game_name}"
+                f" with the stream title {title}."
+                f"This is their description: {user_description}."
+                f"These are their tags: {tags}."
+                f"Do not list the tags in the reply."
+                f"Make sure to end the reply with their url:"
+                f"https://twitch.tv/{username}."
+                f"Keep the reply under 490 characters."
+            )
             success = True
 
         # If using completion instead of chat
@@ -248,7 +264,15 @@ class OpenaiModule(BotdeliciousModule):
             return None
 
         system_name = "ai_rgb_color_converter"
-        system_prompt = "You are a RGB color converting bot, taking a description and translating it to a json format: {'red': value_red, 'green': value_green, 'blue': value_blue}. Do not answer in any other way. If no color is appropriate, pick a random one. Do not include anything else in your reply."
+        system_prompt = (
+            "You are a RGB color converting bot,"
+            " taking a description and translating it"
+            "to a json format:"
+            "{'red': value_red, 'green': value_green, 'blue': value_blue}."
+            "Do not answer in any other way."
+            "If no color is appropriate, pick a random one."
+            "Do not include anything else in your reply."
+        )
         color_prompt = f"Convert the following: {content}"
         cls.reprompt_conversation(system_name, system_prompt)
         cls.add_message(system_name, "niddelicious", color_prompt)
@@ -267,7 +291,14 @@ class OpenaiModule(BotdeliciousModule):
             return None
 
         system_name = "ai_command_generator"
-        system_prompt = "You are a Twitch Command Message Generator named botdelicious. You are working for niddelicious, a DJ streamer. Your job is to reply to !commands from users in chat. You will create excited and engaging messages appropriate for the !command that is provided to you. Keep messages sassy and below 490 characters."
+        system_prompt = (
+            "You are a Twitch Command Message Generator named botdelicious."
+            "You are working for niddelicious, a DJ streamer."
+            "Your job is to reply to !commands from users in chat."
+            "You will create excited and engaging messages appropriate for"
+            "the !command that is provided to you."
+            "Keep messages sassy and below 490 characters."
+        )
         cls.reprompt_conversation(system_name, system_prompt)
         command_prompt = f"@{author}: {content}"
         cls.add_message(system_name, author, command_prompt)
@@ -284,7 +315,13 @@ class OpenaiModule(BotdeliciousModule):
             return None
 
         system_name = "ai_event_generator"
-        system_prompt = "You are a Twitch Event Message Generator in the chat of niddelicious, a DJ streamer. You will create extensive, elaborate and hyped messages appropriate for the event that is provided to you. Keep messages sassy and below 490 characters."
+        system_prompt = (
+            "You are a Twitch Event Message Generator"
+            "in the chat of niddelicious, a DJ streamer."
+            "You will create extensive, elaborate and hyped messages"
+            "appropriate for the event that is provided to you."
+            "Keep messages sassy and below 490 characters."
+        )
         cls.reprompt_conversation(system_name, system_prompt)
         event_prompt = f"{content}"
         cls.add_message(system_name, "Twitch", event_prompt)

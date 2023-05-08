@@ -68,6 +68,11 @@ class CommandLine:
             )
             logging.info(f"Log level set to {set_level}")
         if command.startswith("test"):
+            text_avatar_url = (
+                "https://static-cdn.jtvnw.net/jtv_user_pictures/"
+                "e6bb8945-a942-498c-9ce3-6fa5b6367085-profile_image"
+                "-300x300.png"
+            )
             if command[5:] == "moderator":
                 AsyncioThread.run_coroutine(
                     EventModule.queue_event(
@@ -80,7 +85,7 @@ class CommandLine:
                         event="shoutout",
                         username="shoutout_username",
                         message="Shoutout message to be displayed",
-                        avatar_url="https://static-cdn.jtvnw.net/jtv_user_pictures/e6bb8945-a942-498c-9ce3-6fa5b6367085-profile_image-300x300.png",
+                        avatar_url=text_avatar_url,
                     )
                 )
             if command[5:] == "track":
@@ -124,16 +129,16 @@ class CommandLine:
                     EventModule.queue_event(
                         event="new_follower",
                         username="new_follower_name",
-                        avatar_url="https://static-cdn.jtvnw.net/jtv_user_pictures/e6bb8945-a942-498c-9ce3-6fa5b6367085-profile_image-300x300.png",
+                        avatar_url=text_avatar_url,
                     )
                 )
             if command[5:] == "raid":
                 AsyncioThread.run_coroutine(
                     EventModule.queue_event(
                         event="raid",
-                        name="new_follower_name",
+                        name="new_raid_name",
                         count=256,
-                        avatar_url="https://static-cdn.jtvnw.net/jtv_user_pictures/e6bb8945-a942-498c-9ce3-6fa5b6367085-profile_image-300x300.png",
+                        avatar_url=text_avatar_url,
                     )
                 )
             if command[5:] == "credits":

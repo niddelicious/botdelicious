@@ -5,7 +5,7 @@ import requests
 class Utilities:
     @classmethod
     def find_username(cls, message):
-        twitch_username_pattern = "@(\w+)"
+        twitch_username_pattern = r"@(\w+)"
         res = re.search(twitch_username_pattern, message)
         if not res:
             res = message.split(" ")
@@ -68,7 +68,13 @@ class Utilities:
 
     @classmethod
     def extract_colors(cls, text: str):
-        pattern = r"^(?:.*)\{'red':\s*([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]),\s*'green':\s*([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]),\s*'blue':\s*([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\}(?:.*)$"
+        pattern = (
+            r"^(?:.*)\{'red':\s*"
+            r"([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]),\s*"
+            r"'green':\s*([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]),\s*"
+            r"'blue':\s*([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\}"
+            r"(?:.*)$"
+        )
         match = re.search(pattern, text)
 
         if match:

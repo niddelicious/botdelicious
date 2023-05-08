@@ -53,5 +53,9 @@ class LightsCog(commands.Cog):
                 )
         else:
             await ctx.send(
-                f"Available lights: react [1-12] | effect [1-5] | color [0-255] [0-255] [0-255] | ai [name or description]"
+                f"Available lights: "
+                f"react [1-12] | "
+                f"effect [1-5] | "
+                f"color [0-255] [0-255] [0-255] | "
+                f"ai [name or description]"
             )

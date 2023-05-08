@@ -18,7 +18,10 @@ class CommandsCog(commands.Cog):
     @commands.command(name="commands", aliases=["available", "help"])
     async def commands(self, ctx: commands.Context):
         await ctx.send(
-            f"Available commands: !video !lights !shoutout !hug !lurk !lick !shots | Or if you just want to chat or ask a question, message me directly in chat 🤖"
+            f"Available commands:"
+            f"!video !lights !shoutout !hug !lurk !lick !shots | "
+            f"Or if you just want to chat or ask a question, "
+            f"message me directly in chat 🤖"
         )
 
     @commands.command(name="echo")
@@ -61,10 +64,18 @@ class CommandsCog(commands.Cog):
 
     async def generic_shoutout(self, ctx, username):
         shoutout_variations = [
-            f"@{username} is worthy of a shoutout, hence worthy of your time. How about you drop in on them and see what's up? https://twitch.tv/{username}",
-            f"Have you checked out @{username} yet? It won't take you long, and if they're not your thing you can just ignore it. If they are, give them a follow: https://twitch.tv/{username}",
-            f"Look, @{ctx.author.name} took the time to do a shoutout for @{username}. Are you really gonna be all rude and not give them your attention? https://twitch.tv/{username}",
-            f"https://twitch.tv/{username} | What? You were expecting something? You're an adult, you know how this works.",
+            f"@{username} is worthy of a shoutout, hence worthy of your time. "
+            f"How about you drop in on them and see what's up? "
+            f"https://twitch.tv/{username}",
+            f"Have you checked out @{username} yet? It won't take you long, "
+            f"and if they're not your thing you can just ignore it."
+            f"If they are, give them a follow: https://twitch.tv/{username}",
+            f"Look, @{ctx.author.name} took the time to do a shoutout for "
+            f"@{username}. Are you really gonna be all rude and not give them "
+            f"your attention? https://twitch.tv/{username}",
+            f"https://twitch.tv/{username} | "
+            f"What? You were expecting something?"
+            f"You're an adult, you know how this works.",
         ]
         message = random.choice(shoutout_variations)
         avatar_url = await self.bot.fetch_user_avatar(username)
@@ -78,7 +89,8 @@ class CommandsCog(commands.Cog):
 
     async def not_found_shoutout(self, ctx: commands.Context):
         await ctx.send(
-            f"I wish I knew who @{ctx.author.name} wanted me to shout out, but they didn't supply a name. #feelsbadman"
+            f"I wish I knew who @{ctx.author.name} wanted me to shout out, "
+            f"but they didn't supply a name. #feelsbadman"
         )
 
     @commands.command(

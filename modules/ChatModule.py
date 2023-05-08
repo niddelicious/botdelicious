@@ -156,7 +156,8 @@ class _TwitchBot(commands.Bot):
             )
         )
         message = await OpenaiModule.event_intepretor(
-            f"@{payload.data.raider.name} raided with {payload.data.viewer_count} friends"
+            f"@{payload.data.raider.name} raided "
+            f"with {payload.data.viewer_count} friends"
         )
         await self.send_message_to_channel(
             channel="niddelicious",
@@ -225,7 +226,8 @@ class _TwitchBot(commands.Bot):
         content = json.loads(response.content)
         if len(content["data"]) < 1:
             logging.warning(
-                f"Could not fetch avatar for user {username}. Response: {content}"
+                f"Could not fetch avatar for user {username}. "
+                f"Response: {content}"
             )
             return await self.fetch_user_avatar("botdelicious")
         return json.loads(response.content)["data"][0]["profile_image_url"]
