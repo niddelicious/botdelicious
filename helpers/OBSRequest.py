@@ -4,10 +4,7 @@ import simpleobsws
 from Dataclasses import OBSText
 
 
-class OBSController:
-    def __init__(cls) -> None:
-        pass
-
+class OBSRequest:
     @classmethod
     def check_obs_sources(func):
         """
