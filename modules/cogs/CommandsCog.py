@@ -15,8 +15,8 @@ class CommandsCog(commands.Cog):
         self.bot = bot
         self.create_shoutouts("modules/cogs/shoutouts.yml")
 
-    @commands.command(name="commands", aliases=["available", "help"])
-    async def commands(self, ctx: commands.Context):
+    @commands.command(name="help", aliases=["available", "commands"])
+    async def help(self, ctx: commands.Context):
         await ctx.send(
             f"Available commands:"
             f"!video !lights !shoutout !hug !lurk !lick !shots | "
