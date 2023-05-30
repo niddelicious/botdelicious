@@ -19,7 +19,7 @@ class Utilities:
 
     @classmethod
     def get_twitch_config(cls):
-        config = ConfigController.get_config("chat")
+        config = ConfigController.get("chat")
         return config.client_id, config.client_secret, config.access_token
 
     @classmethod

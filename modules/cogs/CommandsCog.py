@@ -18,7 +18,7 @@ class CommandsCog(commands.Cog):
     @commands.command(name="help", aliases=["available", "commands"])
     async def help(self, ctx: commands.Context):
         await ctx.send(
-            f"Available commands:"
+            f"Available commands: "
             f"!video !lights !shoutout !hug !lurk !lick !shots | "
             f"Or if you just want to chat or ask a question, "
             f"message me directly in chat 🤖"
