@@ -44,3 +44,18 @@ class ConversationEntry:
     role: str
     content: str
     name: str = None
+
+
+@dataclass
+class MidjourneyImage:
+    index: int
+    filename: str
+    name: str
+
+
+@dataclass
+class MidjourneySlide:
+    index: int
+    filename: str
+    name: str
+    status: int

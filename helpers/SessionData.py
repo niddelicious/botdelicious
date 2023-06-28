@@ -117,8 +117,13 @@ class SessionData:
             elapsed_time = round(
                 (datetime.now() - cls.get_session_start()).total_seconds()
             )
-            minutes, seconds = divmod(elapsed_time, 60)
-            timestamp = f"{minutes:02d}:{seconds:02d}"
+            hours, remainder = divmod(elapsed_time, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            timestamp = (
+                f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+                if hours > 0
+                else f"{minutes:02d}:{seconds:02d}"
+            )
             track = Track(
                 cls._current_track.artist, cls._current_track.title, timestamp
             )

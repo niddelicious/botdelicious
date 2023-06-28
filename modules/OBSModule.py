@@ -43,6 +43,11 @@ class OBSModule(BotdeliciousModule):
         await self.gather_instance_data()
         await self.reset_track_texts()
         await self.event_clear_credits()
+        if self._role == ModuleRole.LEADER:
+            from Helpers.MidjourneySlideshow import MidjourneySlideshow
+
+            self.midjourney = MidjourneySlideshow(self)
+            await self.midjourney.slideshow_loop()
 
     async def stop(self):
         self.set_status(ModuleStatus.STOPPING)
@@ -762,6 +767,27 @@ class OBSModule(BotdeliciousModule):
                 "inputType": "ffmpeg_source",
                 "inputSettings": {
                     "local_file": f"{video_path}",
+                },
+            },
+        )
+        await self.call(
+            type=f"Changing {input_name}: {input_source}", request=request
+        )
+
+    @check_obs_sources
+    async def call_update_image(
+        self, input_name: str = None, input_source: str = None
+    ):
+        image_path = (
+            f"C:/Users/micro/Pictures/Midjourney/1920x1080/{input_source}"
+        )
+        request = simpleobsws.Request(
+            "SetInputSettings",
+            {
+                "inputName": f"{input_name}",
+                "inputType": "image_source",
+                "inputSettings": {
+                    "file": f"{image_path}",
                 },
             },
         )

@@ -40,7 +40,7 @@ class _TwitchBot(commands.Bot):
             token=self.config.event_sub.token,
         )
 
-        self._pattern = f"@?{self.config.bot_name}[:;, ]"
+        self._pattern = rf".*{self.config.bot_name}.*"
         self.add_cog(CommandsCog(bot=self))
         self.add_cog(ShotsCog())
         self.add_cog(LightsCog())
