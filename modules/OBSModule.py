@@ -529,10 +529,39 @@ class OBSModule(BotdeliciousModule):
         )
 
     async def event_clear_credits(self):
-        items = ["Setlist", "Followers", "Raids", "Moderators"]
+        items = [
+            "Setlist, header",
+            "Followers, header",
+            "Raids, header",
+            "Moderators, header",
+            "Setlist, list",
+            "Followers, list",
+            "Raids, list",
+            "Moderators, list",
+        ]
+        credits = []
         for item in items:
-            await self.call_blank_text(input_name=item + ", header")
-            await self.call_blank_text(input_name=item + ", list")
+            credits.append(
+                OBSText(
+                    scene="Elements: Credits texts",
+                    source=item,
+                    text=item,
+                    position_x=0,
+                    position_y=0,
+                    width=0,
+                    height=0,
+                )
+            )
+        scene_items = await self.call_get_scene_items(
+            scene_name="Elements: Credits texts"
+        )
+        for item in credits:
+            for scene_item in scene_items:
+                if item.source == scene_item["sourceName"]:
+                    scene_item_id = scene_item["sceneItemId"]
+            await self.call_update_text_extended(
+                item, scene_item_id=scene_item_id
+            )
 
     async def event_update_credits(self):
         credits = SessionData.process_session_credits()
