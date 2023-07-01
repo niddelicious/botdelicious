@@ -18,6 +18,7 @@ from Modules.EventModule import EventModule
 from Modules.Cogs.CommandsCog import CommandsCog
 from Modules.OpenaiModule import OpenaiModule
 from Modules.Cogs.ShotsCog import ShotsCog
+from Modules.Cogs.CharityCog import CharityCog
 
 
 class _TwitchBot(commands.Bot):
@@ -45,6 +46,7 @@ class _TwitchBot(commands.Bot):
         self.add_cog(ShotsCog())
         self.add_cog(LightsCog())
         self.add_cog(EventCog())
+        self.add_cog(CharityCog())
 
     async def event_ready(self):
         logging.info(f"Logged in as | {self.nick}")

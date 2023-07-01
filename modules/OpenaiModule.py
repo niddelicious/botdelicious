@@ -22,9 +22,9 @@ class OpenaiModule(BotdeliciousModule):
 
     @classmethod
     def set_config(cls, config):
-        cls.prompt = config.prompt
-        cls.thinking_message = config.thinking_message
-        cls.error_message = config.error_message
+        cls._prompt = config.prompt
+        cls._thinking_message = config.thinking_message
+        cls._error_message = config.error_message
 
     async def start(self):
         config = ConfigController.get("openai")
@@ -117,7 +117,7 @@ class OpenaiModule(BotdeliciousModule):
             if assistant_message:
                 json_messages.append(assistant_message.__dict__)
             response = await openai.ChatCompletion.acreate(
-                model="gpt-3.5-turbo",
+                model="gpt-3.5-turbo-0613",
                 messages=json_messages,
                 temperature=chaos,
             )
@@ -320,5 +320,29 @@ class OpenaiModule(BotdeliciousModule):
         response = await cls.request_chat(cls.get_conversation(system_name))
         reply = response["choices"][0]["message"]["content"]
         SessionData.add_tokens(tokens=int(response["usage"]["total_tokens"]))
+        reply = Utilities.clean_ai_replies(reply)
+        return reply
+
+    @classmethod
+    async def pa_intepretor(cls, content: str = None, author: str = None):
+        if cls.get_status() != ModuleStatus.RUNNING:
+            return None
+
+        system_name = "ai_pa_generator"
+        system_prompt = (
+            "You are a Twitch Public Announcement Message Generator named botdelicious."
+            "You are working for niddelicious, a DJ streamer."
+            "Your job is to write announcements including any and all links"
+            "You will create engaging messages appropriate for"
+            "the announcement that is provided to you."
+            "Keep messages sassy and below 490 characters."
+        )
+        cls.reprompt_conversation(system_name, system_prompt)
+        command_prompt = f"@{author}: {content}"
+        cls.add_message(system_name, author, command_prompt)
+        response = await cls.request_chat(cls.get_conversation(system_name))
+        reply = response["choices"][0]["message"]["content"]
+        SessionData.add_tokens(tokens=int(response["usage"]["total_tokens"]))
+
         reply = Utilities.clean_ai_replies(reply)
         return reply

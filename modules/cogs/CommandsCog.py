@@ -4,6 +4,7 @@ import yaml
 from twitchio.ext import commands
 
 from Helpers.SessionData import SessionData
+from Helpers.Timer import Timer
 from Helpers.Utilities import Utilities
 from Modules.EventModule import EventModule
 from Modules.OpenaiModule import OpenaiModule
