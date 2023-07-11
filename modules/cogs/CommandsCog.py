@@ -1,6 +1,7 @@
 import logging
 import random
 import yaml
+import requests
 from twitchio.ext import commands
 
 from Helpers.SessionData import SessionData
@@ -8,6 +9,7 @@ from Helpers.Timer import Timer
 from Helpers.Utilities import Utilities
 from Modules.EventModule import EventModule
 from Modules.OpenaiModule import OpenaiModule
+from Helpers.Enums import Status
 
 
 class CommandsCog(commands.Cog):
@@ -15,6 +17,7 @@ class CommandsCog(commands.Cog):
         logging.debug(f"Adding commands/cogs")
         self.bot = bot
         self.create_shoutouts("modules/cogs/shoutouts.yml")
+        self._image_generator_status = Status.ENABLED
 
     @commands.command(name="help", aliases=["available", "commands"])
     async def help(self, ctx: commands.Context):
@@ -132,7 +135,9 @@ class CommandsCog(commands.Cog):
             scene_name="Scene: Collab",
         )
 
-    @commands.command(name="midjourney", aliases=["aiphoto", "mj", "imagine"])
+    @commands.command(
+        name="midjourney", aliases=["slideshow", "mj", "gallery"]
+    )
     async def midjourney(self, ctx: commands.Context):
         await EventModule.queue_event(
             event="switch_scene",
@@ -262,3 +267,50 @@ class CommandsCog(commands.Cog):
             content=ctx.message.content, author=ctx.author.name
         )
         await ctx.send(reply)
+
+    @commands.command(name="imagine", aliases=["aiphoto"])
+    async def imagine(self, ctx: commands.Context):
+        if self._image_generator_status == Status.DISABLED:
+            await ctx.send(
+                f"Sorry, the image generation is currently disabled"
+            )
+            return
+        await ctx.send(f"Generating: {prompt}")
+        words = ctx.message.content.split()
+        prompt = " ".join(words[1:])
+        filename = "_".join(words[1:])
+        url = await OpenaiModule.image_intepretor(
+            prompt=prompt, author=ctx.author.name
+        )
+        if not url:
+            await ctx.send(
+                f"Sorry, I couldn't generate an image for you right now"
+            )
+            return
+        response = requests.get(url)
+        if response.status_code == 200:
+            with open(
+                f"image-generations/{ctx.author.name}-{filename}.png", "wb"
+            ) as f:
+                f.write(response.content)
+        await EventModule.queue_event(
+            event="show_generated_image",
+            url=url,
+            author=ctx.author.name,
+            prompt=prompt,
+        )
+        await ctx.send(f"Image generated for {ctx.author.name}: {prompt}")
+
+    @commands.command(name="enableimage", aliases=["imageon", "imageenable"])
+    async def enableimage(self, ctx: commands.Context):
+        if ctx.author.is_broadcaster:
+            self._image_generator_status = Status.ENABLED
+            await ctx.send(f"Image generator enabled")
+
+    @commands.command(
+        name="disableimage", aliases=["imageoff", "imagedisable"]
+    )
+    async def disableimage(self, ctx: commands.Context):
+        if ctx.author.is_broadcaster:
+            self._image_generator_status = Status.DISABLED
+            await ctx.send(f"Image generator disabled")

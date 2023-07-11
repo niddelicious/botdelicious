@@ -851,3 +851,21 @@ class OBSModule(BotdeliciousModule):
             self.call_blank_text(input_name="Text, fill"),
             self.call_blank_text(input_name="Text, subtitle"),
         )
+
+    async def show_generated_image(self, url, prompt, author):
+        await asyncio.gather(
+            self.call_update_url(input_name="Generated image", url=url),
+            self.call_update_text(
+                input_name="Generated image prompt",
+                text=prompt,
+            ),
+            self.call_update_text(
+                input_name="Generated image author",
+                text=f"- {author}",
+            ),
+        )
+        await self.call_toggle_filter(
+            source_name="AI image animation",
+            filter_name="Load",
+            filter_enabled=True,
+        )

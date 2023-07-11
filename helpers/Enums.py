@@ -13,6 +13,11 @@ class ModuleStatus(Enum):
     STOPPING = 2
 
 
+class Status(Enum):
+    DISABLED = 0
+    ENABLED = 1
+
+
 class OBSConnectionStatus(Enum):
     DISCONNECTED = 0
     CONNECTED = 1

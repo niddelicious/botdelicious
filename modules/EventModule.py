@@ -279,6 +279,22 @@ class EventModule(BotdeliciousModule):
             ]
         )
 
+    @classmethod
+    async def handle_show_generated_image(
+        cls, item_data=None, *args, **kwargs
+    ):
+        logging.debug("Showing generated image")
+        await asyncio.gather(
+            *[
+                instance.show_generated_image(
+                    url=item_data.url,
+                    author=item_data.author,
+                    prompt=item_data.prompt,
+                )
+                for instance in cls._obs_instances
+            ]
+        )
+
     @staticmethod
     def _copy_fallback_image_to_cover_file():
         from_file = Path("external/djctl/record-vinyl-solid-light.png")

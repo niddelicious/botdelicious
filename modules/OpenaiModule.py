@@ -6,7 +6,7 @@ from Helpers.SessionData import SessionData
 
 from Modules.BotdeliciousModule import BotdeliciousModule
 from Helpers.Dataclasses import ConversationEntry
-from Helpers.Enums import ConversationStatus, ModuleStatus
+from Helpers.Enums import ConversationStatus, ModuleStatus, QueueStatus
 from Helpers.Utilities import Utilities
 
 
@@ -16,6 +16,7 @@ class OpenaiModule(BotdeliciousModule):
     _prompt = ""
     _thinking_message = ""
     _error_message = ""
+    _image_status: QueueStatus = QueueStatus.IDLE
 
     def __init__(self) -> None:
         super().__init__()
@@ -346,3 +347,24 @@ class OpenaiModule(BotdeliciousModule):
 
         reply = Utilities.clean_ai_replies(reply)
         return reply
+
+    @classmethod
+    async def image_intepretor(cls, prompt: str = None, author: str = None):
+        if cls.get_status() != ModuleStatus.RUNNING:
+            return None
+
+        if cls._image_status == QueueStatus.PROCESSING:
+            return None
+
+        cls._image_status = QueueStatus.PROCESSING
+        response = openai.Image.create(
+            prompt=prompt,
+            n=1,
+            size="512x512",
+            response_format="url",
+            user=author,
+        )
+        SessionData.add_tokens(tokens=9000)
+        image_url = response["data"][0]["url"]
+        cls._image_status = QueueStatus.IDLE
+        return image_url

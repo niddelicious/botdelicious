@@ -26,12 +26,13 @@ class CharityCog(commands.Cog):
             self._charity_enabled = True
             await Timer.start("charity", 1, self._puplic_announcement, ctx=ctx)
         else:
-            static_message = f"""
-            💖 Thank you for showing interest, {ctx.author.name}! 🌟
-            Use the link https://www.twitch.tv/charity/auntiesassquats to donate 💰
-            And use the link http://www.facebook.com/lumpylizardrescue to read more about Lumpy Lizards 🦎
-            """
-            await ctx.send(static_message)
+            if self._charity_enabled:
+                static_message = f"""
+                💖 Thank you for showing interest, {ctx.author.name}! 🌟
+                Use the link https://www.twitch.tv/charity/auntiesassquats to donate 💰
+                And use the link http://www.facebook.com/lumpylizardrescue to read more about Lumpy Lizards 🦎
+                """
+                await ctx.send(static_message)
 
     @commands.command(
         name="uncharity", aliases=["unfundraiser", "undonate", "uncause"]
