@@ -14,6 +14,7 @@ class EventModule(BotdeliciousModule):
     _event_queue = asyncio.Queue()
     _obs_instances = []
     _loop_sleep = 0
+    _sd_module = None
 
     def __init__(self):
         super().__init__()
@@ -98,6 +99,20 @@ class EventModule(BotdeliciousModule):
         await cls._event_queue.put(item_to_queue)
 
     @classmethod
+    async def direct_event(cls, event: str = None, *args, **kwargs):
+        direct_data = DotMap(
+            {
+                "event_type": event,
+                "event_data": {**kwargs},
+                "additional_data": {*args},
+            }
+        )
+        direct_type_handler_method = "direct_" + direct_data.event_type
+        if hasattr(cls, direct_type_handler_method):
+            handler = getattr(cls, direct_type_handler_method)
+            await handler(item_data=direct_data.event_data)
+
+    @classmethod
     async def handle_new_track(cls, item_data=None, *args, **kwargs):
         logging.debug("Handle new track:")
         logging.debug(f"Artist: {item_data.artist} | Title: {item_data.title}")
@@ -125,6 +140,12 @@ class EventModule(BotdeliciousModule):
             cls._obs_instances.append(
                 ModulesController.get_module(module_name=instance)
             )
+
+    @classmethod
+    def update_sd_module(cls, module=None, *args, **kwargs):
+        from Modules.StableDiffusionModule import StableDiffusionModule
+
+        cls._sd_module = module
 
     @classmethod
     async def handle_show_small_track_id(cls, *args, **kwargs):
@@ -293,6 +314,37 @@ class EventModule(BotdeliciousModule):
                 )
                 for instance in cls._obs_instances
             ]
+        )
+
+    @classmethod
+    async def handle_sd_generate_image(cls, item_data=None, *args, **kwargs):
+        logging.debug("SD start image")
+        await asyncio.gather(
+            cls._sd_module.generate_image(item_data.prompt, item_data.style),
+            *[
+                instance.sd_start(
+                    prompt=item_data.prompt,
+                    author=item_data.author,
+                )
+                for instance in cls._obs_instances
+            ],
+        )
+        await asyncio.gather(
+            *[instance.sd_show() for instance in cls._obs_instances]
+        )
+
+    @classmethod
+    async def direct_sd_progress(cls, item_data=None, *args, **kwargs):
+        logging.debug("SD progress_update")
+        await asyncio.gather(
+            *[
+                instance.sd_progress(
+                    eta=item_data.eta,
+                    percent=item_data.percent,
+                    steps=item_data.steps,
+                )
+                for instance in cls._obs_instances
+            ],
         )
 
     @staticmethod

@@ -869,3 +869,68 @@ class OBSModule(BotdeliciousModule):
             filter_name="Load",
             filter_enabled=True,
         )
+
+    async def sd_start(self, prompt, author):
+        await self.call_toggle_filter(
+            source_name="SD image",
+            filter_name="Reset",
+            filter_enabled=True,
+        )
+        await asyncio.gather(
+            self.call_update_text(
+                input_name="Generated image prompt",
+                text=prompt,
+            ),
+            self.call_update_text(
+                input_name="Generated image author",
+                text=f"- {author}",
+            ),
+        )
+        await self.call_toggle_filter(
+            source_name="SD image",
+            filter_name="Start",
+            filter_enabled=True,
+        )
+
+    async def sd_progress(self, eta, percent, steps):
+        await asyncio.gather(
+            self.call_update_text(
+                input_name="Generated image eta",
+                text=eta,
+            ),
+            self.call_update_text(
+                input_name="Generated image percent",
+                text=percent,
+            ),
+            self.call_update_text(
+                input_name="Generated image steps",
+                text=steps,
+            ),
+        )
+
+    async def sd_show(self):
+        await asyncio.gather(
+            self.call_update_text(
+                input_name="Generated image eta",
+                text="",
+            ),
+            self.call_update_text(
+                input_name="Generated image percent",
+                text="",
+            ),
+            self.call_update_text(
+                input_name="Generated image steps",
+                text="",
+            ),
+        )
+        await self.call_toggle_filter(
+            source_name="SD image",
+            filter_name="Show",
+            filter_enabled=True,
+        )
+        await asyncio.sleep(10)
+        await self.call_toggle_filter(
+            source_name="SD image",
+            filter_name="Hide",
+            filter_enabled=True,
+        )

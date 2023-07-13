@@ -9,7 +9,7 @@ from Helpers.Timer import Timer
 from Helpers.Utilities import Utilities
 from Modules.EventModule import EventModule
 from Modules.OpenaiModule import OpenaiModule
-from Helpers.Enums import Status
+from Helpers.Enums import Status, StableDiffusionStyles
 
 
 class CommandsCog(commands.Cog):
@@ -268,38 +268,60 @@ class CommandsCog(commands.Cog):
         )
         await ctx.send(reply)
 
-    @commands.command(name="imagine", aliases=["aiphoto"])
+    @commands.command(
+        name="imagine",
+        aliases=[
+            "aiphoto",
+            "aiimage",
+            "aiimg",
+            "aiart",
+            "sd",
+            "stable",
+            "diffusion",
+            "stablediffusion",
+        ],
+    )
     async def imagine(self, ctx: commands.Context):
         if self._image_generator_status == Status.DISABLED:
             await ctx.send(
                 f"Sorry, the image generation is currently disabled"
             )
             return
-        await ctx.send(f"Generating: {prompt}")
+
         words = ctx.message.content.split()
-        prompt = " ".join(words[1:])
-        filename = "_".join(words[1:])
-        url = await OpenaiModule.image_intepretor(
-            prompt=prompt, author=ctx.author.name
-        )
-        if not url:
-            await ctx.send(
-                f"Sorry, I couldn't generate an image for you right now"
+        style = None
+        prompt_words = []
+        for word in words[1:]:
+            if word.startswith("--"):
+                possible_style = word[2:].upper()
+                if possible_style == "HELP":
+                    await ctx.send(
+                        f"To generate an image just write what you hope to see. You can also try a style by adding --[style] in your prompt. ( "
+                        f"{', '.join([style.lower() for style in StableDiffusionStyles.__members__.keys()])}"
+                        f" )"
+                    )
+                    return
+                if (
+                    style is None
+                    and possible_style in StableDiffusionStyles.__members__
+                ):
+                    style = StableDiffusionStyles[possible_style].value
+            else:
+                prompt_words.append(word)
+        prompt = " ".join(prompt_words)
+        if style is None:
+            style = random.choice(
+                [
+                    StableDiffusionStyles.DIGITAL.value,
+                    StableDiffusionStyles.PHOTO.value,
+                ]
             )
-            return
-        response = requests.get(url)
-        if response.status_code == 200:
-            with open(
-                f"image-generations/{ctx.author.name}-{filename}.png", "wb"
-            ) as f:
-                f.write(response.content)
         await EventModule.queue_event(
-            event="show_generated_image",
-            url=url,
+            event="sd_generate_image",
             author=ctx.author.name,
             prompt=prompt,
+            style=style,
         )
-        await ctx.send(f"Image generated for {ctx.author.name}: {prompt}")
 
     @commands.command(name="enableimage", aliases=["imageon", "imageenable"])
     async def enableimage(self, ctx: commands.Context):

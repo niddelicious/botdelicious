@@ -18,6 +18,7 @@ class CommandLine:
             ModulesController.stop_module(module_name="twitch")
             ModulesController.stop_module(module_name="podcast")
             ModulesController.stop_module(module_name="twinkly")
+            ModulesController.stop_module(module_name="stablediffusion")
             logging.info(f"Exiting...\n")
             return 0
         if command == "status":
@@ -141,5 +142,13 @@ class CommandLine:
                 from Tests.test_session_data import test_session_data
 
                 test_session_data()
+
+            if command[5:] == "sd":
+                prompt = input("Enter a prompt: ")
+                AsyncioThread.run_coroutine(
+                    ModulesController.get_module(
+                        "stablediffusion"
+                    ).generate_image(prompt=prompt)
+                )
 
         return 1

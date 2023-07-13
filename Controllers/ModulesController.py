@@ -7,6 +7,7 @@ from Modules.OpenaiModule import OpenaiModule
 from Modules.WebhookModule import WebhookModule
 from Modules.DJctlModule import DJctlModule
 from Modules.TwinklyModule import TwinklyModule
+from Modules.StableDiffusionModule import StableDiffusionModule
 from Helpers.Enums import ModuleStatus
 
 
@@ -21,6 +22,7 @@ class ModulesController:
         "djctl": DJctlModule(),
         "twinkly": TwinklyModule(),
         "openai": OpenaiModule(),
+        "stablediffusion": StableDiffusionModule(),
     }
 
     @classmethod
@@ -33,6 +35,7 @@ class ModulesController:
     @classmethod
     def stop_module(cls, module_name=None):
         module = cls.get_module(module_name)
+        AsyncioThread.run_coroutine(module.stop())
         if module.status() is ModuleStatus.RUNNING:
             logging.debug(f"Stopping module: {module_name}")
             AsyncioThread.run_coroutine(module.stop())

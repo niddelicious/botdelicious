@@ -84,3 +84,19 @@ class TwinklyPlaylist(Enum):
     LOVE = 1
     GREEN_WAVES = 2
     RAINBOW_WAVES = 3
+
+
+class StableDiffusionStyles(Enum):
+    GHIBLI = "Ghibli"
+    VECTOR = "Vector Illustrations"
+    DIGITAL = "Digital/Oil Painting"
+    GAME = "Indie Game"
+    PHOTO = "Original Photo Style"
+    NOIR = "Black and White Film Noir"
+    ISOMETRIC = "Isometric Rooms"
+    HOLOGRAM = "Space Hologram"
+    CUTE = "Cute Creatures"
+    PORTRAIT = "Realistic Photo Portraits"
+    SCENIC = "Professional Scenic Photographs"
+    MANGA = "Manga"
+    ANIME = "Anime"
