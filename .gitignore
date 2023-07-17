@@ -6,6 +6,9 @@ external/
 .vscode/
 shoutouts.yml
 scratchpad.py
+sd-sandbox.py
+stable-diffusion.png
+stable-diffusion.jpg
 gpt-playground.py
 playlist*.txt
 image-generations/
