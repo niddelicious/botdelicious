@@ -5,15 +5,17 @@ from Modules.BotdeliciousModule import BotdeliciousModule
 from Helpers.Enums import (
     ModuleStatus,
     TwinklyEffect,
-    TwinklyReact,
+    TwinklyMusic,
     TwinklyPlaylist,
 )
 from Controllers.ConfigController import ConfigController
 from Controllers.TwinklyController import TwinklyController
+from Controllers.TwinklyMusicController import TwinklyMusicController
 
 
 class TwinklyModule(BotdeliciousModule):
     _lights = []
+    _music: TwinklyMusicController
 
     def __init__(self):
         super().__init__()
@@ -25,6 +27,9 @@ class TwinklyModule(BotdeliciousModule):
             self.add_light_instance(TwinklyController(light))
         for light in self.get_lights():
             await light.run_twinkly_color(red=255, green=178, blue=105)
+        self._music = self.add_music(
+            TwinklyMusicController(ConfigController.get("twinkly_music"))
+        )
 
     async def stop(self):
         self.set_status(ModuleStatus.STOPPING)
@@ -37,6 +42,14 @@ class TwinklyModule(BotdeliciousModule):
     @classmethod
     def add_light_instance(cls, instance):
         cls._lights.append(instance)
+
+    @classmethod
+    def get_music(cls):
+        return cls._music
+
+    @classmethod
+    def add_music(cls, instance: TwinklyMusicController):
+        cls._music = instance
 
     @classmethod
     async def effect(
@@ -69,11 +82,12 @@ class TwinklyModule(BotdeliciousModule):
         )
 
     @classmethod
-    async def react(
-        cls, react: TwinklyReact = TwinklyReact.BEAT_HUE, *args, **kwargs
+    async def music(
+        cls, music: TwinklyMusic = TwinklyMusic.DANCE_SHUFFLE, *args, **kwargs
     ):
+        await cls._music.run_twinkly_music(music)
         await asyncio.gather(
-            *[light.run_twinkly_react(react) for light in cls.get_lights()],
+            *[light.run_twinkly_react(music) for light in cls.get_lights()],
         )
 
     @classmethod

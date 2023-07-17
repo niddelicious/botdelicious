@@ -101,13 +101,13 @@ class TwinklyController:
         self, react: TwinklyReact = TwinklyReact.BEAT_HUE
     ):
         react_id = react.value
-        json_payload = {
-            "mode": "effect",
-            "react_id": TwinklyReact.index(react),
-        }
-        requests.post(
-            self.unit_url + "led/mode", json=json_payload, headers=self.headers
-        )
+        # json_payload = {
+        #     "mode": "effect",
+        #     "react_id": TwinklyReact.index(react),
+        # }
+        # requests.post(
+        #     self.unit_url + "led/mode", json=json_payload, headers=self.headers
+        # )
 
         react_mode = {"unique_id": react_id}
         json_payload = {"mode": "musicreactive"}

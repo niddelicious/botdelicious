@@ -8,6 +8,7 @@ from Modules.BotdeliciousModule import BotdeliciousModule
 from Helpers.Enums import ModuleStatus, TwinklyEffect, TwinklyPlaylist
 from Helpers.SessionData import SessionData
 from Modules.TwinklyModule import TwinklyModule
+from Helpers.Utilities import Utilities
 
 
 class EventModule(BotdeliciousModule):
@@ -119,7 +120,7 @@ class EventModule(BotdeliciousModule):
         logging.debug(f"Cover art: {item_data.contains_cover_art}")
 
         if not item_data.contains_cover_art:
-            cls._copy_fallback_image_to_cover_file()
+            Utilities.copy_fallback_image_to_cover_file()
 
         logging.debug("Storing new track in session data")
         SessionData.set_current_track(
@@ -325,12 +326,16 @@ class EventModule(BotdeliciousModule):
                 instance.sd_start(
                     prompt=item_data.prompt,
                     author=item_data.author,
+                    style=item_data.style,
                 )
                 for instance in cls._obs_instances
             ],
         )
         await asyncio.gather(
-            *[instance.sd_show() for instance in cls._obs_instances]
+            *[
+                instance.sd_show(item_data.author)
+                for instance in cls._obs_instances
+            ]
         )
 
     @classmethod
@@ -347,12 +352,19 @@ class EventModule(BotdeliciousModule):
             ],
         )
 
-    @staticmethod
-    def _copy_fallback_image_to_cover_file():
-        from_file = Path("external/djctl/record-vinyl-solid-light.png")
-        to_file = Path("external/djctl/latest-cover-art.png")
-        shutil.copy2(
-            from_file,
-            to_file,
+    @classmethod
+    async def handle_kofi(cls, item_data=None, *args, **kwargs):
+        logging.debug("Ko-fi donation!")
+        logging.debug(f"Item data: {item_data}")
+        await asyncio.gather(
+            *[
+                instance.kofi(
+                    name=item_data.from_name,
+                    amount=item_data.amount,
+                    currency=item_data.currency,
+                    message=item_data.message,
+                )
+                for instance in cls._obs_instances
+            ],
+            TwinklyModule.playlist(TwinklyPlaylist.I_LOVE_YOU, 10),
         )
-        logging.debug("Using fallback cover art")

@@ -1,5 +1,9 @@
+import os
 import re
 import requests
+from pathlib import Path
+import shutil
+import logging
 
 from Controllers.ConfigController import ConfigController
 
@@ -91,3 +95,18 @@ class Utilities:
     def clean_ai_replies(cls, text: str):
         pattern = r"^(?i)[Bb]ot[Dd]elicious[:;,.!?-]?\s*"
         return re.sub(r'^"|"$', "", re.sub(pattern, "", text))
+
+    @classmethod
+    async def check_file_size(cls, file_path):
+        file_size = os.path.getsize(file_path)
+        return file_size
+
+    @staticmethod
+    def copy_fallback_image_to_cover_file():
+        from_file = Path("external/djctl/record-vinyl-solid-light.png")
+        to_file = Path("external/djctl/latest-cover-art.png")
+        shutil.copy2(
+            from_file,
+            to_file,
+        )
+        logging.debug("Using fallback cover art")

@@ -308,6 +308,11 @@ class CommandsCog(commands.Cog):
                     style = StableDiffusionStyles[possible_style].value
             else:
                 prompt_words.append(word)
+        if len(prompt_words) == 0:
+            await ctx.send(
+                f"You need to supply a prompt. Example: !imagine cat in a hat"
+            )
+            return
         prompt = " ".join(prompt_words)
         if style is None:
             style = random.choice(

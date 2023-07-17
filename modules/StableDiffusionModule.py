@@ -75,7 +75,7 @@ class StableDiffusionModule(BotdeliciousModule):
             ],
             "width": 1024,
             "height": 1024,
-            "steps": 40,
+            "steps": 30,
             "send_images": True,
             "save_images": True,
         }

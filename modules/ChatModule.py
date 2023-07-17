@@ -200,6 +200,10 @@ class _TwitchBot(commands.Bot):
             self.loop.create_task(chan.send(chunk))
             await asyncio.sleep(2)
 
+    async def say_everywhere(self, message):
+        for channel in self.connected_channels:
+            await self.send_message_to_channel(channel.name, message)
+
     async def say_hello(self):
         for channel in self.connected_channels:
             current_time_string = datetime.datetime.now().strftime(
@@ -236,6 +240,8 @@ class _TwitchBot(commands.Bot):
 
 
 class ChatModule(BotdeliciousModule):
+    _bot: _TwitchBot
+
     def __init__(self):
         super().__init__()
 
@@ -244,6 +250,7 @@ class ChatModule(BotdeliciousModule):
         self.config = ConfigController.get("chat")
         await self._update_tokens()
         self.bot = _TwitchBot(self.config)
+        self.set_bot(self.bot)
         await self.bot.start()
 
     async def stop(self):
@@ -251,6 +258,18 @@ class ChatModule(BotdeliciousModule):
         await self.bot.say_bye()
         await self.bot.close()
         self.set_status(ModuleStatus.IDLE)
+
+    @classmethod
+    def get_bot(cls):
+        return cls._bot
+
+    @classmethod
+    def set_bot(cls, bot):
+        cls._bot = bot
+
+    @classmethod
+    async def send_message(cls, message):
+        await cls._bot.say_everywhere(message)
 
     async def _update_tokens(self):
         logging.debug("Refreshing Twitch Chat tokens")

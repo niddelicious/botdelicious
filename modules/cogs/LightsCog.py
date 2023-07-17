@@ -2,7 +2,7 @@ import logging
 import random
 from twitchio.ext import commands
 
-from Helpers.Enums import TwinklyEffect, TwinklyReact
+from Helpers.Enums import TwinklyEffect, TwinklyReact, TwinklyMusic
 from Modules.OpenaiModule import OpenaiModule
 from Modules.TwinklyModule import TwinklyModule
 
@@ -23,13 +23,17 @@ class LightsCog(commands.Cog):
             else:
                 effect = random.choice(list(TwinklyEffect))
             await TwinklyModule.effect(effect=effect)
+            await ctx.send(effect.name.replace("_", " ").title())
         elif splits[1] == "react" and splits[2].isnumeric():
-            react_id = int(splits[2]) - 1
-            if 0 <= react_id < len(TwinklyReact):
-                react = TwinklyReact.id(react_id)
+            music_id = int(splits[2]) - 1
+            if 0 <= music_id < len(TwinklyMusic):
+                music = TwinklyMusic.id(music_id)
             else:
-                react = random.choice(list(TwinklyReact))
-            await TwinklyModule.react(react)
+                music = random.choice(list(TwinklyMusic))
+            await TwinklyModule.music(music)
+            await ctx.send(
+                f"Reactive effect: {music.name.replace('_', ' ').title()}"
+            )
         elif (
             (splits[1] == "color" or splits[1] == "colour")
             and splits[2].isnumeric()
@@ -54,7 +58,7 @@ class LightsCog(commands.Cog):
         else:
             await ctx.send(
                 f"Available lights: "
-                f"react [1-12] | "
+                f"react [1-42] | "
                 f"effect [1-5] | "
                 f"color [0-255] [0-255] [0-255] | "
                 f"ai [name or description]"

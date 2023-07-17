@@ -34,18 +34,43 @@ class WebhookModule(BotdeliciousModule):
         logging.debug("Incoming Webhook")
         logging.debug(request)
         if args and (destination := getattr(self, args[0], None)):
-            destination(webhook_data=DotMap(json.loads(request.body.read())))
+            destination(
+                request,
+                *args,
+                **kwargs,
+            )
         return
 
-    def djctl(self, webhook_data: DotMap = None):
+    def djctl(self, request, *args, **kwargs):
+        body = DotMap(json.loads(request.body.read()))
         AsyncioThread.run_coroutine(
             EventModule.queue_event(
                 event="new_track",
-                artist=webhook_data.data.artist,
-                title=webhook_data.data.title,
-                contains_cover_art=webhook_data.cover.art,
+                artist=body.data.artist,
+                title=body.data.title,
+                contains_cover_art=body.cover.art,
             )
         )
         AsyncioThread.run_coroutine(
             EventModule.queue_event(event="show_small_track_id")
+        )
+
+    def kofi(self, request, *args, **kwargs):
+        kofi_data = json.loads(kwargs["data"])
+        if (
+            kofi_data["verification_token"]
+            != ConfigController._config.kofi.token
+        ):
+            logging.warning("Kofi token does not match!")
+            return
+        logging.debug("Kofi token matches")
+        AsyncioThread.run_coroutine(
+            EventModule.queue_event(
+                event="kofi",
+                from_name=kofi_data["from_name"],
+                type=kofi_data["type"],
+                amount=kofi_data["amount"],
+                currency=kofi_data["currency"],
+                message=kofi_data["message"],
+            )
         )

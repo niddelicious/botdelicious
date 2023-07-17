@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from Helpers.Utilities import Utilities
 import simpleobsws
 from AsyncioThread import AsyncioThread
 
@@ -8,6 +9,7 @@ from Controllers.ConfigController import ConfigController
 from Helpers.Enums import ModuleStatus
 from Helpers.Enums import ModuleRole
 from Helpers.SessionData import SessionData
+from Modules.ChatModule import ChatModule
 from Modules.EventModule import EventModule
 from Helpers.Dataclasses import OBSText
 
@@ -870,7 +872,7 @@ class OBSModule(BotdeliciousModule):
             filter_enabled=True,
         )
 
-    async def sd_start(self, prompt, author):
+    async def sd_start(self, prompt, author, style):
         await self.call_toggle_filter(
             source_name="SD image",
             filter_name="Reset",
@@ -883,7 +885,7 @@ class OBSModule(BotdeliciousModule):
             ),
             self.call_update_text(
                 input_name="Generated image author",
-                text=f"- {author}",
+                text=f"{author} / {style}",
             ),
         )
         await self.call_toggle_filter(
@@ -908,7 +910,7 @@ class OBSModule(BotdeliciousModule):
             ),
         )
 
-    async def sd_show(self):
+    async def sd_show(self, author):
         await asyncio.gather(
             self.call_update_text(
                 input_name="Generated image eta",
@@ -928,9 +930,71 @@ class OBSModule(BotdeliciousModule):
             filter_name="Show",
             filter_enabled=True,
         )
-        await asyncio.sleep(10)
+        await asyncio.sleep(2)
+
+        if await Utilities.check_file_size("./stable-diffusion.png") < 10000:
+            logging.debug("NSFW triggered")
+            await self.call_toggle_filter(
+                source_name="SD image animation",
+                filter_name="Show thirsty",
+                filter_enabled=True,
+            )
+            await ChatModule.send_message(
+                message=f"Someone get this glass of water to {author}, they thirsty"
+            )
+
+        await asyncio.sleep(8)
+
         await self.call_toggle_filter(
             source_name="SD image",
             filter_name="Hide",
             filter_enabled=True,
         )
+        await asyncio.sleep(1)
+
+    async def kofi(self, name, amount, currency, message):
+        logging.debug(f"{self._name} | Animation started...")
+        kofi_text = f"{name} x {amount} {currency}"
+        if self._name == "video":
+            await asyncio.gather(
+                self.call_update_text(
+                    input_name="Text, supertitle", text="WASTED MONEY"
+                ),
+                self.call_update_text(
+                    input_name="Text, outline", text=kofi_text
+                ),
+                self.call_update_text(input_name="Text, fill", text=kofi_text),
+                self.call_update_text(
+                    input_name="Text, subtitle", text=message
+                ),
+            )
+            await self.call_toggle_filter(
+                source_name="Animation",
+                filter_name="Start animation",
+                filter_enabled=True,
+            )
+        if self._name == "twitch":
+            await asyncio.gather(
+                self.call_update_text(
+                    input_name="Bump text", text=f"{kofi_text}"
+                ),
+            )
+            await asyncio.gather(
+                self.call_update_text(
+                    input_name="Bump subtext", text=f"{message}"
+                ),
+                self.call_toggle_filter(
+                    source_name="Bumps",
+                    filter_name="Show: Subtext",
+                    filter_enabled=True,
+                ),
+            )
+            await self.call_toggle_filter(
+                source_name="Bumps",
+                filter_name="Slide",
+                filter_enabled=True,
+            )
+        await asyncio.sleep(10)
+        if self._name == "video":
+            await self.reset_video_texts()
+        logging.debug(f"{self._name} | ... animation completed")
