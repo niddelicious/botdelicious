@@ -1,0 +1,6 @@
+dotmap
+twitchio
+coloredlogs
+openai
+simpleobsws
+webhook_listener
