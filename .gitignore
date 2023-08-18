@@ -1,5 +1,6 @@
 config.yml
 autostart.yml
+sd-config.yml
 __pycache__/
 external/
 .idea/

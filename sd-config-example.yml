@@ -1,0 +1,11 @@
+negative_prompt: "easynegative, FastNegativeV2, bad-hands-5"
+width: 512
+height: 512
+steps: 30
+send_images: True
+save_images: True
+hr_scale: 2
+hr_upscaler: "4x-UltraSharp"
+hr_sampler_name: "Euler a"
+enable_hr: True
+denoising_strength: 0.15

@@ -31,3 +31,11 @@ class ConfigController:
             return getattr(cls._config, config_name)
         else:
             return False
+
+    @classmethod
+    def get_config_file(cls, filename):
+        tmp_config = None
+        tmp_config_file = Path(filename)
+        with tmp_config_file.open("r") as config_file:
+            tmp_config = DotMap(yaml.load(config_file, Loader=yaml.FullLoader))
+        return tmp_config

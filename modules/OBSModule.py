@@ -911,6 +911,8 @@ class OBSModule(BotdeliciousModule):
         )
 
     async def sd_show(self, author):
+        if self._role != ModuleRole.LEADER:
+            return
         await asyncio.gather(
             self.call_update_text(
                 input_name="Generated image eta",

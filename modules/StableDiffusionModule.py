@@ -7,6 +7,7 @@ import subprocess
 import logging
 
 import httpx
+from Controllers.ConfigController import ConfigController
 
 from Modules.BotdeliciousModule import BotdeliciousModule
 from Modules.EventModule import EventModule
@@ -64,28 +65,31 @@ class StableDiffusionModule(BotdeliciousModule):
 
     @classmethod
     async def get_image(cls, prompt, style):
+        sd_config = ConfigController.get_config_file("sd-config.yml")
         txt2img_url = f"{cls._api_url}/txt2img"
         headers = {"Content-Type": "application/json"}
         data = {
             "prompt": prompt,
-            "styles": [
-                "Default_Negative",
-                "Default_Negative (sfw)",
-                style,
-            ],
-            "width": 1024,
-            "height": 1024,
-            "steps": 30,
+            "negative_prompt": sd_config.negative_prompt,
+            "styles": ["Default_Negative", "Default_Negative (sfw)", style],
+            "width": sd_config.width,
+            "height": sd_config.height,
+            "steps": sd_config.steps,
             "send_images": True,
             "save_images": True,
+            "hr_scale": sd_config.hr_scale,
+            "hr_upscaler": sd_config.hr_upscaler,
+            "hr_sampler_name": sd_config.hr_sampler_name,
+            "enable_hr": sd_config.enable_hr,
+            "denoising_strength": sd_config.denoising_strength,
         }
 
-        cls.awaiting_images = True
+        cls._awaiting_images = True
         response = await cls._httpx.post(
             txt2img_url, headers=headers, data=json.dumps(data)
         )
 
-        cls.awaiting_images = False
+        cls._awaiting_images = False
         response_data = response.json()
         base64_image = response_data["images"][0]
         image_data = base64.b64decode(base64_image)
@@ -96,9 +100,9 @@ class StableDiffusionModule(BotdeliciousModule):
     @classmethod
     async def get_progress(cls):
         progress_url = f"{cls._api_url}/progress"
-        while cls.awaiting_images:
+        while cls._awaiting_images:
             response = await cls._httpx.get(progress_url)
-            if not cls.awaiting_images:
+            if not cls._awaiting_images:
                 break
             if response.status_code == 200:
                 response_data = response.json()
@@ -116,6 +120,6 @@ class StableDiffusionModule(BotdeliciousModule):
                     steps=f"{response_data['state']['sampling_step']} / {response_data['state']['sampling_steps']}",
                     eta=f"{round(response_data['eta_relative'])}sec",
                 )
-            if not cls.awaiting_images:
+            if not cls._awaiting_images:
                 break
-            await asyncio.sleep(2)
+            await asyncio.sleep(3)
