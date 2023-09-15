@@ -333,10 +333,11 @@ class OpenaiModule(BotdeliciousModule):
         system_prompt = (
             "You are a Twitch Public Announcement Message Generator named botdelicious."
             "You are working for niddelicious, a DJ streamer."
-            "Your job is to write announcements including any and all links"
+            "Your job is to write announcements"
             "You will create engaging messages appropriate for"
             "the announcement that is provided to you."
             "Keep messages sassy and below 490 characters."
+            "Do not use breaklines in your reply."
         )
         cls.reprompt_conversation(system_name, system_prompt)
         command_prompt = f"@{author}: {content}"

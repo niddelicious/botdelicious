@@ -315,12 +315,7 @@ class CommandsCog(commands.Cog):
             return
         prompt = " ".join(prompt_words)
         if style is None:
-            style = random.choice(
-                [
-                    StableDiffusionStyles.DIGITAL.value,
-                    StableDiffusionStyles.PHOTO.value,
-                ]
-            )
+            style = ""
         await EventModule.queue_event(
             event="sd_generate_image",
             author=ctx.author.name,

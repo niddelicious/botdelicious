@@ -14,6 +14,7 @@ from Helpers.Enums import ModuleStatus
 from Helpers.SessionData import SessionData
 from Modules.Cogs.EventCog import EventCog
 from Modules.Cogs.LightsCog import LightsCog
+from Modules.Cogs.PublicAnnouncementCog import PublicAnnouncementCog
 from Modules.EventModule import EventModule
 from Modules.Cogs.CommandsCog import CommandsCog
 from Modules.OpenaiModule import OpenaiModule
@@ -38,7 +39,7 @@ class _TwitchBot(commands.Bot):
             client=self,
             webhook_secret=self.config.event_sub.secret,
             callback_route=self.config.event_sub.callback,
-            token=self.config.event_sub.token,
+            token=self.config.access_token,
         )
 
         self._pattern = rf".*{self.config.bot_name}.*"
@@ -47,6 +48,7 @@ class _TwitchBot(commands.Bot):
         self.add_cog(LightsCog())
         self.add_cog(EventCog())
         self.add_cog(CharityCog())
+        self.add_cog(PublicAnnouncementCog(bot=self))
 
     async def event_ready(self):
         logging.info(f"Logged in as | {self.nick}")

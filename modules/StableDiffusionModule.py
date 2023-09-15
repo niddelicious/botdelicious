@@ -75,6 +75,8 @@ class StableDiffusionModule(BotdeliciousModule):
             "width": sd_config.width,
             "height": sd_config.height,
             "steps": sd_config.steps,
+            "sampler_name": sd_config.sampler_name,
+            "cfg_scale": sd_config.cfg_scale,
             "send_images": True,
             "save_images": True,
             "hr_scale": sd_config.hr_scale,

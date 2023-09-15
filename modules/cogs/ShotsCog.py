@@ -54,6 +54,8 @@ class ShotsCog(commands.Cog):
                     f"Have some water 🚰 Get help. Call AA! 🚑"
                 )
                 self._knocks = 0
+            else:
+                await ctx.send(f"@{ctx.author.name} knocks on the bar door. 🚪")
             return
         if self._shot_requested:
             await ctx.send(
