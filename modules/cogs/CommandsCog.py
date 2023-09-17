@@ -34,6 +34,7 @@ class CommandsCog(commands.Cog):
 
     @commands.command(name="id", aliases=["track"])
     async def id(self, ctx: commands.Context):
+        ctx.send(f"Current track: {SessionData.current_artist()} - {SessionData.current_title()}")
         await EventModule.queue_event(
             event="show_big_track_id",
         )
