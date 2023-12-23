@@ -1,5 +1,6 @@
 import json
 import logging
+import random
 import webhook_listener
 
 from dotmap import DotMap
@@ -7,7 +8,7 @@ from AsyncioThread import AsyncioThread
 
 from Modules.BotdeliciousModule import BotdeliciousModule
 from Controllers.ConfigController import ConfigController
-from Helpers.Enums import ModuleStatus
+from Helpers.Enums import ModuleStatus, VideoBeeple, VideoYule, VideoTrippy
 from Modules.EventModule import EventModule
 
 
@@ -55,12 +56,20 @@ class WebhookModule(BotdeliciousModule):
             EventModule.queue_event(event="show_small_track_id")
         )
 
+        vj_loop_list = list(VideoBeeple) + list(VideoYule) + list(VideoTrippy)
+        video_id = random.choice(range(len(vj_loop_list)))
+        video_file = vj_loop_list[video_id]
+
+        AsyncioThread.run_coroutine(
+            EventModule.queue_event(
+                event="change_video",
+                video=video_file.value,
+            )
+        )
+
     def kofi(self, request, *args, **kwargs):
         kofi_data = json.loads(kwargs["data"])
-        if (
-            kofi_data["verification_token"]
-            != ConfigController._config.kofi.token
-        ):
+        if kofi_data["verification_token"] != ConfigController._config.kofi.token:
             logging.warning("Kofi token does not match!")
             return
         logging.debug("Kofi token matches")

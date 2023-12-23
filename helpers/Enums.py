@@ -159,3 +159,165 @@ class TwinklyMusic(Enum):
     @classmethod
     def id(cls, index: int = 0):
         return list(cls)[index]
+
+
+class VideoBeeple(Enum):
+    TWENTYFOURK = "beeple/24K.mp4"
+    ANGULAR = "beeple/Angular.mp4"
+    AQUAHALL = "beeple/Aquahall.mp4"
+    BOKK = "beeple/Bokk.mp4"
+    BREATH_CTRL = "beeple/Breath Ctrl.mp4"
+    BROKCHRD = "beeple/Brokchrd.mp4"
+    BUILT_EE = "beeple/Built.ee.mp4"
+    CLEANROOM = "beeple/Cleanroom.mp4"
+    CRYSBLAST = "beeple/Crysblast.mp4"
+    CRYSTMOUNTS = "beeple/Crystmounts.mov"
+    CUTTT = "beeple/Cuttt.mp4"
+    DARK_VALLEY = "beeple/Dark Valley.mp4"
+    DARKNET = "beeple/Darknet.mov"
+    DIRTY_RIBBON = "beeple/Dirty Ribbon.mp4"
+    DVDE = "beeple/Dvde.mp4"
+    EXHAUST = "beeple/Exhaust.mov"
+    FIBER_OPTICAL = "beeple/Fiber Optical.mp4"
+    FLUFFF = "beeple/Flufff.mp4"
+    GLASS_LADDER = "beeple/Glass Ladder.mp4"
+    GLAUBOX = "beeple/Glaubox.mov"
+    GOBO_V1 = "beeple/Gobo.v1.mp4"
+    HEXXX = "beeple/Hexxx.mp4"
+    HOMIE = "beeple/Homie.mp4"
+    KEWBIC_FLOW = "beeple/Kewbic Flow.mov"
+    LIGHTGRID = "beeple/Lightgrid.mov"
+    MILKCAVE = "beeple/Milkcave.mp4"
+    MOONVIRUS = "beeple/Moonvirus.mp4"
+    OCTMESH = "beeple/Octmesh.mp4"
+    OKKKK = "beeple/Okkkk.mp4"
+    OUT_B = "beeple/Out-B.mp4"
+    P_CRAWL = "beeple/P-Crawl.mp4"
+    PINK_VYNIL = "beeple/Pink Vynil.mov"
+    POXELS = "beeple/Poxels.mov"
+    QUICKSILVER = "beeple/Quicksilver.mp4"
+    REBALANCE = "beeple/Rebalance.mp4"
+    REDGATE_V1 = "beeple/Redgate.v1.mp4"
+    REDGATE_V2 = "beeple/Redgate.v2.mp4"
+    SETTING_SUN = "beeple/Setting Sun.mp4"
+    SIGNAL_BARREL = "beeple/Signal Barrel.mov"
+    STEPS = "beeple/Steps.mp4"
+    STRT = "beeple/Strt.mp4"
+    T_HAWK = "beeple/T-Hawk.mp4"
+    TECH_FUX = "beeple/Tech.fux.mp4"
+    TENDRIL = "beeple/Tendril.mp4"
+    UNPLUG = "beeple/Unplug.mp4"
+    WINTER_FEELS = "beeple/Winter Feels.mp4"
+    WORMHOLE = "beeple/Wormhole.mov"
+    WRMMM = "beeple/Wrmmm.mp4"
+
+    @classmethod
+    def index(cls, member):
+        return list(cls).index(member)
+
+    @classmethod
+    def id(cls, index: int = 0):
+        return list(cls)[index]
+
+class VideoYule(Enum):
+    CHRISTMAS_CHESHIRE_2 = "sleepless_monk/yule/Christmas Cheshire 2.mov"
+    CHRISTMAS_CHESHIRE_3 = "sleepless_monk/yule/Christmas Cheshire 3.mov"
+    CHRISTMAS_CHESHIRE_4 = "sleepless_monk/yule/christmas cheshire 4.mov"
+    CHRISTMAS_CHESHIRE_5 = "sleepless_monk/yule/Christmas Cheshire 5.mov"
+    CHRISTMAS_CHESHIRE = "sleepless_monk/yule/Christmas Cheshire.mov"
+    MUSHROOM_SANTA_2 = "sleepless_monk/yule/Mushroom Santa 2.mov"
+    MUSHROOM_SANTA_3 = "sleepless_monk/yule/Mushroom Santa 3.mov"
+    MUSHROOM_SANTA_4 = "sleepless_monk/yule/Mushroom Santa 4.mov"
+    MUSHROOM_SANTA = "sleepless_monk/yule/Mushroom Santa.mov"
+    SANTA_AMANITA = "sleepless_monk/yule/Santa Amanita.mov"
+    SANTA_CLOSEUP_2 = "sleepless_monk/yule/Santa Closeup 2.mov"
+    SANTA_CLOSEUP = "sleepless_monk/yule/Santa closeup.mov"
+    SANTA_DOLL_2 = "sleepless_monk/yule/Santa Doll 2.mov"
+    SANTA_DOLL_3 = "sleepless_monk/yule/Santa Doll 3.mov"
+    SANTA_DOLL_4 = "sleepless_monk/yule/Santa Doll 4.mov"
+    SANTA_DOLL_5 = "sleepless_monk/yule/Santa Doll 5.mov"
+    SANTA_DOLL_6 = "sleepless_monk/yule/Santa Doll 6.mov"
+    SANTA_DOLL_7 = "sleepless_monk/yule/Santa Doll 7.mov"
+    SANTA_DOLL = "sleepless_monk/yule/Santa Doll.mov"
+    YULE_CRITTER = "sleepless_monk/yule/yule critter.mov"
+    YULE_DECOR_2 = "sleepless_monk/yule/Yule Decor 2.mov"
+    YULE_DECOR_3 = "sleepless_monk/yule/yule decor 3.mov"
+    YULE_DECOR_4 = "sleepless_monk/yule/yule decor 4.mov"
+    YULE_GODDESS_2 = "sleepless_monk/yule/yule goddess 2.mov"
+    YULE_GODDESS = "sleepless_monk/yule/Yule Goddess.mov"
+    YULE_SPIRIT = "sleepless_monk/yule/Yule Spirit.mov"
+    YULE_TREE_2 = "sleepless_monk/yule/Yule Tree 2.mov"
+    YULE_TREE_3 = "sleepless_monk/yule/Yule Tree 3.mov"
+    YULE_TREE_4 = "sleepless_monk/yule/Yule Tree 4.mov"
+    YULE_TREE_5 = "sleepless_monk/yule/Yule Tree 5.mov"
+    YULE_TREE = "sleepless_monk/yule/Yule Tree.mov"
+    YULE_TREECRITTER = "sleepless_monk/yule/Yule Treecritter.mov"
+
+    @classmethod
+    def index(cls, member):
+        return list(cls).index(member)
+
+    @classmethod
+    def id(cls, index: int = 0):
+        return list(cls)[index]
+
+class VideoTrippy(Enum):
+    AMANITA_2 = "sleepless_monk/trippy/Amanita 2.mov"
+    AMANITA_3 = "sleepless_monk/trippy/Amanita 3.mov"
+    AMANITA_4 = "sleepless_monk/trippy/Amanita 4.mov"
+    AMANITA_5 = "sleepless_monk/trippy/Amanita 5.mov"
+    AMANITA_6 = "sleepless_monk/trippy/Amanita 6.mov"
+    AMANITA_7 = "sleepless_monk/trippy/amanita 7.mov"
+    AMANITA = "sleepless_monk/trippy/Amanita.mov"
+    BIRD_MORPH_2 = "sleepless_monk/trippy/Bird Morph 2.mov"
+    BIRD_MORPH_3 = "sleepless_monk/trippy/bird morph 3.mov"
+    BIRD_MORPH_5 = "sleepless_monk/trippy/bird morph 5.mov"
+    BIRD_MORPH = "sleepless_monk/trippy/Bird Morph.mov"
+    CHESHIRE_CAT_2 = "sleepless_monk/trippy/Cheshire cat 2.mov"
+    CHESHIRE_CAT = "sleepless_monk/trippy/Cheshire Cat.mov"
+    CHESHIRE_PORTAL_2 = "sleepless_monk/trippy/Cheshire Portal 2.mov"
+    CHESHIRE_PORTAL_3 = "sleepless_monk/trippy/Cheshire Portal 3.mov"
+    CHESHIRE_PORTAL_4 = "sleepless_monk/trippy/Cheshire Portal 4.mov"
+    CHESHIRE_PORTAL_5 = "sleepless_monk/trippy/Cheshire portal 5.mov"
+    CHESHIRE_PORTAL_6 = "sleepless_monk/trippy/cheshire portal 6.mov"
+    CHESHIRE_PORTAL = "sleepless_monk/trippy/Cheshire Portal.mov"
+    EYE_DECOR = "sleepless_monk/trippy/Eye Decor.mov"
+    EYENIMORPH = "sleepless_monk/trippy/Eyenimorph.mov"
+    FLOWER_ANIMORPH = "sleepless_monk/trippy/flower animorph.mov"
+    FRACTAL_OPENING_3 = "sleepless_monk/trippy/Fractal  opening 3.mov"
+    FRACTAL_OPENING = "sleepless_monk/trippy/Fractal  Opening.mov"
+    FRACTAL_OPENING_2 = "sleepless_monk/trippy/Fractal Opening 2.mov"
+    FRACTAL_OPENING_4 = "sleepless_monk/trippy/fractal opening 4.mov"
+    FRACTAL_OPENING_5 = "sleepless_monk/trippy/fractal opening 5.mov"
+    FRACTAL_OPENING_6 = "sleepless_monk/trippy/Fractal Opening 6.mov"
+    FRACTAL_OPENING_7 = "sleepless_monk/trippy/fractal opening 7.mov"
+    FUNGAL_SPIRIT = "sleepless_monk/trippy/Fungal Spirit.mov"
+    MANDALA_ANIMORPH = "sleepless_monk/trippy/Mandala animorph.mov"
+    MANDALA_DECOR_3 = "sleepless_monk/trippy/mandala Decor 3.mov"
+    MANDALA_DECOR_4 = "sleepless_monk/trippy/mandala Decor 4.mov"
+    MANDALA_DECOR_5 = "sleepless_monk/trippy/mandala decor 5.mov"
+    MANDALA_DECOR_6 = "sleepless_monk/trippy/mandala decor 6.mov"
+    MANDALA_DECOR_7 = "sleepless_monk/trippy/mandala decor 7.mov"
+    MANDALA_DECOR = "sleepless_monk/trippy/Mandala Decor.mov"
+    MUSCARIA_10 = "sleepless_monk/trippy/Muscaria 10.mov"
+    MUSCARIA_11 = "sleepless_monk/trippy/Muscaria 11.mov"
+    MUSCARIA_12 = "sleepless_monk/trippy/muscaria 12.mov"
+    MUSCARIA_13 = "sleepless_monk/trippy/muscaria 13.mov"
+    MUSCARIA_14 = "sleepless_monk/trippy/muscaria 14.mov"
+    MUSCARIA_2 = "sleepless_monk/trippy/Muscaria 2.mov"
+    MUSCARIA_4 = "sleepless_monk/trippy/muscaria 4.mov"
+    MUSCARIA_5 = "sleepless_monk/trippy/Muscaria 5.mov"
+    MUSCARIA_6 = "sleepless_monk/trippy/Muscaria 6.mov"
+    MUSCARIA_7 = "sleepless_monk/trippy/Muscaria 7.mov"
+    MUSCARIA_8 = "sleepless_monk/trippy/Muscaria 8.mov"
+    MUSCARIA_9 = "sleepless_monk/trippy/Muscaria 9.mov"
+    MUSCARIA = "sleepless_monk/trippy/Muscaria.mov"
+
+    @classmethod
+    def index(cls, member):
+        return list(cls).index(member)
+
+    @classmethod
+    def id(cls, index: int = 0):
+        return list(cls)[index]
+

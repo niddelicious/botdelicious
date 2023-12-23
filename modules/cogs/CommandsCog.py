@@ -9,7 +9,13 @@ from Helpers.Timer import Timer
 from Helpers.Utilities import Utilities
 from Modules.EventModule import EventModule
 from Modules.OpenaiModule import OpenaiModule
-from Helpers.Enums import Status, StableDiffusionStyles
+from Helpers.Enums import (
+    Status,
+    StableDiffusionStyles,
+    VideoBeeple,
+    VideoYule,
+    VideoTrippy,
+)
 
 
 class CommandsCog(commands.Cog):
@@ -34,7 +40,9 @@ class CommandsCog(commands.Cog):
 
     @commands.command(name="id", aliases=["track"])
     async def id(self, ctx: commands.Context):
-        ctx.send(f"Current track: {SessionData.current_artist()} - {SessionData.current_title()}")
+        ctx.send(
+            f"Current track: {SessionData.current_artist()} - {SessionData.current_title()}"
+        )
         await EventModule.queue_event(
             event="show_big_track_id",
         )
@@ -51,9 +59,7 @@ class CommandsCog(commands.Cog):
             aliases = command_data.get("aliases", [])
             message = command_data["message"]
 
-            async def func(
-                self, ctx: commands.Context, username=name, message=message
-            ):
+            async def func(self, ctx: commands.Context, username=name, message=message):
                 avatar_url = await self.bot.fetch_user_avatar(username)
                 await ctx.send(message)
                 await EventModule.queue_event(
@@ -98,9 +104,7 @@ class CommandsCog(commands.Cog):
             f"but they didn't supply a name. #feelsbadman"
         )
 
-    @commands.command(
-        name="lurk", aliases=["lurking", "lurker", "wurk", "wurking"]
-    )
+    @commands.command(name="lurk", aliases=["lurking", "lurker", "wurk", "wurking"])
     async def lurk(self, ctx: commands.Context):
         reply = await OpenaiModule.command_intepretor(
             ctx.message.content, ctx.author.name
@@ -136,76 +140,24 @@ class CommandsCog(commands.Cog):
             scene_name="Scene: Collab",
         )
 
-    @commands.command(
-        name="midjourney", aliases=["slideshow", "mj", "gallery"]
-    )
+    @commands.command(name="midjourney", aliases=["slideshow", "mj", "gallery"])
     async def midjourney(self, ctx: commands.Context):
         await EventModule.queue_event(
             event="switch_scene",
             scene_name="Scene: Midjourney",
         )
 
-    @commands.command(name="video", aliases=["v", "beeple", "beeple_crap"])
+    @commands.command(name="video", aliases=["v", "vj", "vjay", "vjloop", "tv"])
     async def video(self, ctx: commands.Context):
         video_id = False
         splits = ctx.message.content.split()
         if len(splits) > 1:
             video_id = (
-                int(splits[1])
-                if len(splits) > 1 and splits[1].isnumeric()
-                else False
+                int(splits[1]) if len(splits) > 1 and splits[1].isnumeric() else False
             )
 
-        vj_loop_list = [
-            "beeple/24K.mp4",  # 0
-            "beeple/Angular.mp4",
-            "beeple/Aquahall.mp4",
-            "beeple/Bokk.mp4",
-            "beeple/Breath Ctrl.mp4",
-            "beeple/Brokchrd.mp4",
-            "beeple/Built.ee.mp4",
-            "beeple/Cleanroom.mp4",
-            "beeple/Crysblast.mp4",
-            "beeple/Crystmounts.mov",
-            "beeple/Cuttt.mp4",  # 10
-            "beeple/Dark Valley.mp4",
-            "beeple/Darknet.mov",
-            "beeple/Dirty Ribbon.mp4",
-            "beeple/Dvde.mp4",
-            "beeple/Exhaust.mov",
-            "beeple/Fiber Optical.mp4",
-            "beeple/Flufff.mp4",
-            "beeple/Glass Ladder.mp4",
-            "beeple/Glaubox.mov",
-            "beeple/Gobo.v1.mp4",  # 20
-            "beeple/Hexxx.mp4",
-            "beeple/Homie.mp4",
-            "beeple/Kewbic Flow.mov",
-            "beeple/Lightgrid.mov",
-            "beeple/Milkcave.mp4",
-            "beeple/Moonvirus.mp4",
-            "beeple/Octmesh.mp4",
-            "beeple/Okkkk.mp4",
-            "beeple/Out-B.mp4",
-            "beeple/P-Crawl.mp4",  # 30
-            "beeple/Pink Vynil.mov",
-            "beeple/Poxels.mov",
-            "beeple/Quicksilver.mp4",
-            "beeple/Rebalance.mp4",
-            "beeple/Redgate.v1.mp4",
-            "beeple/Redgate.v2.mp4",
-            "beeple/Setting Sun.mp4",
-            "beeple/Signal Barrel.mov",
-            "beeple/Steps.mp4",
-            "beeple/Strt.mp4",  # 40
-            "beeple/T-Hawk.mp4",
-            "beeple/Tech.fux.mp4",
-            "beeple/Tendril.mp4",
-            "beeple/Unplug.mp4",
-            "beeple/Winter Feels.mp4",
-            "beeple/Wormhole.mov",
-            "beeple/Wrmmm.mp4",
-        ]
+        vj_loop_list = list(VideoBeeple) + list(VideoYule) + list(VideoTrippy)
+
         if video_id is not False and video_id < len(vj_loop_list):
             video_file = vj_loop_list[video_id]
         else:
@@ -214,8 +166,81 @@ class CommandsCog(commands.Cog):
 
         await EventModule.queue_event(
             event="change_video",
-            video=video_file,
+            video=video_file.value,
         )
+
+        await ctx.send(f"Video #{video_id}: {video_file.value[:-4]}")
+
+    @commands.command(name="beeple", aliases=["beep", "crap", "beeple_crap"])
+    async def video_beeple(self, ctx: commands.Context):
+        video_id = False
+        splits = ctx.message.content.split()
+        if len(splits) > 1:
+            video_id = (
+                int(splits[1]) if len(splits) > 1 and splits[1].isnumeric() else False
+            )
+
+        vj_loop_list = list(VideoBeeple)
+
+        if video_id is not False and video_id < len(vj_loop_list):
+            video_file = vj_loop_list[video_id]
+        else:
+            video_id = random.choice(range(len(vj_loop_list)))
+            video_file = vj_loop_list[video_id]
+
+        await EventModule.queue_event(
+            event="change_video",
+            video=video_file.value,
+        )
+
+        await ctx.send(f"Beeple video #{video_id}: {video_file.value[:-4]}")
+
+    @commands.command(name="yule", aliases=["juletid", "yuletide"])
+    async def video_yule(self, ctx: commands.Context):
+        video_id = False
+        splits = ctx.message.content.split()
+        if len(splits) > 1:
+            video_id = (
+                int(splits[1]) if len(splits) > 1 and splits[1].isnumeric() else False
+            )
+
+        vj_loop_list = list(VideoYule)
+        if video_id is not False and video_id < len(vj_loop_list):
+            video_file = vj_loop_list[video_id]
+        else:
+            video_id = random.choice(range(len(vj_loop_list)))
+            video_file = vj_loop_list[video_id]
+
+        await EventModule.queue_event(
+            event="change_video",
+            video=video_file.value,
+        )
+
+        await ctx.send(f"Yule video #{video_id}: {video_file.value[:-4]}")
+
+    @commands.command(name="trippy", aliases=["trip", "lsd", "dmt", "acid", "shrooms"])
+    async def video_trippy(self, ctx: commands.Context):
+        video_id = False
+        splits = ctx.message.content.split()
+        if len(splits) > 1:
+            video_id = (
+                int(splits[1]) if len(splits) > 1 and splits[1].isnumeric() else False
+            )
+
+        vj_loop_list = list(VideoTrippy)
+
+        if video_id is not False and video_id < len(vj_loop_list):
+            video_file = vj_loop_list[video_id]
+        else:
+            video_id = random.choice(range(len(vj_loop_list)))
+            video_file = vj_loop_list[video_id]
+
+        await EventModule.queue_event(
+            event="change_video",
+            video=video_file.value,
+        )
+
+        await ctx.send(f"Trippy video #{video_id}: {video_file.value[:-4]}")
 
     @commands.command(name="tokens", aliases=["openai", "ticks", "tick"])
     async def tokens(self, ctx: commands.Context):
@@ -284,9 +309,7 @@ class CommandsCog(commands.Cog):
     )
     async def imagine(self, ctx: commands.Context):
         if self._image_generator_status == Status.DISABLED:
-            await ctx.send(
-                f"Sorry, the image generation is currently disabled"
-            )
+            await ctx.send(f"Sorry, the image generation is currently disabled")
             return
 
         words = ctx.message.content.split()
@@ -330,9 +353,7 @@ class CommandsCog(commands.Cog):
             self._image_generator_status = Status.ENABLED
             await ctx.send(f"Image generator enabled")
 
-    @commands.command(
-        name="disableimage", aliases=["imageoff", "imagedisable"]
-    )
+    @commands.command(name="disableimage", aliases=["imageoff", "imagedisable"])
     async def disableimage(self, ctx: commands.Context):
         if ctx.author.is_broadcaster:
             self._image_generator_status = Status.DISABLED
