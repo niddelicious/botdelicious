@@ -53,9 +53,7 @@ class OpenaiModule(BotdeliciousModule):
     def reprompt_conversation(cls, conversation_group, prompt: str = None):
         cls.clean_conversation(conversation_group)
         conversation_prompt = (
-            prompt
-            if prompt
-            else cls._prompt.format(username=conversation_group)
+            prompt if prompt else cls._prompt.format(username=conversation_group)
         )
         cls._conversations[conversation_group] = [
             ConversationEntry("system", conversation_prompt, "niddelicious")
@@ -70,9 +68,7 @@ class OpenaiModule(BotdeliciousModule):
             del cls._conversation_status[conversation_group]
 
     @classmethod
-    def add_message(
-        cls, conversation_group, username, message, role: str = "user"
-    ):
+    def add_message(cls, conversation_group, username, message, role: str = "user"):
         cls._conversations[conversation_group].append(
             ConversationEntry(role, message, username)
         )
@@ -149,11 +145,9 @@ class OpenaiModule(BotdeliciousModule):
             return False
 
     @classmethod
-    async def chat(
-        cls, channel: str = None, username: str = None, message: str = None
-    ):
+    async def chat(cls, channel: str = None, username: str = None, message: str = None):
         if cls.get_status() != ModuleStatus.RUNNING:
-            return False
+            return f"💤"
         if cls.get_conversation_status(channel) == ConversationStatus.IDLE:
             cls.set_conversation_status(channel, ConversationStatus.OCCUPIED)
             cls.add_message(channel, username, message)
@@ -161,7 +155,6 @@ class OpenaiModule(BotdeliciousModule):
                 "assistant",
                 f"Please respond to @{username}'s last message: '{message}'."
                 f" Consider the context and adress them directly."
-                f" Do not use hashtags",
                 "Twitch",
             )
             response = await cls.request_chat(
@@ -169,9 +162,7 @@ class OpenaiModule(BotdeliciousModule):
                 assistant_message=assistant_message,
             )
             if response:
-                SessionData.add_tokens(
-                    tokens=int(response["usage"]["total_tokens"])
-                )
+                SessionData.add_tokens(tokens=int(response["usage"]["total_tokens"]))
                 reply = response["choices"][0]["message"]["content"]
                 cls.add_reply(channel, reply)
             else:
@@ -211,15 +202,11 @@ class OpenaiModule(BotdeliciousModule):
             user_id = user["id"]
             avatar_url = user["profile_image_url"]
             user_description = user["description"]
-            channel_info = await Utilities.get_twitch_channel_info(
-                user_id=user_id
-            )
+            channel_info = await Utilities.get_twitch_channel_info(user_id=user_id)
             game_name = channel_info["game_name"]
             title = channel_info["title"]
             tags = channel_info["tags"]
-            stream_info = await Utilities.get_twitch_live_stream_info(
-                user_id=user_id
-            )
+            stream_info = await Utilities.get_twitch_live_stream_info(user_id=user_id)
             live_message = (
                 "is currently live and is"
                 if stream_info
@@ -269,9 +256,7 @@ class OpenaiModule(BotdeliciousModule):
         color_prompt = f"Convert the following: {content}"
         cls.reprompt_conversation(system_name, system_prompt)
         cls.add_message(system_name, "niddelicious", color_prompt)
-        response = await cls.request_chat(
-            cls.get_conversation(system_name), chaos=0
-        )
+        response = await cls.request_chat(cls.get_conversation(system_name), chaos=0)
         reply = response["choices"][0]["message"]["content"]
         SessionData.add_tokens(tokens=int(response["usage"]["total_tokens"]))
 

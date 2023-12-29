@@ -20,6 +20,7 @@ from Modules.Cogs.CommandsCog import CommandsCog
 from Modules.OpenaiModule import OpenaiModule
 from Modules.Cogs.ShotsCog import ShotsCog
 from Modules.Cogs.CharityCog import CharityCog
+import os
 
 
 class _TwitchBot(commands.Bot):
@@ -50,23 +51,25 @@ class _TwitchBot(commands.Bot):
         self.add_cog(CharityCog())
         self.add_cog(PublicAnnouncementCog(bot=self))
 
+        if self.config.log_to_file:
+            self.init_log_file()
+
     async def event_ready(self):
         logging.info(f"Logged in as | {self.nick}")
         logging.info(f"User id is | {self.user_id}")
         AsyncioThread.run_coroutine(
-            self.event_subscription.listen(
-                port=self.config.event_sub.listen_port
-            )
+            self.event_subscription.listen(port=self.config.event_sub.listen_port)
         )
         await self.say_hello()
 
     async def event_message(self, message):
+        if self.config.log_to_file:
+            await self.log_chat(message)
+
         if message.echo:
             return
 
-        AsyncioThread.run_coroutine(
-            EventModule.queue_event(event="new_message")
-        )
+        AsyncioThread.run_coroutine(EventModule.queue_event(event="new_message"))
         logging.info(f"{message.author.name}: {message.content}")
 
         if message.author.is_mod:
@@ -102,9 +105,7 @@ class _TwitchBot(commands.Bot):
     async def vip_active(cls, vip):
         if vip not in SessionData.get_vips():
             SessionData.add_vip(vip=vip)
-            AsyncioThread.run_coroutine(
-                EventModule.queue_event(event="vip", vip=vip)
-            )
+            AsyncioThread.run_coroutine(EventModule.queue_event(event="vip", vip=vip))
 
     @classmethod
     async def chatter_active(cls, chatter):
@@ -114,10 +115,10 @@ class _TwitchBot(commands.Bot):
                 EventModule.queue_event(event="chatter", chatter=chatter)
             )
 
-    async def event_eventsub_notification_follow(
+    async def event_eventsub_notification_followV2(
         self, payload: eventsub.ChannelFollowData
     ):
-        logging.debug(f"New follower!")
+        logging.debug(f"New follower! (v2)")
         logging.debug(payload.data.user.name)
         SessionData.add_follower(follower=payload.data.user.name)
         avatar_url = await self.fetch_user_avatar(payload.data.user.name)
@@ -136,14 +137,7 @@ class _TwitchBot(commands.Bot):
             message=message,
         )
 
-    async def event_eventsub_notification_followV2(
-        self, payload: eventsub.ChannelFollowData
-    ):
-        await self.event_eventsub_notification_follow(payload)
-
-    async def event_eventsub_notification_raid(
-        self, payload: eventsub.ChannelRaidData
-    ):
+    async def event_eventsub_notification_raid(self, payload: eventsub.ChannelRaidData):
         logging.debug(f"New raid!")
         logging.debug(payload.data.raider.name)
         logging.debug(payload.data.viewer_count)
@@ -208,18 +202,14 @@ class _TwitchBot(commands.Bot):
 
     async def say_hello(self):
         for channel in self.connected_channels:
-            current_time_string = datetime.datetime.now().strftime(
-                "%Y-%m-%d %H:%M:%S"
-            )
+            current_time_string = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             await self.send_message_to_channel(
                 channel.name, f"Hello World! ({current_time_string})"
             )
 
     async def say_bye(self):
         for channel in self.connected_channels:
-            current_time_string = datetime.datetime.now().strftime(
-                "%Y-%m-%d %H:%M:%S"
-            )
+            current_time_string = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             await self.send_message_to_channel(
                 channel.name, f"Bye World! ({current_time_string})"
             )
@@ -234,11 +224,20 @@ class _TwitchBot(commands.Bot):
         content = json.loads(response.content)
         if len(content["data"]) < 1:
             logging.warning(
-                f"Could not fetch avatar for user {username}. "
-                f"Response: {content}"
+                f"Could not fetch avatar for user {username}. " f"Response: {content}"
             )
             return await self.fetch_user_avatar("botdelicious")
         return json.loads(response.content)["data"][0]["profile_image_url"]
+
+    def init_log_file(self):
+        current_date = datetime.datetime.now().strftime("%Y-%m-%d")
+        self.log_filename = f"logs/{current_date}.log"
+
+    async def log_chat(self, message):
+        author = self.config.bot_name if message.echo else message.author.name
+        current_time_string = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with open(self.log_filename, "a", encoding="utf-8") as log_file:
+            log_file.write(f"{current_time_string} | {author}: {message.content}\n")
 
 
 class ChatModule(BotdeliciousModule):
@@ -285,9 +284,7 @@ class ChatModule(BotdeliciousModule):
         refresh = DotMap(requests.post(twitch_refresh_url).json())
         logging.debug(f"Refresh response: {refresh}")
         if self.config.access_token != refresh.access_token:
-            ConfigController.update_config(
-                "chat", "access_token", refresh.access_token
-            )
+            ConfigController.update_config("chat", "access_token", refresh.access_token)
 
         if self.config.refresh_token != refresh.refresh_token:
             ConfigController.update_config(

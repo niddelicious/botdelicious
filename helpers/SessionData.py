@@ -19,6 +19,7 @@ class SessionData:
     _vips = []
     _chatters = []
     _tokens_count = 0
+    _start_delay = None
 
     @classmethod
     def start_session(cls):
@@ -117,6 +118,10 @@ class SessionData:
             elapsed_time = round(
                 (datetime.now() - cls.get_session_start()).total_seconds()
             )
+            if not cls._start_delay:
+                cls._start_delay = elapsed_time
+            elapsed_time -= cls._start_delay
+
             hours, remainder = divmod(elapsed_time, 3600)
             minutes, seconds = divmod(remainder, 60)
             timestamp = (
@@ -129,7 +134,14 @@ class SessionData:
             )
             cls._playlist.append(track)
             cls._tracks_count += 1
+            cls.write_track_to_file(track)
             logging.debug(cls._playlist)
+
+    @classmethod
+    def write_track_to_file(cls, track: Track):
+        filename = f"playlists/{cls._start.strftime('%Y-%m-%d %H.%M')}.log"
+        with open(filename, "a", encoding="utf-8") as file:
+            file.write(f"[{track.timestamp}] {track.artist} - {track.title}\n")
 
     @classmethod
     def get_playlist(cls) -> List[Track]:
@@ -157,12 +169,10 @@ class SessionData:
 
     @classmethod
     def write_playlist_to_file(cls):
-        filename = f"playlist, {cls._start.strftime('%Y-%m-%d %H.%M')}.txt"
-        with open(filename, "w") as file:
+        filename = f"playlists/{cls._start.strftime('%Y-%m-%d %H.%M')} (done).log"
+        with open(filename, "w", encoding="utf-8") as file:
             for track in cls._playlist:
-                file.write(
-                    f"[{track.timestamp}] {track.artist} - {track.title}\n"
-                )
+                file.write(f"[{track.timestamp}] {track.artist} - {track.title}\n")
 
     @classmethod
     def process_session_credits(cls):
