@@ -40,20 +40,14 @@ def main():
     stdout_handler = logging.StreamHandler(sys.stdout)
     stdout_handler.setFormatter(formatter)
     logger.addHandler(stdout_handler)
-    coloredlogs.install(
-        level=ConfigController._config.logging.level, logger=logger
-    )
+    coloredlogs.install(level=ConfigController._config.logging.level, logger=logger)
     if ConfigController._config.logging.log_to_file:
-        logging.basicConfig(
-            filename="debug.log", encoding="utf-8", level=logging.DEBUG
-        )
+        logging.basicConfig(filename="debug.log", encoding="utf-8", level=logging.DEBUG)
 
     """Main entry point of the app"""
     b = Botdelicious()
     b.autostart()
-    sleep_time = (
-        2 if logging.getLogger().getEffectiveLevel() == logging.DEBUG else 0
-    )
+    sleep_time = 2 if logging.getLogger().getEffectiveLevel() == logging.DEBUG else 0
     EventModule.set_loop_sleep(sleep_time=sleep_time)
     SessionData.start_session()
     while CommandLine.cli():

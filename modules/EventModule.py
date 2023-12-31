@@ -123,9 +123,7 @@ class EventModule(BotdeliciousModule):
             Utilities.copy_fallback_image_to_cover_file()
 
         logging.debug("Storing new track in session data")
-        SessionData.set_current_track(
-            artist=item_data.artist, title=item_data.title
-        )
+        SessionData.set_current_track(artist=item_data.artist, title=item_data.title)
         logging.debug("Updating track stat list")
         await asyncio.gather(
             *[instance.event_update_stats() for instance in cls._obs_instances]
@@ -235,10 +233,7 @@ class EventModule(BotdeliciousModule):
     async def handle_vip(cls, item_data=None, *args, **kwargs):
         logging.debug("VIP check-in")
         await asyncio.gather(
-            *[
-                instance.event_vip(vip=item_data.vip)
-                for instance in cls._obs_instances
-            ]
+            *[instance.event_vip(vip=item_data.vip) for instance in cls._obs_instances]
         )
 
     @classmethod
@@ -284,9 +279,7 @@ class EventModule(BotdeliciousModule):
         logging.debug("Synchronizing recording state")
         await asyncio.gather(
             *[
-                instance.sync_record_toggle(
-                    record_status=item_data.record_status
-                )
+                instance.sync_record_toggle(record_status=item_data.record_status)
                 for instance in cls._obs_instances
             ]
         )
@@ -302,9 +295,7 @@ class EventModule(BotdeliciousModule):
         )
 
     @classmethod
-    async def handle_show_generated_image(
-        cls, item_data=None, *args, **kwargs
-    ):
+    async def handle_show_generated_image(cls, item_data=None, *args, **kwargs):
         logging.debug("Showing generated image")
         await asyncio.gather(
             *[
@@ -321,7 +312,9 @@ class EventModule(BotdeliciousModule):
     async def handle_sd_generate_image(cls, item_data=None, *args, **kwargs):
         logging.debug("SD start image")
         await asyncio.gather(
-            cls._sd_module.generate_image(item_data.prompt, item_data.style),
+            cls._sd_module.generate_image(
+                item_data.prompt, item_data.style, item_data.author
+            ),
             *[
                 instance.sd_start(
                     prompt=item_data.prompt,
@@ -332,10 +325,7 @@ class EventModule(BotdeliciousModule):
             ],
         )
         await asyncio.gather(
-            *[
-                instance.sd_show(item_data.author)
-                for instance in cls._obs_instances
-            ]
+            *[instance.sd_show(item_data.author) for instance in cls._obs_instances]
         )
 
     @classmethod

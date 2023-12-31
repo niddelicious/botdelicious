@@ -187,9 +187,7 @@ class OBSModule(BotdeliciousModule):
         Name    Type    Description
         sceneName  String  Name of the scene that was switched to
         """
-        logging.debug(
-            f'|{self._name}| Scene switched to {eventData["sceneName"]}'
-        )
+        logging.debug(f'|{self._name}| Scene switched to {eventData["sceneName"]}')
         if self._name == "twitch" and eventData["sceneName"] == "Scene: Outro":
             await self.event_update_credits()
         await EventModule.queue_event(event="sync_scene", event_data=eventData)
@@ -212,10 +210,7 @@ class OBSModule(BotdeliciousModule):
         logging.debug(f"|{self._name}| Stream state changed:")
         logging.debug(eventData["outputActive"])
         logging.debug(eventData["outputState"])
-        if (
-            eventData["outputActive"] is True
-            and self._role == ModuleRole.LEADER
-        ):
+        if eventData["outputActive"] is True and self._role == ModuleRole.LEADER:
             SessionData.start_session()
 
     async def on_record_toggled(self, eventData):
@@ -305,9 +300,7 @@ class OBSModule(BotdeliciousModule):
         await self.call(type="Update text", request=request)
 
     @check_obs_sources
-    async def call_get_item_id(
-        self, scene_name: str = None, source_name: str = None
-    ):
+    async def call_get_item_id(self, scene_name: str = None, source_name: str = None):
         request = simpleobsws.Request(
             "GetSceneItemId",
             {"sceneName": f"{scene_name}", "sourceName": f"{source_name}"},
@@ -487,9 +480,7 @@ class OBSModule(BotdeliciousModule):
         avatar_url: str = "https://loremflickr.com/300/300/twitch",
     ):
         await asyncio.gather(
-            self.call_update_text(
-                input_name="Shoutout username", text=username
-            ),
+            self.call_update_text(input_name="Shoutout username", text=username),
             self.call_update_text(input_name="Shoutout message", text=message),
             self.call_update_url(input_name="Image avatar", url=avatar_url),
         )
@@ -561,9 +552,7 @@ class OBSModule(BotdeliciousModule):
             for scene_item in scene_items:
                 if item.source == scene_item["sourceName"]:
                     scene_item_id = scene_item["sceneItemId"]
-            await self.call_update_text_extended(
-                item, scene_item_id=scene_item_id
-            )
+            await self.call_update_text_extended(item, scene_item_id=scene_item_id)
 
     async def event_update_credits(self):
         credits = SessionData.process_session_credits()
@@ -574,19 +563,13 @@ class OBSModule(BotdeliciousModule):
             for scene_item in scene_items:
                 if item.source == scene_item["sourceName"]:
                     scene_item_id = scene_item["sceneItemId"]
-            await self.call_update_text_extended(
-                item, scene_item_id=scene_item_id
-            )
+            await self.call_update_text_extended(item, scene_item_id=scene_item_id)
 
     async def event_moderator(self, moderator: str = None):
         if self._name == "video":
             await asyncio.gather(
-                self.call_update_text(
-                    input_name="Text, supertitle", text="MODERATOR"
-                ),
-                self.call_update_text(
-                    input_name="Text, outline", text=moderator
-                ),
+                self.call_update_text(input_name="Text, supertitle", text="MODERATOR"),
+                self.call_update_text(input_name="Text, outline", text=moderator),
                 self.call_update_text(input_name="Text, fill", text=moderator),
                 self.call_update_text(
                     input_name="Text, subtitle", text="IS IN THE HOUSE"
@@ -605,9 +588,7 @@ class OBSModule(BotdeliciousModule):
     async def event_vip(self, vip: str = None):
         if self._name == "video":
             await asyncio.gather(
-                self.call_update_text(
-                    input_name="Text, supertitle", text="VIP"
-                ),
+                self.call_update_text(input_name="Text, supertitle", text="VIP"),
                 self.call_update_text(input_name="Text, outline", text=vip),
                 self.call_update_text(input_name="Text, fill", text=vip),
                 self.call_update_text(
@@ -628,9 +609,7 @@ class OBSModule(BotdeliciousModule):
         if self._name == "video":
             await asyncio.gather(
                 self.call_update_text(input_name="Text, supertitle", text=""),
-                self.call_update_text(
-                    input_name="Text, outline", text=chatter
-                ),
+                self.call_update_text(input_name="Text, outline", text=chatter),
                 self.call_update_text(input_name="Text, fill", text=chatter),
                 self.call_update_text(
                     input_name="Text, subtitle", text="WELCOME TO THE CHAT"
@@ -646,18 +625,14 @@ class OBSModule(BotdeliciousModule):
             logging.debug("... animation completed")
             await self.reset_video_texts()
 
-    async def event_new_follower(
-        self, username: str = None, avatar_url: str = None
-    ):
+    async def event_new_follower(self, username: str = None, avatar_url: str = None):
         logging.debug(f"{self._name} | Animation started...")
         if self._name == "video":
             await asyncio.gather(
                 self.call_update_text(
                     input_name="Text, supertitle", text="NEW FOLLOWER"
                 ),
-                self.call_update_text(
-                    input_name="Text, outline", text=username
-                ),
+                self.call_update_text(input_name="Text, outline", text=username),
                 self.call_update_text(input_name="Text, fill", text=username),
             )
             await self.call_toggle_filter(
@@ -667,15 +642,11 @@ class OBSModule(BotdeliciousModule):
             )
         if self._name == "twitch":
             await asyncio.gather(
-                self.call_update_text(
-                    input_name="Bump text", text=f"{username}"
-                ),
+                self.call_update_text(input_name="Bump text", text=f"{username}"),
             )
             if avatar_url:
                 await asyncio.gather(
-                    self.call_update_url(
-                        input_name="Bump image", url=avatar_url
-                    ),
+                    self.call_update_url(input_name="Bump image", url=avatar_url),
                     self.call_toggle_filter(
                         source_name="Bumps",
                         filter_name="Show: Image",
@@ -702,9 +673,7 @@ class OBSModule(BotdeliciousModule):
                 self.call_update_text(
                     input_name="Text, supertitle", text="INCOMING RAID"
                 ),
-                self.call_update_text(
-                    input_name="Text, outline", text=raid_text
-                ),
+                self.call_update_text(input_name="Text, outline", text=raid_text),
                 self.call_update_text(input_name="Text, fill", text=raid_text),
                 self.call_update_text(
                     input_name="Text, subtitle", text="WELCOME EVERYONE"
@@ -717,15 +686,11 @@ class OBSModule(BotdeliciousModule):
             )
         if self._name == "twitch":
             await asyncio.gather(
-                self.call_update_text(
-                    input_name="Bump text", text=f"{raid_text}"
-                ),
+                self.call_update_text(input_name="Bump text", text=f"{raid_text}"),
             )
             if avatar_url:
                 await asyncio.gather(
-                    self.call_update_url(
-                        input_name="Bump image", url=avatar_url
-                    ),
+                    self.call_update_url(input_name="Bump image", url=avatar_url),
                     self.call_toggle_filter(
                         source_name="Bumps",
                         filter_name="Show: Image",
@@ -744,9 +709,7 @@ class OBSModule(BotdeliciousModule):
 
     async def event_change_video(self, video: str = None):
         if self._name == "video":
-            await self.call_update_input_source(
-                input_name="Video", input_source=video
-            ),
+            await self.call_update_input_source(input_name="Video", input_source=video),
 
     async def call_update_text_extended(
         self, item: OBSText = None, scene_item_id: int = None
@@ -788,9 +751,7 @@ class OBSModule(BotdeliciousModule):
     async def call_update_input_source(
         self, input_name: str = None, input_source: str = None
     ):
-        video_path = (
-            f"C:/Users/micro/Documents/OBS/video-sources/{input_source}"
-        )
+        video_path = f"C:/Users/micro/Documents/OBS/video-sources/{input_source}"
         request = simpleobsws.Request(
             "SetInputSettings",
             {
@@ -801,16 +762,12 @@ class OBSModule(BotdeliciousModule):
                 },
             },
         )
-        await self.call(
-            type=f"Changing {input_name}: {input_source}", request=request
-        )
+        await self.call(type=f"Changing {input_name}: {input_source}", request=request)
 
     @check_obs_sources
-    async def call_update_image(
-        self, input_name: str = None, input_source: str = None
-    ):
+    async def call_update_image(self, input_name: str = None, input_source: str = None):
         image_path = (
-            f"C:/Users/micro/Pictures/Midjourney/1920x1080/{input_source}"
+            f"C:/Users/micro/Pictures/Stable Diffusion/Gallery/Scaled/{input_source}"
         )
         request = simpleobsws.Request(
             "SetInputSettings",
@@ -822,9 +779,7 @@ class OBSModule(BotdeliciousModule):
                 },
             },
         )
-        await self.call(
-            type=f"Changing {input_name}: {input_source}", request=request
-        )
+        await self.call(type=f"Changing {input_name}: {input_source}", request=request)
 
     async def reset_track_texts(self):
         await asyncio.gather(
@@ -962,13 +917,9 @@ class OBSModule(BotdeliciousModule):
                 self.call_update_text(
                     input_name="Text, supertitle", text="WASTED MONEY"
                 ),
-                self.call_update_text(
-                    input_name="Text, outline", text=kofi_text
-                ),
+                self.call_update_text(input_name="Text, outline", text=kofi_text),
                 self.call_update_text(input_name="Text, fill", text=kofi_text),
-                self.call_update_text(
-                    input_name="Text, subtitle", text=message
-                ),
+                self.call_update_text(input_name="Text, subtitle", text=message),
             )
             await self.call_toggle_filter(
                 source_name="Animation",
@@ -977,14 +928,10 @@ class OBSModule(BotdeliciousModule):
             )
         if self._name == "twitch":
             await asyncio.gather(
-                self.call_update_text(
-                    input_name="Bump text", text=f"{kofi_text}"
-                ),
+                self.call_update_text(input_name="Bump text", text=f"{kofi_text}"),
             )
             await asyncio.gather(
-                self.call_update_text(
-                    input_name="Bump subtext", text=f"{message}"
-                ),
+                self.call_update_text(input_name="Bump subtext", text=f"{message}"),
                 self.call_toggle_filter(
                     source_name="Bumps",
                     filter_name="Show: Subtext",

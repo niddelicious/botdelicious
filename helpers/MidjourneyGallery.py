@@ -4,7 +4,7 @@ from Helpers.Dataclasses import MidjourneyImage
 
 
 class MidjourneyGallery:
-    _folder_path = rf"C:\Users\micro\Pictures\Midjourney\1920x1080"
+    _folder_path = rf"C:\Users\micro\Pictures\Stable Diffusion\Gallery\Scaled"
     _pool = []
     _played = []
     _max_pool_size = 0

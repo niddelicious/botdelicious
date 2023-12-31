@@ -5,13 +5,16 @@ import os
 from pathlib import Path
 import subprocess
 import logging
-
+from PIL import Image
+from datetime import datetime
 import httpx
 from Controllers.ConfigController import ConfigController
 
 from Modules.BotdeliciousModule import BotdeliciousModule
 from Modules.EventModule import EventModule
 from Helpers.Enums import ModuleStatus
+from Helpers.FTPClient import FTPClient
+from Helpers.DiscordBot import DiscordBot
 
 
 class StableDiffusionModule(BotdeliciousModule):
@@ -22,9 +25,7 @@ class StableDiffusionModule(BotdeliciousModule):
     def __init__(self):
         super().__init__()
         self.directory = Path(os.getcwd())
-        self.working_directory = (
-            self.directory / "external" / "stable-diffusion-webui"
-        )
+        self.working_directory = self.directory / "external" / "stable-diffusion-webui"
         self.executable = ["api.bat"]
         self.process = None
 
@@ -43,28 +44,24 @@ class StableDiffusionModule(BotdeliciousModule):
 
     def console(self):
         si = subprocess.STARTUPINFO()
-        si.dwFlags = (
-            subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NEW_CONSOLE
-        )
+        si.dwFlags = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NEW_CONSOLE
         # Save the current working directory
         old_cwd = os.getcwd()
         # Change the working directory to the directory of the batch file
         os.chdir(self.working_directory)
-        self.process = subprocess.Popen(
-            self.executable, close_fds=True, startupinfo=si
-        )
+        self.process = subprocess.Popen(self.executable, close_fds=True, startupinfo=si)
         # Change the working directory back to the original directory
         os.chdir(old_cwd)
 
     @classmethod
-    async def generate_image(cls, prompt, style):
+    async def generate_image(cls, prompt, style, author):
         progress_task = asyncio.create_task(cls.get_progress())
-        await cls.get_image(prompt, style)
+        await cls.get_image(prompt, style, author)
         await progress_task
         return True
 
     @classmethod
-    async def get_image(cls, prompt, style):
+    async def get_image(cls, prompt, style, author):
         sd_config = ConfigController.get_config_file("sd-config.yml")
         txt2img_url = f"{cls._api_url}/txt2img"
         headers = {"Content-Type": "application/json"}
@@ -97,6 +94,17 @@ class StableDiffusionModule(BotdeliciousModule):
         image_data = base64.b64decode(base64_image)
         with open("stable-diffusion.png", "wb") as f:
             f.write(image_data)
+
+        new_filename = datetime.now().strftime("%Y%m%d-%H%M%S")
+
+        with Image.open("stable-diffusion.png") as img:
+            img.save(f"stable-diffusion.jpg", "JPEG", quality=60)
+            img.thumbnail((128, 128))
+            img.save(f"stable-diffusion-th.jpg", "JPEG", quality=60)
+
+        FTPClient.upload(new_filename)
+        await DiscordBot.upload(filename=new_filename, prompt=prompt, author=author)
+
         return True
 
     @classmethod
@@ -111,9 +119,7 @@ class StableDiffusionModule(BotdeliciousModule):
                 print(f"Progress: {response_data['progress']}")
 
                 if response_data["current_image"]:
-                    image_data = base64.b64decode(
-                        response_data["current_image"]
-                    )
+                    image_data = base64.b64decode(response_data["current_image"])
                     with open("stable-diffusion.png", "wb") as f:
                         f.write(image_data)
                 await EventModule.direct_event(
