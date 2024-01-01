@@ -2,6 +2,7 @@ import asyncio
 import base64
 import json
 import os
+import shutil
 from pathlib import Path
 import subprocess
 import logging
@@ -104,6 +105,10 @@ class StableDiffusionModule(BotdeliciousModule):
 
         FTPClient.upload(new_filename)
         await DiscordBot.upload(filename=new_filename, prompt=prompt, author=author)
+
+        destination_directory = "C:/Users/micro/Pictures/SD Chat/Original/"
+        destination_path = f"{destination_directory}{new_filename}.png"
+        shutil.copy("stable-diffusion.png", destination_path)
 
         return True
 

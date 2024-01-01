@@ -54,6 +54,13 @@ class MidjourneyImage:
 
 
 @dataclass
+class UserGeneratedImage:
+    index: int
+    filename: str
+    name: str
+
+
+@dataclass
 class MidjourneySlide:
     index: int
     filename: str
