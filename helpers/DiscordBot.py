@@ -15,17 +15,16 @@ class DiscordBot:
 
     @classmethod
     async def upload(cls, filename: str = None, prompt: str = None, author: str = None):
-        if cls.BOT is None:
-            logging.debug(f"Configuring DiscordClient")
-            config = ConfigController.get("discord")
-            cls.TOKEN = config.token
-            cls.CHANNEL_ID = config.channel_id
+        logging.debug(f"Configuring DiscordClient")
+        config = ConfigController.get("discord")
+        cls.TOKEN = config.token
+        cls.CHANNEL_ID = config.channel_id
 
-            intents = discord.Intents.default()
-            intents.message_content = True
+        intents = discord.Intents.default()
+        intents.message_content = True
 
-            logging.debug(f"Creating DiscordClient")
-            cls.BOT = DiscordClient(intents=intents, channel_id=cls.CHANNEL_ID)
+        logging.debug(f"Creating DiscordClient")
+        cls.BOT = DiscordClient(intents=intents, channel_id=cls.CHANNEL_ID)
         cls.BOT.post_filename = filename
         cls.BOT.post_prompt = prompt
         cls.BOT.post_author = author

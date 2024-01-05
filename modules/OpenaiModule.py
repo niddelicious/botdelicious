@@ -154,7 +154,7 @@ class OpenaiModule(BotdeliciousModule):
             assistant_message = ConversationEntry(
                 "assistant",
                 f"Please respond to @{username}'s last message: '{message}'."
-                f" Consider the context and adress them directly."
+                f" Consider the context and adress them directly.",
                 "Twitch",
             )
             response = await cls.request_chat(
