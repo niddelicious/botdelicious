@@ -106,9 +106,17 @@ class StableDiffusionModule(BotdeliciousModule):
         FTPClient.upload(new_filename)
         await DiscordBot.upload(filename=new_filename, prompt=prompt, author=author)
 
-        destination_directory = "C:/Users/micro/Pictures/SD Chat/Original/"
-        destination_path = f"{destination_directory}{new_filename}.png"
-        shutil.copy("stable-diffusion.png", destination_path)
+        destination_directory = "C:/Users/micro/Pictures/SD Chat"
+        destination_path_orig = f"{destination_directory}/Original/{new_filename}.png"
+        destination_path_lossy = (
+            f"{destination_directory}/Compressed/{new_filename}.jpg"
+        )
+        destination_path_thumb = (
+            f"{destination_directory}/Thumbnails/{new_filename}.jpg"
+        )
+        shutil.copy("stable-diffusion.png", destination_path_orig)
+        shutil.copy("stable-diffusion.jpg", destination_path_lossy)
+        shutil.copy("stable-diffusion-th.jpg", destination_path_thumb)
 
         return True
 
