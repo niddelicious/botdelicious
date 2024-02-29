@@ -1,4 +1,5 @@
 import logging
+import datetime
 import openai
 from openai import OpenAIError
 from Controllers.ConfigController import ConfigController
@@ -16,7 +17,9 @@ class OpenaiModule(BotdeliciousModule):
     _prompt = ""
     _thinking_message = ""
     _error_message = ""
+    _model = ""
     _image_status: QueueStatus = QueueStatus.IDLE
+    _logger = None
 
     def __init__(self) -> None:
         super().__init__()
@@ -26,17 +29,35 @@ class OpenaiModule(BotdeliciousModule):
         cls._prompt = config.prompt
         cls._thinking_message = config.thinking_message
         cls._error_message = config.error_message
+        cls._model = config.model
 
     async def start(self):
         config = ConfigController.get("openai")
         openai.organization = config.org
         openai.api_key = config.key
         self.set_config(config)
+        await self.openai_logging()
         self.set_status(ModuleStatus.RUNNING)
 
     async def stop(self):
         self.set_status(ModuleStatus.STOPPING)
         self.set_status(ModuleStatus.IDLE)
+
+    @classmethod
+    async def openai_logging(cls):
+        cls._logger = logging.getLogger(__name__)
+        cls._logger.setLevel(logging.DEBUG)
+        cls._logger.propagate = False
+        log_filename = datetime.datetime.now().strftime(
+            f"logs/{__name__}-%Y-%m-%d_%H-%M-%S.log"
+        )
+        file_handler = logging.FileHandler(log_filename, encoding="utf-8")
+        file_handler.setLevel(logging.DEBUG)
+        formatter = logging.Formatter(
+            "%(asctime)s | %(levelname)s | %(name)s | %(message)s", "%m-%d-%Y %H:%M:%S"
+        )
+        file_handler.setFormatter(formatter)
+        cls._logger.addHandler(file_handler)
 
     @classmethod
     def start_conversation(cls, conversation_group):
@@ -72,7 +93,7 @@ class OpenaiModule(BotdeliciousModule):
         cls._conversations[conversation_group].append(
             ConversationEntry(role, message, username)
         )
-        if len(cls._conversations[conversation_group]) > 15:
+        if len(cls._conversations[conversation_group]) > 100:
             del cls._conversations[conversation_group][1:3]
 
     @classmethod
@@ -104,41 +125,19 @@ class OpenaiModule(BotdeliciousModule):
     async def request_chat(
         cls, messages, assistant_message: str = None, chaos: float = 1.0
     ):
-        """
-        $0.002 per 1000 tokens using gpt-3.5-turbo
-        Which is 1/10th of the cost of text-davinci-003
-        Meaning that even with a larger prompt, this is still cheaper
-        """
         try:
+            cls._logger.warning("New query:")
+            cls._logger.info(messages)
             json_messages = [message.__dict__ for message in messages]
             if assistant_message:
                 json_messages.append(assistant_message.__dict__)
             response = await openai.ChatCompletion.acreate(
-                model="gpt-3.5-turbo-0613",
+                model=cls._model,
                 messages=json_messages,
                 temperature=chaos,
             )
             logging.info(response)
-            return response
-        except OpenAIError as e:
-            logging.error(e)
-            return False
-
-    @classmethod
-    async def request_text(cls, prompt: str = None, chaos: float = 1.0):
-        """
-        $0.020 per 1000 tokens using text-davinci-003
-        Which means 10x that of gpt-3.5-turbo
-        So rather use that than this
-        """
-        try:
-            response = await openai.Completion.acreate(
-                model="text-davinci-003",
-                prompt=prompt,
-                max_tokens=100,
-                temperature=chaos,
-            )
-            logging.info(response)
+            cls._logger.info(response)
             return response
         except OpenAIError as e:
             logging.error(e)
@@ -333,24 +332,3 @@ class OpenaiModule(BotdeliciousModule):
 
         reply = Utilities.clean_ai_replies(reply)
         return reply
-
-    @classmethod
-    async def image_intepretor(cls, prompt: str = None, author: str = None):
-        if cls.get_status() != ModuleStatus.RUNNING:
-            return None
-
-        if cls._image_status == QueueStatus.PROCESSING:
-            return None
-
-        cls._image_status = QueueStatus.PROCESSING
-        response = openai.Image.create(
-            prompt=prompt,
-            n=1,
-            size="512x512",
-            response_format="url",
-            user=author,
-        )
-        SessionData.add_tokens(tokens=9000)
-        image_url = response["data"][0]["url"]
-        cls._image_status = QueueStatus.IDLE
-        return image_url

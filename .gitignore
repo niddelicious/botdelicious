@@ -10,9 +10,11 @@ scratchpad.py
 sd-sandbox.py
 stable-diffusion.png
 stable-diffusion.jpg
+stable-diffusion-th.jpg
 gpt-playground.py
 playlist*.txt
 image-generations/
 image-outputs/
 logs/
 playlists/
+chatlogs/

@@ -1,6 +1,7 @@
 import os
 import re
 import requests
+import json
 from pathlib import Path
 import shutil
 import logging
@@ -76,12 +77,24 @@ class Utilities:
 
     @classmethod
     def extract_colors(cls, text: str):
+        try:
+            json_data = json.loads(text)
+            return {
+                "red": json_data["red"],
+                "green": json_data["green"],
+                "blue": json_data["blue"],
+            }
+        except Exception as e:
+            logging.error(f"Error extracting colors: {e}")
+            logging.error(f"Text: {text}")
+            logging.error(f"Attempting string extraction...")
+
+        # Adjusted regex pattern to match the given string format
         pattern = (
-            r"^(?:.*)\{'red':\s*"
+            r"\{\s*'red'\s*:\s*"
             r"([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]),\s*"
-            r"'green':\s*([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]),\s*"
-            r"'blue':\s*([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\}"
-            r"(?:.*)$"
+            r"'green'\s*:\s*([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]),\s*"
+            r"'blue'\s*:\s*([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\s*\}"
         )
         match = re.search(pattern, text)
 

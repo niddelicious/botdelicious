@@ -118,8 +118,9 @@ class _TwitchBot(commands.Bot):
     async def event_eventsub_notification_followV2(
         self, payload: eventsub.ChannelFollowData
     ):
-        logging.debug(f"New follower! (v2)")
-        logging.debug(payload.data.user.name)
+        logging.warning(f"New follower! (v2)")
+        logging.warning(payload)
+        logging.warning(payload.data.user.name)
         SessionData.add_follower(follower=payload.data.user.name)
         avatar_url = await self.fetch_user_avatar(payload.data.user.name)
         AsyncioThread.run_coroutine(
@@ -231,7 +232,7 @@ class _TwitchBot(commands.Bot):
 
     def init_log_file(self):
         current_date = datetime.datetime.now().strftime("%Y-%m-%d")
-        self.log_filename = f"logs/{current_date}.log"
+        self.log_filename = f"chatlogs/{current_date}.log"
 
     async def log_chat(self, message):
         author = self.config.bot_name if message.echo else message.author.name

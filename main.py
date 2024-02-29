@@ -9,6 +9,7 @@ __version__ = "0.1.0"
 
 import sys
 import yaml
+import datetime
 from dotmap import DotMap
 import logging
 import coloredlogs
@@ -32,17 +33,37 @@ class Botdelicious:
 
 def main():
     ConfigController.get_config()
+    if ConfigController._config["logging"]["log_to_file"]:
+        log_filename = datetime.datetime.now().strftime(
+            "logs/debug-%Y-%m-%d_%H-%M-%S.log"
+        )
+
+        logging.basicConfig(
+            filename=log_filename,
+            filemode="a",  # Append to the log file
+            format="%(asctime)s | %(levelname)s | %(message)s",
+            datefmt="%m-%d-%Y %H:%M:%S",
+            level=logging.DEBUG,  # Set to DEBUG level for the file handler
+        )
+
+    # Create logger
     logger = logging.getLogger()
-    logger.setLevel(ConfigController._config.logging.level)
-    formatter = logging.Formatter(
-        "%(asctime)s | %(levelname)s | %(message)s", "%m-%d-%Y %H:%M:%S"
+    logger.setLevel(logging.DEBUG)  # Set logger to DEBUG to capture all levels
+
+    # Console (stdout) handler for INFO and higher
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(logging.INFO)  # Set to INFO level for console
+    log_format = "%(asctime)s | %(levelname)s | %(message)s"
+    date_format = "%m-%d-%Y %H:%M:%S"
+    formatter = logging.Formatter(log_format, date_format)
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+    coloredlogs.install(
+        level=ConfigController._config.logging.level,
+        logger=logger,
+        fmt=log_format,
+        datefmt=date_format,
     )
-    stdout_handler = logging.StreamHandler(sys.stdout)
-    stdout_handler.setFormatter(formatter)
-    logger.addHandler(stdout_handler)
-    coloredlogs.install(level=ConfigController._config.logging.level, logger=logger)
-    if ConfigController._config.logging.log_to_file:
-        logging.basicConfig(filename="debug.log", encoding="utf-8", level=logging.DEBUG)
 
     """Main entry point of the app"""
     b = Botdelicious()

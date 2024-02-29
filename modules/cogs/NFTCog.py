@@ -18,7 +18,7 @@ from Helpers.Enums import (
 )
 
 
-class CommandsCog(commands.Cog):
+class NFTCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         logging.debug(f"Adding commands/cogs")
         self.bot = bot
@@ -29,7 +29,7 @@ class CommandsCog(commands.Cog):
     async def help(self, ctx: commands.Context):
         await ctx.send(
             f"Available commands: "
-            f"!video !lights !shoutout !hug !lurk !lick !shots | "
+            f"!shoutout !mint | "
             f"Or if you just want to chat or ask a question, "
             f"message me directly in chat 🤖"
         )
@@ -37,15 +37,6 @@ class CommandsCog(commands.Cog):
     @commands.command(name="echo")
     async def echo(self, ctx: commands.Context):
         await ctx.send(f"Echo echo echo echo....")
-
-    @commands.command(name="id", aliases=["track"])
-    async def id(self, ctx: commands.Context):
-        await ctx.send(
-            f"Current track: {SessionData.current_artist()} - {SessionData.current_title()}"
-        )
-        await EventModule.queue_event(
-            event="show_big_track_id",
-        )
 
     @commands.command(name="check", aliases=["debug"])
     async def check(self, ctx: commands.Context):
@@ -104,153 +95,6 @@ class CommandsCog(commands.Cog):
             f"but they didn't supply a name. #feelsbadman"
         )
 
-    @commands.command(name="lurk", aliases=["lurking", "lurker", "wurk", "wurking"])
-    async def lurk(self, ctx: commands.Context):
-        reply = await OpenaiModule.command_intepretor(
-            ctx.message.content, ctx.author.name
-        )
-
-        await ctx.send(reply)
-
-    @commands.command(name="fire", aliases=["flame", "flames", "lit"])
-    async def fire(self, ctx: commands.Context):
-        await EventModule.queue_event(
-            event="fire",
-        )
-
-    @commands.command(name="tune", aliases=["tuna", "jam"])
-    async def tune(self, ctx: commands.Context):
-        await EventModule.queue_event(
-            event="tune",
-        )
-
-    @commands.command(
-        name="home", aliases=["primary", "back", "dj", "fullscreen", "main"]
-    )
-    async def home(self, ctx: commands.Context):
-        await EventModule.queue_event(
-            event="switch_scene",
-            scene_name="Scene: Main",
-        )
-
-    @commands.command(name="collab", aliases=["duo", "collaboration", "duet"])
-    async def collab(self, ctx: commands.Context):
-        await EventModule.queue_event(
-            event="switch_scene",
-            scene_name="Scene: Collab",
-        )
-
-    @commands.command(name="midjourney", aliases=["slideshow", "mj", "gallery"])
-    async def midjourney(self, ctx: commands.Context):
-        await EventModule.queue_event(
-            event="switch_scene",
-            scene_name="Scene: Midjourney",
-        )
-
-    @commands.command(name="video", aliases=["v", "vj", "vjay", "vjloop", "tv"])
-    async def video(self, ctx: commands.Context):
-        video_id = False
-        splits = ctx.message.content.split()
-        if len(splits) > 1:
-            video_id = (
-                int(splits[1]) if len(splits) > 1 and splits[1].isnumeric() else False
-            )
-
-        vj_loop_list = list(VideoBeeple) + list(VideoYule) + list(VideoTrippy)
-
-        if video_id is not False and video_id < len(vj_loop_list):
-            video_file = vj_loop_list[video_id]
-        else:
-            video_id = random.choice(range(len(vj_loop_list)))
-            video_file = vj_loop_list[video_id]
-
-        await EventModule.queue_event(
-            event="change_video",
-            video=video_file.value,
-        )
-
-        await ctx.send(f"Video #{video_id}: {video_file.value[:-4]}")
-
-    @commands.command(name="beeple", aliases=["beep", "crap", "beeple_crap"])
-    async def video_beeple(self, ctx: commands.Context):
-        video_id = False
-        splits = ctx.message.content.split()
-        if len(splits) > 1:
-            video_id = (
-                int(splits[1]) if len(splits) > 1 and splits[1].isnumeric() else False
-            )
-
-        vj_loop_list = list(VideoBeeple)
-
-        if video_id is not False and video_id < len(vj_loop_list):
-            video_file = vj_loop_list[video_id]
-        else:
-            video_id = random.choice(range(len(vj_loop_list)))
-            video_file = vj_loop_list[video_id]
-
-        await EventModule.queue_event(
-            event="change_video",
-            video=video_file.value,
-        )
-
-        await ctx.send(f"Beeple video #{video_id}: {video_file.value[:-4]}")
-
-    @commands.command(name="yule", aliases=["juletid", "yuletide"])
-    async def video_yule(self, ctx: commands.Context):
-        video_id = False
-        splits = ctx.message.content.split()
-        if len(splits) > 1:
-            video_id = (
-                int(splits[1]) if len(splits) > 1 and splits[1].isnumeric() else False
-            )
-
-        vj_loop_list = list(VideoYule)
-        if video_id is not False and video_id < len(vj_loop_list):
-            video_file = vj_loop_list[video_id]
-        else:
-            video_id = random.choice(range(len(vj_loop_list)))
-            video_file = vj_loop_list[video_id]
-
-        await EventModule.queue_event(
-            event="change_video",
-            video=video_file.value,
-        )
-
-        await ctx.send(f"Yule video #{video_id}: {video_file.value[:-4]}")
-
-    @commands.command(name="trippy", aliases=["trip", "lsd", "dmt", "acid", "shrooms"])
-    async def video_trippy(self, ctx: commands.Context):
-        video_id = False
-        splits = ctx.message.content.split()
-        if len(splits) > 1:
-            video_id = (
-                int(splits[1]) if len(splits) > 1 and splits[1].isnumeric() else False
-            )
-
-        vj_loop_list = list(VideoTrippy)
-
-        if video_id is not False and video_id < len(vj_loop_list):
-            video_file = vj_loop_list[video_id]
-        else:
-            video_id = random.choice(range(len(vj_loop_list)))
-            video_file = vj_loop_list[video_id]
-
-        await EventModule.queue_event(
-            event="change_video",
-            video=video_file.value,
-        )
-
-        await ctx.send(f"Trippy video #{video_id}: {video_file.value[:-4]}")
-
-    @commands.command(name="tokens", aliases=["openai", "ticks", "tick"])
-    async def tokens(self, ctx: commands.Context):
-        token_count = SessionData.tokens_count()
-        token_cost = token_count * 0.000002
-        display_cost = max(token_cost, 0.01) if token_cost > 0 else 0.0
-        await ctx.send(
-            f"This session has used {token_count} tokens (${display_cost:.2f})"
-        )
-
     @commands.command(name="aiso", aliases=["aishoutout", "so", "shoutout"])
     async def aiso(self, ctx: commands.Context):
         (
@@ -270,10 +114,16 @@ class CommandsCog(commands.Cog):
             )
         if message:
             await self.bot.chat(ctx.channel.name, message)
-            native_shoutout = f"/shoutout {username}"
-            await self.bot.chat(ctx.channel.name, native_shoutout)
         else:
             await self.fallback_shoutout(ctx)
+
+    @commands.command(name="lurk", aliases=["lurking", "lurker", "wurk", "wurking"])
+    async def lurk(self, ctx: commands.Context):
+        reply = await OpenaiModule.command_intepretor(
+            ctx.message.content, ctx.author.name
+        )
+
+        await ctx.send(reply)
 
     async def fallback_shoutout(self, ctx: commands.Context):
         username = Utilities.find_username(ctx.message.content)
@@ -284,13 +134,6 @@ class CommandsCog(commands.Cog):
 
     @commands.command(name="hug", aliases=["squeeze", "pounce"])
     async def hug(self, ctx: commands.Context):
-        reply = await OpenaiModule.command_intepretor(
-            content=ctx.message.content, author=ctx.author.name
-        )
-        await ctx.send(reply)
-
-    @commands.command(name="lick", aliases=["lickitylick"])
-    async def lick(self, ctx: commands.Context):
         reply = await OpenaiModule.command_intepretor(
             content=ctx.message.content, author=ctx.author.name
         )
@@ -307,6 +150,7 @@ class CommandsCog(commands.Cog):
             "stable",
             "diffusion",
             "stablediffusion",
+            "mint",
         ],
     )
     async def imagine(self, ctx: commands.Context):
@@ -322,7 +166,7 @@ class CommandsCog(commands.Cog):
                 possible_style = word[2:].upper()
                 if possible_style == "HELP":
                     await ctx.send(
-                        f"To generate an image just write what you hope to see. You can also try a style by adding --[style] in your prompt. ( "
+                        f"To mint an NFT just write what you hope to see. You can also try a style by adding --[style] in your prompt. ( "
                         f"{', '.join([style.lower() for style in StableDiffusionStyles.__members__.keys()])}"
                         f" )"
                     )
@@ -335,9 +179,7 @@ class CommandsCog(commands.Cog):
             else:
                 prompt_words.append(word)
         if len(prompt_words) == 0:
-            await ctx.send(
-                f"You need to supply a prompt. Example: !imagine cat in a hat"
-            )
+            await ctx.send(f"You need to supply a prompt. Example: !mint cat in a hat")
             return
         prompt = " ".join(prompt_words)
         if style is None:

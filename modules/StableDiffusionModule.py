@@ -16,6 +16,7 @@ from Modules.EventModule import EventModule
 from Helpers.Enums import ModuleStatus
 from Helpers.FTPClient import FTPClient
 from Helpers.DiscordBot import DiscordBot
+from Helpers.Utilities import Utilities
 
 
 class StableDiffusionModule(BotdeliciousModule):
@@ -96,27 +97,8 @@ class StableDiffusionModule(BotdeliciousModule):
         with open("stable-diffusion.png", "wb") as f:
             f.write(image_data)
 
-        new_filename = datetime.now().strftime("%Y%m%d-%H%M%S")
-
-        with Image.open("stable-diffusion.png") as img:
-            img.save(f"stable-diffusion.jpg", "JPEG", quality=60)
-            img.thumbnail((128, 128))
-            img.save(f"stable-diffusion-th.jpg", "JPEG", quality=60)
-
-        FTPClient.upload(new_filename)
-        await DiscordBot.upload(filename=new_filename, prompt=prompt, author=author)
-
-        destination_directory = "C:/Users/micro/Pictures/SD Chat"
-        destination_path_orig = f"{destination_directory}/Original/{new_filename}.png"
-        destination_path_lossy = (
-            f"{destination_directory}/Compressed/{new_filename}.jpg"
-        )
-        destination_path_thumb = (
-            f"{destination_directory}/Thumbnails/{new_filename}.jpg"
-        )
-        shutil.copy("stable-diffusion.png", destination_path_orig)
-        shutil.copy("stable-diffusion.jpg", destination_path_lossy)
-        shutil.copy("stable-diffusion-th.jpg", destination_path_thumb)
+        if await Utilities.check_file_size("./stable-diffusion.png") > 10000:
+            await cls.save_images(prompt, author)
 
         return True
 
@@ -144,3 +126,27 @@ class StableDiffusionModule(BotdeliciousModule):
             if not cls._awaiting_images:
                 break
             await asyncio.sleep(3)
+
+    @classmethod
+    async def save_images(cls, prompt, author):
+        new_filename = datetime.now().strftime("%Y%m%d-%H%M%S")
+
+        with Image.open("stable-diffusion.png") as img:
+            img.save(f"stable-diffusion.jpg", "JPEG", quality=60)
+            img.thumbnail((128, 128))
+            img.save(f"stable-diffusion-th.jpg", "JPEG", quality=60)
+
+        FTPClient.upload(new_filename)
+        await DiscordBot.upload(filename=new_filename, prompt=prompt, author=author)
+
+        destination_directory = "C:/Users/micro/Pictures/SD Chat"
+        destination_path_orig = f"{destination_directory}/Original/{new_filename}.png"
+        destination_path_lossy = (
+            f"{destination_directory}/Compressed/{new_filename}.jpg"
+        )
+        destination_path_thumb = (
+            f"{destination_directory}/Thumbnails/{new_filename}.jpg"
+        )
+        shutil.copy("stable-diffusion.png", destination_path_orig)
+        shutil.copy("stable-diffusion.jpg", destination_path_lossy)
+        shutil.copy("stable-diffusion-th.jpg", destination_path_thumb)
