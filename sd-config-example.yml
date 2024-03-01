@@ -11,3 +11,7 @@ hr_upscaler: "4x-UltraSharp"
 hr_sampler_name: "Euler a"
 enable_hr: True
 denoising_strength: 0.15
+upload: True
+upload_site: True
+upload_gallery: True
+upload_Discord: True

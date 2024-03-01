@@ -129,6 +129,9 @@ class StableDiffusionModule(BotdeliciousModule):
 
     @classmethod
     async def save_images(cls, prompt, author):
+        sd_config = ConfigController.get_config_file("sd-config.yml")
+        if not sd_config.upload:
+            return
         new_filename = datetime.now().strftime("%Y%m%d-%H%M%S")
 
         with Image.open("stable-diffusion.png") as img:
@@ -136,17 +139,21 @@ class StableDiffusionModule(BotdeliciousModule):
             img.thumbnail((128, 128))
             img.save(f"stable-diffusion-th.jpg", "JPEG", quality=60)
 
-        FTPClient.upload(new_filename)
-        await DiscordBot.upload(filename=new_filename, prompt=prompt, author=author)
-
-        destination_directory = "C:/Users/micro/Pictures/SD Chat"
-        destination_path_orig = f"{destination_directory}/Original/{new_filename}.png"
-        destination_path_lossy = (
-            f"{destination_directory}/Compressed/{new_filename}.jpg"
-        )
-        destination_path_thumb = (
-            f"{destination_directory}/Thumbnails/{new_filename}.jpg"
-        )
-        shutil.copy("stable-diffusion.png", destination_path_orig)
-        shutil.copy("stable-diffusion.jpg", destination_path_lossy)
-        shutil.copy("stable-diffusion-th.jpg", destination_path_thumb)
+        if sd_config.upload_site:
+            FTPClient.upload(new_filename)
+        if sd_config.upload_discord:
+            await DiscordBot.upload(filename=new_filename, prompt=prompt, author=author)
+        if sd_config.upload_gallery:
+            destination_directory = "C:/Users/micro/Pictures/SD Chat"
+            destination_path_orig = (
+                f"{destination_directory}/Original/{new_filename}.png"
+            )
+            destination_path_lossy = (
+                f"{destination_directory}/Compressed/{new_filename}.jpg"
+            )
+            destination_path_thumb = (
+                f"{destination_directory}/Thumbnails/{new_filename}.jpg"
+            )
+            shutil.copy("stable-diffusion.png", destination_path_orig)
+            shutil.copy("stable-diffusion.jpg", destination_path_lossy)
+            shutil.copy("stable-diffusion-th.jpg", destination_path_thumb)
