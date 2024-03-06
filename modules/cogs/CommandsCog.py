@@ -29,7 +29,7 @@ class CommandsCog(commands.Cog):
     async def help(self, ctx: commands.Context):
         await ctx.send(
             f"Available commands: "
-            f"!video !lights !shoutout !hug !lurk !lick !shots | "
+            f"!video !lights !shoutout !hug !lurk !lick !shots !de/saturate !trip| "
             f"Or if you just want to chat or ask a question, "
             f"message me directly in chat 🤖"
         )
@@ -218,7 +218,9 @@ class CommandsCog(commands.Cog):
 
         await ctx.send(f"Yule video #{video_id}: {video_file.value[:-4]}")
 
-    @commands.command(name="vtrippy", aliases=["vtrip", "vlsd", "vdmt", "vacid", "vshrooms"])
+    @commands.command(
+        name="vtrippy", aliases=["vtrip", "vlsd", "vdmt", "vacid", "vshrooms"]
+    )
     async def video_trippy(self, ctx: commands.Context):
         video_id = False
         splits = ctx.message.content.split()
