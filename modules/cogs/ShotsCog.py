@@ -64,13 +64,10 @@ class ShotsCog(commands.Cog):
             )
         elif self._shot_taken:
             await ctx.send(
-                f"Let's give the last 🥃 time to sink in,"
-                f" huh @{ctx.author.name}?"
+                f"Let's give the last 🥃 time to sink in," f" huh @{ctx.author.name}?"
             )
         elif self._shot_accepted:
-            await ctx.send(
-                f"@{ctx.author.name} We're doing it! 🥃 Get in on it!"
-            )
+            await ctx.send(f"@{ctx.author.name} We're doing it! 🥃 Get in on it!")
         else:
             self._shot_requested = ctx.author.name
             await ctx.send(
@@ -89,9 +86,7 @@ class ShotsCog(commands.Cog):
             )
             return
         if ctx.author.is_broadcaster:
-            await ctx.send(
-                f"🙅‍♂️ @{ctx.author.name} has denied the challenge! ⛔"
-            )
+            await ctx.send(f"🙅‍♂️ @{ctx.author.name} has denied the challenge! ⛔")
             self._shot_requested = False
             if self._drinkers:
                 await ctx.send(
@@ -123,6 +118,7 @@ class ShotsCog(commands.Cog):
             await ctx.send(
                 f"✅ ACCEPTED! @{ctx.author.name} IS IN! LESSGO!"
                 f" 🥃 Shots all around! 🥃 20 seconds!"
+                f" 🥃 !accept if you're doing one with us!"
             )
             await asyncio.sleep(10)
             await ctx.send(f"🥃 10 seconds")
@@ -143,9 +139,7 @@ class ShotsCog(commands.Cog):
             self._shot_taken = True
             self._shot_accepted = False
             self.move_drinkers()
-            await Timer.start(
-                "Reopen the bar", 15 * 60, self._reopen_the_bar, ctx=ctx
-            )
+            await Timer.start("Reopen the bar", 15 * 60, self._reopen_the_bar, ctx=ctx)
         else:
             if self.add_drinker(ctx.author.name):
                 await ctx.send(f"✅ {ctx.author.name} is in! 🍻")
@@ -172,9 +166,7 @@ class ShotsCog(commands.Cog):
         self._shot_taken = False
         await ctx.send(f"🥃 Bar is open again! 🥃")
 
-    @commands.command(
-        name="drunkars", aliases=["drunkards", "drunkies", "drinkers"]
-    )
+    @commands.command(name="drunkars", aliases=["drunkards", "drunkies", "drinkers"])
     async def drunkars(self, ctx: commands.Context):
         if self._drunkards:
             await ctx.send(f"Drunkars so far: {' 🥃 '.join(self._drunkards)}")
@@ -200,9 +192,7 @@ class ShotsCog(commands.Cog):
         if ctx.author.is_broadcaster:
             await ctx.send(f"Test timer done!")
 
-    @commands.command(
-        name="reopenbar", aliases=["reopen", "thirsty", "alcoholic"]
-    )
+    @commands.command(name="reopenbar", aliases=["reopen", "thirsty", "alcoholic"])
     async def reopenbar(self, ctx: commands.Context):
         if not ctx.author.is_broadcaster:
             return

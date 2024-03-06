@@ -967,3 +967,40 @@ class OBSModule(BotdeliciousModule):
         if self._name == "video":
             await self.reset_video_texts()
         logging.debug(f"{self._name} | ... animation completed")
+
+    async def desaturate(self):
+        await self.call_toggle_filter(
+            source_name="Camera: GH5 Desaturated",
+            filter_name="Fade in",
+            filter_enabled=True,
+        )
+        await asyncio.sleep(5)
+
+    async def saturate(self):
+        await self.call_toggle_filter(
+            source_name="Camera: GH5 Desaturated",
+            filter_name="Fade out",
+            filter_enabled=True,
+        )
+        await asyncio.sleep(5)
+
+    async def trip_up(self):
+        await self.call_toggle_filter(
+            source_name="Camera: GH5 no background recursive",
+            filter_name="Fade in",
+            filter_enabled=True,
+        )
+        await asyncio.sleep(5)
+
+    async def trip_down(self):
+        await self.call_toggle_filter(
+            source_name="Camera: GH5 no background recursive",
+            filter_name="Fade out",
+            filter_enabled=True,
+        )
+        await asyncio.sleep(5)
+
+    async def trip_balls(self):
+        await self.trip_up()
+        await asyncio.sleep(50)
+        await self.trip_down()

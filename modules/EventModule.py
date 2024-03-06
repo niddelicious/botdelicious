@@ -358,3 +358,24 @@ class EventModule(BotdeliciousModule):
             ],
             TwinklyModule.playlist(TwinklyPlaylist.I_LOVE_YOU, 10),
         )
+
+    @classmethod
+    async def direct_trip_balls(cls, item_data=None, *args, **kwargs):
+        logging.debug("Trip balls")
+        await asyncio.gather(
+            *[instance.trip_balls() for instance in cls._obs_instances],
+        )
+
+    @classmethod
+    async def direct_saturate(cls, item_data=None, *args, **kwargs):
+        logging.debug("Saturate")
+        await asyncio.gather(
+            *[instance.saturate() for instance in cls._obs_instances],
+        )
+
+    @classmethod
+    async def direct_desaturate(cls, item_data=None, *args, **kwargs):
+        logging.debug("Desaturate")
+        await asyncio.gather(
+            *[instance.desaturate() for instance in cls._obs_instances],
+        )

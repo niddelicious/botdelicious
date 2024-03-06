@@ -127,10 +127,10 @@ class OpenaiModule(BotdeliciousModule):
     ):
         try:
             cls._logger.warning("New query:")
-            cls._logger.info(messages)
             json_messages = [message.__dict__ for message in messages]
             if assistant_message:
                 json_messages.append(assistant_message.__dict__)
+            cls._logger.info(json_messages)
             response = await openai.ChatCompletion.acreate(
                 model=cls._model,
                 messages=json_messages,

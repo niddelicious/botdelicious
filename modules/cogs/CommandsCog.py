@@ -218,7 +218,7 @@ class CommandsCog(commands.Cog):
 
         await ctx.send(f"Yule video #{video_id}: {video_file.value[:-4]}")
 
-    @commands.command(name="trippy", aliases=["trip", "lsd", "dmt", "acid", "shrooms"])
+    @commands.command(name="vtrippy", aliases=["vtrip", "vlsd", "vdmt", "vacid", "vshrooms"])
     async def video_trippy(self, ctx: commands.Context):
         video_id = False
         splits = ctx.message.content.split()
@@ -360,3 +360,21 @@ class CommandsCog(commands.Cog):
         if ctx.author.is_broadcaster:
             self._image_generator_status = Status.DISABLED
             await ctx.send(f"Image generator disabled")
+
+    @commands.command(name="trip", aliases=["trippy", "lsd", "dmt", "acid", "shrooms"])
+    async def trip(self, ctx: commands.Context):
+        await EventModule.direct_event(
+            event="trip_balls",
+        )
+
+    @commands.command(name="saturate", aliases=["saturation", "color", "colour"])
+    async def saturate(self, ctx: commands.Context):
+        await EventModule.direct_event(
+            event="saturate",
+        )
+
+    @commands.command(name="desaturate", aliases=["desaturation", "greyscale"])
+    async def desaturate(self, ctx: commands.Context):
+        await EventModule.direct_event(
+            event="desaturate",
+        )
