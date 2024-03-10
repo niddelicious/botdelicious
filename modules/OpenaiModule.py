@@ -152,8 +152,8 @@ class OpenaiModule(BotdeliciousModule):
             cls.add_message(channel, username, message)
             assistant_message = ConversationEntry(
                 "assistant",
-                f"Please respond to @{username}'s last message: '{message}'."
-                f" Consider the context and adress them directly.",
+                f"Please respond to @{username}'s last message: '{message}'. "
+                f"Consider the context and adress them directly. ",
                 "Twitch",
             )
             response = await cls.request_chat(
@@ -192,8 +192,8 @@ class OpenaiModule(BotdeliciousModule):
         if not user:
             system_prompt = "Hype Twitch Streamer Shoutout Generator"
             system_message = (
-                f"Give a snarky reply about how @{author}"
-                f" tried to shoutout @{username}, but that user doesn't exist."
+                f"Give a snarky reply about how @{author} "
+                f"tried to shoutout @{username}, but that user doesn't exist."
             )
             avatar_url = None
             success = False
@@ -212,15 +212,15 @@ class OpenaiModule(BotdeliciousModule):
                 else "is currently not live, but was last seen"
             )
             system_message = (
-                f"Write a shoutout for a Twitch streamer named {username}"
-                f"who {live_message} playing {game_name}"
-                f" with the stream title {title}."
-                f"This is their description: {user_description}."
-                f"These are their tags: {tags}."
-                f"Do not list the tags in the reply."
-                f"Make sure to end the reply with their url:"
-                f"https://twitch.tv/{username}."
-                f"Keep the reply under 490 characters."
+                f"Write a shoutout for a Twitch streamer named {username} "
+                f"who {live_message} playing {game_name} "
+                f" with the stream title {title}. "
+                f"This is their description: {user_description}. "
+                f"These are their tags: {tags}. "
+                f"Do not list the tags in the reply. "
+                f"Make sure to end the reply with their url: "
+                f"https://twitch.tv/{username}. "
+                f"Keep the reply under 490 characters. "
             )
             success = True
 
@@ -244,13 +244,13 @@ class OpenaiModule(BotdeliciousModule):
 
         system_name = "ai_rgb_color_converter"
         system_prompt = (
-            "You are a RGB color converting bot,"
-            " taking a description and translating it"
-            "to a json format:"
-            "{'red': value_red, 'green': value_green, 'blue': value_blue}."
-            "Do not answer in any other way."
-            "If no color is appropriate, pick a random one."
-            "Do not include anything else in your reply."
+            "You are a RGB color converting bot, "
+            " taking a description and translating it "
+            "to a json format: "
+            "{'red': value_red, 'green': value_green, 'blue': value_blue}. "
+            "Do not answer in any other way. "
+            "If no color is appropriate, pick a random one. "
+            "Do not include anything else in your reply. "
         )
         color_prompt = f"Convert the following: {content}"
         cls.reprompt_conversation(system_name, system_prompt)
@@ -269,12 +269,12 @@ class OpenaiModule(BotdeliciousModule):
 
         system_name = "ai_command_generator"
         system_prompt = (
-            "You are a Twitch Command Message Generator named botdelicious."
-            "You are working for niddelicious, a DJ streamer."
-            "Your job is to reply to !commands from users in chat."
-            "You will create excited and engaging messages appropriate for"
-            "the !command that is provided to you."
-            "Keep messages sassy and below 490 characters."
+            "You are a Twitch Command Message Generator named botdelicious. "
+            "You are working for niddelicious, a DJ streamer. "
+            "Your job is to reply to !commands from users in chat. "
+            "You will create excited and engaging messages appropriate for "
+            "the !command that is provided to you. "
+            "Keep messages sassy and below 490 characters. "
         )
         cls.reprompt_conversation(system_name, system_prompt)
         command_prompt = f"@{author}: {content}"
@@ -293,11 +293,11 @@ class OpenaiModule(BotdeliciousModule):
 
         system_name = "ai_event_generator"
         system_prompt = (
-            "You are a Twitch Event Message Generator"
-            "in the chat of niddelicious, a DJ streamer."
-            "You will create extensive, elaborate and hyped messages"
-            "appropriate for the event that is provided to you."
-            "Keep messages sassy and below 490 characters."
+            "You are a Twitch Event Message Generator "
+            "in the chat of niddelicious, a DJ streamer. "
+            "You will create extensive, elaborate and hyped messages "
+            "appropriate for the event that is provided to you. "
+            "Keep messages sassy and below 490 characters. "
         )
         cls.reprompt_conversation(system_name, system_prompt)
         event_prompt = f"{content}"
@@ -315,13 +315,13 @@ class OpenaiModule(BotdeliciousModule):
 
         system_name = "ai_pa_generator"
         system_prompt = (
-            "You are a Twitch Public Announcement Message Generator named botdelicious."
-            "You are working for niddelicious, a DJ streamer."
-            "Your job is to write announcements"
-            "You will create engaging messages appropriate for"
-            "the announcement that is provided to you."
-            "Keep messages sassy and below 490 characters."
-            "Do not use breaklines in your reply."
+            "You are a Twitch Public Announcement Message Generator named botdelicious. "
+            "You are working for niddelicious, a DJ streamer. "
+            "Your job is to write announcements. "
+            "You will create engaging messages appropriate for "
+            "the announcement that is provided to you. "
+            "Keep messages sassy and below 490 characters. "
+            "Do not use breaklines in your reply. "
         )
         cls.reprompt_conversation(system_name, system_prompt)
         command_prompt = f"@{author}: {content}"

@@ -379,3 +379,26 @@ class EventModule(BotdeliciousModule):
         await asyncio.gather(
             *[instance.desaturate() for instance in cls._obs_instances],
         )
+
+    @classmethod
+    async def direct_macrodose(cls, item_data=None, *args, **kwargs):
+        logging.debug("Macrodose")
+        await asyncio.gather(
+            *[instance.macrodose() for instance in cls._obs_instances],
+        )
+
+    @classmethod
+    async def direct_fire(cls, *args, **kwargs):
+        logging.debug("Fire!")
+        await asyncio.gather(
+            *[instance.event_fire() for instance in cls._obs_instances],
+            TwinklyModule.playlist(TwinklyPlaylist.FIRE, 10),
+        )
+
+    @classmethod
+    async def direct_tune(cls, *args, **kwargs):
+        logging.debug("Tune!")
+        await asyncio.gather(
+            *[instance.event_tune() for instance in cls._obs_instances],
+            TwinklyModule.playlist(TwinklyPlaylist.RAINBOW_WAVES, 10),
+        )

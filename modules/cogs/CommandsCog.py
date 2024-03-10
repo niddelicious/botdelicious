@@ -114,13 +114,13 @@ class CommandsCog(commands.Cog):
 
     @commands.command(name="fire", aliases=["flame", "flames", "lit"])
     async def fire(self, ctx: commands.Context):
-        await EventModule.queue_event(
+        await EventModule.direct_event(
             event="fire",
         )
 
     @commands.command(name="tune", aliases=["tuna", "jam"])
     async def tune(self, ctx: commands.Context):
-        await EventModule.queue_event(
+        await EventModule.direct_event(
             event="tune",
         )
 
@@ -250,7 +250,7 @@ class CommandsCog(commands.Cog):
         token_cost = token_count * 0.000002
         display_cost = max(token_cost, 0.01) if token_cost > 0 else 0.0
         await ctx.send(
-            f"This session has used {token_count} tokens (${display_cost:.2f})"
+            f"This session has used {token_count} tokens (approx: ${display_cost:.2f})"
         )
 
     @commands.command(name="aiso", aliases=["aishoutout", "so", "shoutout"])
@@ -379,4 +379,10 @@ class CommandsCog(commands.Cog):
     async def desaturate(self, ctx: commands.Context):
         await EventModule.direct_event(
             event="desaturate",
+        )
+
+    @commands.command(name="macrodose", aliases=["tooktoomuch", "egodeath"])
+    async def macrodose(self, ctx: commands.Context):
+        await EventModule.direct_event(
+            event="macrodose",
         )

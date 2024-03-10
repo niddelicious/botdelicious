@@ -1004,3 +1004,43 @@ class OBSModule(BotdeliciousModule):
         await self.trip_up()
         await asyncio.sleep(50)
         await self.trip_down()
+
+    async def get_source_scene_id(self, scene_name, source_name):
+        request = simpleobsws.Request(
+            "GetSceneItemId",
+            {"sceneName": f"{scene_name}", "sourceName": f"{source_name}"},
+        )
+        result = await self.call(type="Get SceneItem id", request=request)
+        return result["sceneItemId"]
+
+    async def get_scene_item_visibility(self, scene_name, source_name):
+        scene_item_id = await self.get_source_scene_id(scene_name, source_name)
+        request = simpleobsws.Request(
+            "GetSceneItemEnabled",
+            {"sceneName": f"{scene_name}", "sceneItemId": scene_item_id},
+        )
+        result = await self.call(type="Get SceneItem visibility", request=request)
+        return result["sceneItemEnabled"]
+
+    async def set_scene_item_visibility(
+        self, scene_name, source_name, visibility: bool
+    ):
+        scene_item_id = await self.get_source_scene_id(scene_name, source_name)
+        request = simpleobsws.Request(
+            "SetSceneItemEnabled",
+            {
+                "sceneName": f"{scene_name}",
+                "sceneItemId": scene_item_id,
+                "sceneItemEnabled": visibility,
+            },
+        )
+        await self.call(type="Set SceneItem visibility", request=request)
+
+    async def toggle_scene_item_visibility(self, scene_name, source_name):
+        visibility = await self.get_scene_item_visibility(scene_name, source_name)
+        await self.set_scene_item_visibility(scene_name, source_name, not visibility)
+
+    async def macrodose(self):
+        await self.set_scene_item_visibility("Screen: GH5", "Screen: Macrodose", True)
+        await asyncio.sleep(100)
+        await self.set_scene_item_visibility("Screen: GH5", "Screen: Macrodose", False)
