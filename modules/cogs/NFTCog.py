@@ -20,7 +20,7 @@ from Helpers.Enums import (
 
 class NFTCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
-        logging.debug(f"Adding commands/cogs")
+        logging.debug(f"Adding NFT/cogs")
         self.bot = bot
         self.create_shoutouts("modules/cogs/shoutouts.yml")
         self._image_generator_status = Status.ENABLED

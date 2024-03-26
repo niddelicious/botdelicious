@@ -801,6 +801,34 @@ class OBSModule(BotdeliciousModule):
         )
         await self.call(type=f"Changing {input_name}: {input_source}", request=request)
 
+    async def reset_sd_image(self):
+        await self.call_update_sd_image(
+            input_name=f"Stable Diffusion image",
+            input_source="sd-reset.png",
+        )
+        await asyncio.sleep(0.01)
+        await self.call_update_sd_image(
+            input_name=f"Stable Diffusion image",
+            input_source="stable-diffusion.png",
+        )
+
+    @check_obs_sources
+    async def call_update_sd_image(
+        self, input_name: str = None, input_source: str = None
+    ):
+        image_path = f"C:/Users/micro/Documents/GitHub/botdelicious/{input_source}"
+        request = simpleobsws.Request(
+            "SetInputSettings",
+            {
+                "inputName": f"{input_name}",
+                "inputType": "image_source",
+                "inputSettings": {
+                    "file": f"{image_path}",
+                },
+            },
+        )
+        await self.call(type=f"Changing {input_name}: {input_source}", request=request)
+
     async def reset_track_texts(self):
         await asyncio.gather(
             self.call_update_text(
@@ -848,6 +876,7 @@ class OBSModule(BotdeliciousModule):
         )
 
     async def sd_start(self, prompt, author, style):
+        await self.reset_sd_image()
         await self.call_toggle_filter(
             source_name="SD image",
             filter_name="Reset",
@@ -870,6 +899,7 @@ class OBSModule(BotdeliciousModule):
         )
 
     async def sd_progress(self, eta, percent, steps):
+        await self.reset_sd_image()
         await asyncio.gather(
             self.call_update_text(
                 input_name="Generated image eta",
@@ -902,6 +932,7 @@ class OBSModule(BotdeliciousModule):
                 text="",
             ),
         )
+        await self.reset_sd_image()
         await self.call_toggle_filter(
             source_name="SD image",
             filter_name="Show",
@@ -1005,6 +1036,7 @@ class OBSModule(BotdeliciousModule):
         await asyncio.sleep(50)
         await self.trip_down()
 
+    @check_obs_sources
     async def get_source_scene_id(self, scene_name, source_name):
         request = simpleobsws.Request(
             "GetSceneItemId",
@@ -1013,6 +1045,7 @@ class OBSModule(BotdeliciousModule):
         result = await self.call(type="Get SceneItem id", request=request)
         return result["sceneItemId"]
 
+    @check_obs_sources
     async def get_scene_item_visibility(self, scene_name, source_name):
         scene_item_id = await self.get_source_scene_id(scene_name, source_name)
         request = simpleobsws.Request(
@@ -1022,6 +1055,7 @@ class OBSModule(BotdeliciousModule):
         result = await self.call(type="Get SceneItem visibility", request=request)
         return result["sceneItemEnabled"]
 
+    @check_obs_sources
     async def set_scene_item_visibility(
         self, scene_name, source_name, visibility: bool
     ):

@@ -45,7 +45,16 @@ class ModulesController:
         return cls._modules.get(module_name) or None
 
     @classmethod
-    def get_module_status(cls):
+    def get_module_status(cls, module_name=None):
         logging.info(f"Module status:")
+        if module_name:
+            module = cls.get_module(module_name)
+            status = module.get_status()
+            logging.info(f"Module: {module_name} - Status: {status}")
+            return status
         for name, module in cls._modules.items():
             logging.info(f"Module: {name} - Status: {module.get_status()}")
+
+    @classmethod
+    def list_modules(cls):
+        return cls._modules.keys()

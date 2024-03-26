@@ -20,6 +20,7 @@ from Modules.Cogs.CommandsCog import CommandsCog
 from Modules.OpenaiModule import OpenaiModule
 from Modules.Cogs.ShotsCog import ShotsCog
 from Modules.Cogs.CharityCog import CharityCog
+from Modules.Cogs.AdminCog import AdminCog
 import os
 
 
@@ -50,6 +51,7 @@ class _TwitchBot(commands.Bot):
         self.add_cog(EventCog())
         self.add_cog(CharityCog())
         self.add_cog(PublicAnnouncementCog(bot=self))
+        self.add_cog(AdminCog())
 
         if self.config.log_to_file:
             self.init_log_file()
