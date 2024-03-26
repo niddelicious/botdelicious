@@ -12,15 +12,15 @@
     <style>
         .chat {
             margin: 0;
-            padding: 16px 32px;
+            padding: 16pt 32pt;
             position: relative;
             display: block;
         }
 
         .message {
-            margin-bottom: 10px;
+            margin-bottom: 10pt;
             font-family: "Poppins", sans-serif;
-            font-size: 16px;
+            font-size: 12pt;
             color: #55FF22;
             font-weight: normal;
             text-decoration: none solid rgb(68, 68, 68);
@@ -29,6 +29,7 @@
             text-transform: none;
             position: relative;
             display: block;
+            text-shadow: 0 2px 4px #112211;
         }
 
         .timestamp {
@@ -37,25 +38,27 @@
 
         .channel {
             position: absolute;
-            font-size: 16px;
+            font-size: 10pt;
             font-weight: light;
-            top: -10px;
-            left: -6px;
+            top: -10pt;
+            left: -6pt;
+            color: #55ff22;
         }
 
         .author {
-            font-size: 20px;
+            font-size: 14pt;
             font-weight: bold;
             display: inline-block;
+            padding-right: 2pt;
         }
 
         .content {
-            font-size: 24px;
+            font-size: 14pt;
             display: inline-block;
         }
 
         .hidden {
-            /* display: none; */
+            display: none;
         }
     </style>
 </head>
@@ -109,7 +112,7 @@
 
             const authorDiv = document.createElement('div');
             authorDiv.classList.add('author');
-            authorDiv.textContent = author;
+            authorDiv.textContent = author + " : ";
             messageDiv.appendChild(authorDiv);
 
             const contentDiv = document.createElement('div');
