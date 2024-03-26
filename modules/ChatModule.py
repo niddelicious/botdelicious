@@ -21,6 +21,8 @@ from Modules.OpenaiModule import OpenaiModule
 from Modules.Cogs.ShotsCog import ShotsCog
 from Modules.Cogs.CharityCog import CharityCog
 from Modules.Cogs.AdminCog import AdminCog
+from Modules.Cogs.NFTCog import NFTCog
+from Modules.WebsocketModule import WebsocketModule
 import os
 
 
@@ -45,13 +47,14 @@ class _TwitchBot(commands.Bot):
         )
 
         self._pattern = rf".*{self.config.bot_name}.*"
-        self.add_cog(CommandsCog(bot=self))
-        self.add_cog(ShotsCog())
-        self.add_cog(LightsCog())
-        self.add_cog(EventCog())
-        self.add_cog(CharityCog())
-        self.add_cog(PublicAnnouncementCog(bot=self))
+        # self.add_cog(CommandsCog(bot=self))
+        # self.add_cog(ShotsCog())
+        # self.add_cog(LightsCog())
+        # self.add_cog(EventCog())
+        # self.add_cog(CharityCog())
+        # self.add_cog(PublicAnnouncementCog(bot=self))
         self.add_cog(AdminCog())
+        self.add_cog(NFTCog(bot=self))
 
         if self.config.log_to_file:
             self.init_log_file()
@@ -67,6 +70,7 @@ class _TwitchBot(commands.Bot):
     async def event_message(self, message):
         if self.config.log_to_file:
             await self.log_chat(message)
+            await self.serve_message(message)
 
         if message.echo:
             return
@@ -235,12 +239,31 @@ class _TwitchBot(commands.Bot):
     def init_log_file(self):
         current_date = datetime.datetime.now().strftime("%Y-%m-%d")
         self.log_filename = f"chatlogs/{current_date}.log"
+        self.nft_log_filename = f"chatlogs/nft_chat.log"
 
     async def log_chat(self, message):
         author = self.config.bot_name if message.echo else message.author.name
         current_time_string = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        short_time_string = datetime.datetime.now().strftime("%H:%M")
         with open(self.log_filename, "a", encoding="utf-8") as log_file:
             log_file.write(f"{current_time_string} | {author}: {message.content}\n")
+        with open(self.nft_log_filename, "a", encoding="utf-8") as nft_file:
+            nft_file.write(
+                f"{short_time_string} {message.channel.name} | {author}: {message.content}\n"
+            )
+
+    async def serve_message(self, message):
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        channel = message.channel.name
+        author = self.config.bot_name if message.echo else message.author.name
+        message = message.content
+        payload = {
+            "timestamp": timestamp,
+            "channel": channel,
+            "author": author,
+            "message": message,
+        }
+        await WebsocketModule.send_websocket_message(payload)
 
 
 class ChatModule(BotdeliciousModule):

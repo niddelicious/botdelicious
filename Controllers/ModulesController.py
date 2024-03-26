@@ -8,6 +8,7 @@ from Modules.WebhookModule import WebhookModule
 from Modules.DJctlModule import DJctlModule
 from Modules.TwinklyModule import TwinklyModule
 from Modules.StableDiffusionModule import StableDiffusionModule
+from Modules.WebsocketModule import WebsocketModule
 from Helpers.Enums import ModuleStatus
 
 
@@ -23,6 +24,7 @@ class ModulesController:
         "twinkly": TwinklyModule(),
         "openai": OpenaiModule(),
         "stablediffusion": StableDiffusionModule(),
+        "websocket": WebsocketModule(),
     }
 
     @classmethod

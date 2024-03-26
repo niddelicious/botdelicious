@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Chat Display for OBS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+        rel="stylesheet">
+    <style>
+        .chat {
+            margin: 0;
+            padding: 16px 32px;
+            position: relative;
+            display: block;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            font-family: "Poppins", sans-serif;
+            font-size: 16px;
+            color: #55FF22;
+            font-weight: normal;
+            text-decoration: none solid rgb(68, 68, 68);
+            font-style: normal;
+            font-variant: normal;
+            text-transform: none;
+            position: relative;
+            display: block;
+        }
+
+        .timestamp {
+            display: none;
+        }
+
+        .channel {
+            position: absolute;
+            font-size: 16px;
+            font-weight: light;
+            top: -10px;
+            left: -6px;
+        }
+
+        .author {
+            font-size: 20px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .content {
+            font-size: 24px;
+            display: inline-block;
+        }
+
+        .hidden {
+            /* display: none; */
+        }
+    </style>
+</head>
+
+<body>
+    <div id="chat" class="chat">
+        <div class="message">
+            <div class="timestamp">2024-03-26 21:43:51</div>
+            <div class="channel">niddelicious</div>
+            <div class="author">niddelicious</div>
+            <div class="content">Ping message</div>
+        </div>
+        <div class="message">
+            <div class="timestamp">2024-03-26 21:43:51</div>
+            <div class="channel">djriiser</div>
+            <div class="author">niddelicious</div>
+            <div class="content">Ping message</div>
+        </div>
+        <div class="message">
+            <div class="timestamp">2024-03-26 21:43:51</div>
+            <div class="channel">niddelicious</div>
+            <div class="author">deejayskye</div>
+            <div class="content">Ping message</div>
+        </div>
+        <div class="message">
+            <div class="timestamp">2024-03-26 21:43:51</div>
+            <div class="channel">deejayskye</div>
+            <div class="author">djriiser</div>
+            <div class="content">Ping message</div>
+        </div>
+
+
+    </div>
+
+    <script>
+        // Example function to add a message
+        function addMessage(timestamp, channel, author, messageContent) {
+            const chatDiv = document.getElementById('chat');
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+
+            const timestampDiv = document.createElement('div');
+            timestampDiv.classList.add('timestamp');
+            timestampDiv.textContent = timestamp;
+            messageDiv.appendChild(timestampDiv);
+
+            const channelDiv = document.createElement('div');
+            channelDiv.classList.add('channel');
+            channelDiv.textContent = channel;
+            messageDiv.appendChild(channelDiv);
+
+            const authorDiv = document.createElement('div');
+            authorDiv.classList.add('author');
+            authorDiv.textContent = author;
+            messageDiv.appendChild(authorDiv);
+
+            const contentDiv = document.createElement('div');
+            contentDiv.classList.add('content');
+            contentDiv.textContent = messageContent;
+            messageDiv.appendChild(contentDiv);
+
+            chatDiv.appendChild(messageDiv);
+        }
+
+        function hideOldMessages() {
+            const now = new Date();
+            const messages = document.querySelectorAll('.message');
+            messages.forEach(message => {
+                const timestamp = new Date(message.querySelector('.timestamp').textContent);
+                const diff = (now - timestamp) / 1000 / 60; // difference in minutes
+                if (diff > 3) {
+                    message.classList.add('hidden');
+                }
+            });
+        }
+        setInterval(hideOldMessages, 3 * 1000); // Check every 3 seconds
+
+        const ws = new WebSocket('ws://127.0.0.1:9011');
+        ws.onmessage = function (event) {
+            const data = JSON.parse(event.data);
+            addMessage(data.timestamp, data.channel, data.author, data.message);
+        };
+    </script>
+</body>
+
+</html>
