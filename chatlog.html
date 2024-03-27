@@ -10,11 +10,21 @@
         href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
         rel="stylesheet">
     <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #112211;
+        }
+
         .chat {
             margin: 0;
             padding: 16pt 32pt;
             position: relative;
-            display: block;
+            width: 720px;
+            height: 360px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column-reverse;
         }
 
         .message {
@@ -65,36 +75,9 @@
 
 <body>
     <div id="chat" class="chat">
-        <div class="message">
-            <div class="timestamp">2024-03-26 21:43:51</div>
-            <div class="channel">niddelicious</div>
-            <div class="author">niddelicious</div>
-            <div class="content">Ping message</div>
-        </div>
-        <div class="message">
-            <div class="timestamp">2024-03-26 21:43:51</div>
-            <div class="channel">djriiser</div>
-            <div class="author">niddelicious</div>
-            <div class="content">Ping message</div>
-        </div>
-        <div class="message">
-            <div class="timestamp">2024-03-26 21:43:51</div>
-            <div class="channel">niddelicious</div>
-            <div class="author">deejayskye</div>
-            <div class="content">Ping message</div>
-        </div>
-        <div class="message">
-            <div class="timestamp">2024-03-26 21:43:51</div>
-            <div class="channel">deejayskye</div>
-            <div class="author">djriiser</div>
-            <div class="content">Ping message</div>
-        </div>
-
 
     </div>
-
     <script>
-        // Example function to add a message
         function addMessage(timestamp, channel, author, messageContent) {
             const chatDiv = document.getElementById('chat');
             const messageDiv = document.createElement('div');
@@ -120,7 +103,13 @@
             contentDiv.textContent = messageContent;
             messageDiv.appendChild(contentDiv);
 
-            chatDiv.appendChild(messageDiv);
+            chatDiv.insertBefore(messageDiv, chatDiv.firstChild)
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            const chatDiv = document.getElementById('chat');
+            chatDiv.scrollTop = chatDiv.scrollHeight;
         }
 
         function hideOldMessages() {
@@ -136,11 +125,35 @@
         }
         setInterval(hideOldMessages, 3 * 1000); // Check every 3 seconds
 
-        const ws = new WebSocket('ws://127.0.0.1:9011');
-        ws.onmessage = function (event) {
-            const data = JSON.parse(event.data);
-            addMessage(data.timestamp, data.channel, data.author, data.message);
-        };
+        var ws; // WebSocket instance
+        var wsUrl = 'ws://127.0.0.1:9011'; // Your WebSocket URL
+        var reconnectInterval = 3000; // Time to wait before attempting to reconnect (5 seconds)
+
+        function connect() {
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function () {
+                console.log('WebSocket connected');
+            };
+
+            ws.onmessage = function (message) {
+                const data = JSON.parse(event.data);
+                addMessage(data.timestamp, data.channel, data.author, data.message);
+            };
+
+            ws.onclose = function (e) {
+                console.log('WebSocket closed. Attempting to reconnect...', e.reason);
+                setTimeout(function () {
+                    connect();
+                }, reconnectInterval);
+            };
+
+            ws.onerror = function (err) {
+                console.error('WebSocket encountered error: ', err.message, 'Closing socket');
+                ws.close();
+            };
+        }
+        connect();
     </script>
 </body>
 
