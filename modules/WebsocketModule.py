@@ -26,7 +26,7 @@ class WebsocketModule(BotdeliciousModule):
 
     @classmethod
     def setup_websocket_server(cls):
-        cls.websocket_server = WebsocketServer(port=9011, host="127.0.0.1")
+        cls.websocket_server = WebsocketServer(port=9011, host="192.168.9.216")
         cls.websocket_server.set_fn_new_client(cls.new_client)
         cls.websocket_server.set_fn_client_left(cls.client_left)
 
