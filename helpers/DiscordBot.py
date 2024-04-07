@@ -48,17 +48,26 @@ class DiscordClient(discord.Client):
         await self.upload()
 
     async def upload(self):
+        url = None
         logging.debug(f"Uploading to Discord...")
         channel = self.get_channel(self.channel_id)
 
         logging.debug(f"Sending message to Discord...")
 
         message = f"{self.post_author} ordered '{self.post_prompt}': https://nidde.nu/gallery/{self.post_filename}"
+        # message = f"{self.post_author} ordered '{self.post_prompt}'"
         await channel.send(message)
 
         with open("stable-diffusion.png", "rb") as file:
             file_data = discord.File(file, filename=f"{self.post_filename}.png")
-            await channel.send(file=file_data)
+            response = await channel.send(file=file_data)
+            logging.debug(f"Sent '{self.post_filename}.png' to Discord!")
+            url = response.channel.jump_url
 
         logging.info(f"Sent '{message}' to Discord!")
         await self.close()
+
+        if url:
+            return url
+        else:
+            return None

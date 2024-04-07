@@ -13,6 +13,7 @@ from Controllers.ConfigController import ConfigController
 
 from Modules.BotdeliciousModule import BotdeliciousModule
 from Modules.EventModule import EventModule
+from Modules.ChatModule import ChatModule
 from Helpers.Enums import ModuleStatus
 from Helpers.FTPClient import FTPClient
 from Helpers.DiscordBot import DiscordBot
@@ -142,7 +143,13 @@ class StableDiffusionModule(BotdeliciousModule):
         if sd_config.upload_site:
             FTPClient.upload(new_filename)
         if sd_config.upload_discord:
-            await DiscordBot.upload(filename=new_filename, prompt=prompt, author=author)
+            discord_url = await DiscordBot.upload(
+                filename=new_filename, prompt=prompt, author=author
+            )
+            if discord_url:
+                await ChatModule.send_message(
+                    f"{author} ordered a '{prompt}': {discord_url}"
+                )
         if sd_config.upload_gallery:
             destination_directory = "C:/Users/micro/Pictures/SD Chat"
             destination_path_orig = (
