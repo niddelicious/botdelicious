@@ -35,7 +35,7 @@ def main():
     ConfigController.get_config()
     if ConfigController._config["logging"]["log_to_file"]:
         log_filename = datetime.datetime.now().strftime(
-            "logs/debug-%Y-%m-%d_%H-%M-%S.log"
+            "logs/nft-debug-%Y-%m-%d_%H-%M-%S.log"
         )
 
         logging.basicConfig(

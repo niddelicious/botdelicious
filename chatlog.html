@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Chat Display for OBS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #112211;
+        }
+
+        .chat {
+            margin: 0;
+            padding: 16pt 32pt;
+            position: relative;
+            width: 720px;
+            height: 360px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column-reverse;
+        }
+
+        .message {
+            margin-bottom: 10pt;
+            font-family: "Poppins", sans-serif;
+            font-size: 12pt;
+            color: #55FF22;
+            font-weight: normal;
+            text-decoration: none solid rgb(68, 68, 68);
+            font-style: normal;
+            font-variant: normal;
+            text-transform: none;
+            position: relative;
+            display: block;
+            text-shadow: 0 2px 4px #112211;
+        }
+
+        .timestamp {
+            display: none;
+        }
+
+        .channel {
+            position: absolute;
+            font-size: 10pt;
+            font-weight: light;
+            top: -10pt;
+            left: -6pt;
+        }
+
+        .djriiser {
+            color: #008cff;
+        }
+
+        .niddelicious {
+            color: #ff9900;
+        }
+
+        .deejayskye {
+            color: #ff0080;
+        }
+
+        .djtobbelito {
+            color: #c300ff;
+        }
+
+        .author {
+            font-size: 14pt;
+            font-weight: bold;
+            display: inline-block;
+            padding-right: 2pt;
+        }
+
+        .content {
+            font-size: 14pt;
+            display: inline-block;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="chat" class="chat">
+
+    </div>
+    <script>
+        function addMessage(timestamp, channel, author, messageContent) {
+            const chatDiv = document.getElementById('chat');
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+
+            const timestampDiv = document.createElement('div');
+            timestampDiv.classList.add('timestamp');
+            timestampDiv.textContent = timestamp;
+            messageDiv.appendChild(timestampDiv);
+
+            const channelDiv = document.createElement('div');
+            channelDiv.classList.add('channel');
+            channelDiv.classList.add(channel);
+            channelDiv.textContent = channel;
+            messageDiv.appendChild(channelDiv);
+
+            const authorDiv = document.createElement('div');
+            authorDiv.classList.add('author');
+            authorDiv.textContent = author + " : ";
+            messageDiv.appendChild(authorDiv);
+
+            const contentDiv = document.createElement('div');
+            contentDiv.classList.add('content');
+            contentDiv.textContent = messageContent;
+            messageDiv.appendChild(contentDiv);
+
+            chatDiv.insertBefore(messageDiv, chatDiv.firstChild)
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            const chatDiv = document.getElementById('chat');
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        }
+
+        function hideOldMessages() {
+            const now = new Date();
+            const messages = document.querySelectorAll('.message');
+            messages.forEach(message => {
+                const timestamp = new Date(message.querySelector('.timestamp').textContent);
+                const diff = (now - timestamp) / 1000 / 60; // difference in minutes
+                if (diff > 3) {
+                    message.classList.add('hidden');
+                }
+            });
+        }
+        setInterval(hideOldMessages, 3 * 1000); // Check every 3 seconds
+
+        var ws; // WebSocket instance
+        var wsUrl = 'ws://192.168.9.216:9011'; // Your WebSocket URL
+        var reconnectInterval = 3000; // Time to wait before attempting to reconnect (5 seconds)
+
+        function connect() {
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function () {
+                console.log('WebSocket connected');
+            };
+
+            ws.onmessage = function (message) {
+                const data = JSON.parse(event.data);
+                addMessage(data.timestamp, data.channel, data.author, data.message);
+            };
+
+            ws.onclose = function (e) {
+                console.log('WebSocket closed. Attempting to reconnect...', e.reason);
+                setTimeout(function () {
+                    connect();
+                }, reconnectInterval);
+            };
+
+            ws.onerror = function (err) {
+                console.error('WebSocket encountered error: ', err.message, 'Closing socket');
+                ws.close();
+            };
+        }
+        connect();
+    </script>
+</body>
+
+</html>
