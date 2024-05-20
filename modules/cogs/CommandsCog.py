@@ -106,6 +106,7 @@ class CommandsCog(commands.Cog):
 
     @commands.command(name="lurk", aliases=["lurking", "lurker", "wurk", "wurking"])
     async def lurk(self, ctx: commands.Context):
+        return
         reply = await OpenaiModule.command_intepretor(
             ctx.message.content, ctx.author.name
         )
@@ -255,6 +256,7 @@ class CommandsCog(commands.Cog):
 
     @commands.command(name="aiso", aliases=["aishoutout", "so", "shoutout"])
     async def aiso(self, ctx: commands.Context):
+        return
         (
             success,
             username,

@@ -10,8 +10,8 @@ class PublicAnnouncementCog(commands.Cog):
         super().__init__()
         self.bot = bot
         self._pa_enabled = False
-        self._initial_delay = 60 * 5  # 5 minutes
-        self._message_delay = 60 * 6  # 6 minutes
+        self._initial_delay = 60 * 30  # 5 minutes
+        self._message_delay = 60 * 10  # 6 minutes
         self._message_index = 0
         twitch_config = ConfigController.get_config_file("twitch_channel.yaml")
         self._public_announcements = twitch_config.commands.pa

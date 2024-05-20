@@ -48,13 +48,13 @@ class _TwitchBot(commands.Bot):
 
         self._pattern = rf".*{self.config.bot_name}.*"
         self.add_cog(CommandsCog(bot=self))
-        self.add_cog(ShotsCog())
+        # self.add_cog(ShotsCog())
         self.add_cog(LightsCog())
-        self.add_cog(EventCog())
-        self.add_cog(CharityCog())
+        # self.add_cog(EventCog())
+        # self.add_cog(CharityCog())
         self.add_cog(PublicAnnouncementCog(bot=self))
         self.add_cog(AdminCog())
-        self.add_cog(NFTCog(bot=self))
+        # self.add_cog(NFTCog(bot=self))
 
         if self.config.log_to_file:
             self.init_log_file()

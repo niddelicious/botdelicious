@@ -155,16 +155,6 @@ def main():
     )
     new_tags = twitch_config.info.tags
     new_tags = twitch_update_tool.genre_to_tags(twitch_config.info.genre, new_tags)
-    if twitch_update_tool.update_twitch_channel(
-        title=new_twitch_title,
-        category_id=twitch_config.info.category_id,
-        tags=new_tags,
-    ):
-        logger.info(f"Updated Twitch channel with new title: {new_twitch_title}")
-    else:
-        logger.error(
-            f"Failed to update Twitch channel with new title: {new_twitch_title}"
-        )
     obs_info_tool = OBSInfoTool()
     obs_info_tool.update_show_info(profile_dir)
     b.autostart()

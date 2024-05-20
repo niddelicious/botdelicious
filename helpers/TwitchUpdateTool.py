@@ -48,6 +48,8 @@ class TwitchUpdateTool:
         genre = genre.replace(" ", "")
         if "-" in genre:
             genres = genre.split("-")
+        else:
+            genres = [genre]
         for g in genres:
             if len(g) > 20:
                 g = g[:20]
