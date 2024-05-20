@@ -1,3 +1,4 @@
+from pathlib import Path
 import logging
 import datetime
 import openai
@@ -18,21 +19,34 @@ class OpenaiModule(BotdeliciousModule):
     _thinking_message = ""
     _error_message = ""
     _model = ""
+    _role = ""
+    _name = ""
     _image_status: QueueStatus = QueueStatus.IDLE
     _logger = None
+    _system_prompt = ""
+    _event_prompt = ""
+    _pa_prompt = ""
+    _so_prompt = ""
+    _cmd_prompt = ""
 
     def __init__(self) -> None:
         super().__init__()
 
     @classmethod
     def set_config(cls, config):
-        cls._prompt = config.prompt
+        cls._prompt = config.system_prompt
         cls._thinking_message = config.thinking_message
         cls._error_message = config.error_message
         cls._model = config.model
+        cls._role = config.role
+        cls._name = config.name
+        cls._system_prompt = config.system_prompt
+        cls._event_prompt = config.event_prompt
+        cls._pa_prompt = config.pa_prompt
+        cls._cmd_prompt = config.cmd_prompt
 
     async def start(self):
-        config = ConfigController.get("openai")
+        config = ConfigController.get_config_file("openai.yaml")
         openai.organization = config.org
         openai.api_key = config.key
         self.set_config(config)
@@ -48,8 +62,12 @@ class OpenaiModule(BotdeliciousModule):
         cls._logger = logging.getLogger(__name__)
         cls._logger.setLevel(logging.DEBUG)
         cls._logger.propagate = False
-        log_filename = datetime.datetime.now().strftime(
-            f"logs/{__name__}-%Y-%m-%d_%H-%M-%S.log"
+        profile_path = ConfigController._get_config_file_path("")
+
+        log_directory = Path(profile_path) / "logs"
+        log_directory.mkdir(exist_ok=True)
+        log_filename = log_directory / datetime.datetime.now().strftime(
+            f"{__name__}-%Y-%m-%d_%H-%M-%S.log"
         )
         file_handler = logging.FileHandler(log_filename, encoding="utf-8")
         file_handler.setLevel(logging.DEBUG)
@@ -99,7 +117,7 @@ class OpenaiModule(BotdeliciousModule):
     @classmethod
     def add_reply(cls, conversation_group, reply):
         cls._conversations[conversation_group].append(
-            ConversationEntry("assistant", reply, "botdelicious")
+            ConversationEntry(cls._role, reply, cls._name)
         )
 
     @classmethod
@@ -126,7 +144,7 @@ class OpenaiModule(BotdeliciousModule):
         cls, messages, assistant_message: str = None, chaos: float = 1.0
     ):
         try:
-            cls._logger.warning("New query:")
+            cls._logger.info("New query:")
             json_messages = [message.__dict__ for message in messages]
             if assistant_message:
                 json_messages.append(assistant_message.__dict__)
@@ -182,7 +200,7 @@ class OpenaiModule(BotdeliciousModule):
 
         system_name = "ai_shoutout_generator"
         system_prompt = "Hype Twitch Streamer Shoutout Generator"
-        twitch_config = ConfigController.get("chat")
+
         username = Utilities.find_username(content)
         if username:
             user = await Utilities.get_twitch_user_info(username=username)
@@ -211,16 +229,13 @@ class OpenaiModule(BotdeliciousModule):
                 if stream_info
                 else "is currently not live, but was last seen"
             )
-            system_message = (
-                f"Write a shoutout for a Twitch streamer named {username} "
-                f"who {live_message} playing {game_name} "
-                f" with the stream title {title}. "
-                f"This is their description: {user_description}. "
-                f"These are their tags: {tags}. "
-                f"Do not list the tags in the reply. "
-                f"Make sure to end the reply with their url: "
-                f"https://twitch.tv/{username}. "
-                f"Keep the reply under 490 characters. "
+            system_message = cls._system_prompt.format(
+                username=username,
+                live_message=live_message,
+                game_name=game_name,
+                title=title,
+                user_description=user_description,
+                tags=tags,
             )
             success = True
 
@@ -268,14 +283,7 @@ class OpenaiModule(BotdeliciousModule):
             return None
 
         system_name = "ai_command_generator"
-        system_prompt = (
-            "You are a Twitch Command Message Generator named botdelicious. "
-            "You are working for niddelicious, a DJ streamer and supreme leader of the NiddeNation. "
-            "Your job is to reply to !commands from users in chat. "
-            "You will create excited and engaging messages appropriate for "
-            "the !command that is provided to you in order to recruit more followers to the NiddeNation. "
-            "Keep messages below 490 characters. "
-        )
+        system_prompt = cls._cmd_prompt
         cls.reprompt_conversation(system_name, system_prompt)
         command_prompt = f"@{author}: {content}"
         cls.add_message(system_name, author, command_prompt)
@@ -292,13 +300,7 @@ class OpenaiModule(BotdeliciousModule):
             return None
 
         system_name = "ai_event_generator"
-        system_prompt = (
-            "You are a Twitch Event Announcer "
-            "in the chat of niddelicious, a DJ streamer and supreme leader of the NiddeNation. "
-            "You will create extensive, elaborate and hyped messages "
-            "appropriate for the event that is provided to you to assist in the recruitment of more followers of NiddeNation. "
-            "Keep messages below 490 characters. "
-        )
+        system_prompt = cls._event_prompt
         cls.reprompt_conversation(system_name, system_prompt)
         event_prompt = f"{content}"
         cls.add_message(system_name, "Twitch", event_prompt)
@@ -314,15 +316,7 @@ class OpenaiModule(BotdeliciousModule):
             return None
 
         system_name = "ai_pa_generator"
-        system_prompt = (
-            "You are a Twitch Public Service Announcer named botdelicious. "
-            "You are working for niddelicious, a DJ streamer and supreme leader of the NiddeNation. "
-            "Your job is to write announcements and recruit new followers to the NiddeNation. "
-            "You will create engaging messages appropriate for "
-            "the announcement that is provided to you. "
-            "Keep messages below 490 characters. "
-            "Do not use breaklines in your reply. "
-        )
+        system_prompt = cls._pa_prompt
         cls.reprompt_conversation(system_name, system_prompt)
         command_prompt = f"@{author}: {content}"
         cls.add_message(system_name, author, command_prompt)

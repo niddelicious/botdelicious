@@ -47,12 +47,12 @@ class _TwitchBot(commands.Bot):
         )
 
         self._pattern = rf".*{self.config.bot_name}.*"
-        # self.add_cog(CommandsCog(bot=self))
+        self.add_cog(CommandsCog(bot=self))
         self.add_cog(ShotsCog())
-        # self.add_cog(LightsCog())
-        # self.add_cog(EventCog())
-        # self.add_cog(CharityCog())
-        # self.add_cog(PublicAnnouncementCog(bot=self))
+        self.add_cog(LightsCog())
+        self.add_cog(EventCog())
+        self.add_cog(CharityCog())
+        self.add_cog(PublicAnnouncementCog(bot=self))
         self.add_cog(AdminCog())
         self.add_cog(NFTCog(bot=self))
 
@@ -208,21 +208,18 @@ class _TwitchBot(commands.Bot):
             await self.send_message_to_channel(channel.name, message)
 
     async def say_hello(self):
-        pass
-        #    for channel in self.connected_channels:
-        #          current_time_string = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        #          await self.send_message_to_channel(
-        #              channel.name, f"Hello World! ({current_time_string})"
-        #          )
+        for channel in self.connected_channels:
+            current_time_string = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            await self.send_message_to_channel(
+                channel.name, f"Hello World! ({current_time_string})"
+            )
 
     async def say_bye(self):
-        pass
-
-        #    for channel in self.connected_channels:
-        #        current_time_string = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        #        await self.send_message_to_channel(
-        #            channel.name, f"Bye World! ({current_time_string})"
-        #       )
+        for channel in self.connected_channels:
+            current_time_string = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            await self.send_message_to_channel(
+                channel.name, f"Bye World! ({current_time_string})"
+            )
 
     async def fetch_user_avatar(self, username):
         fetch_url = f"https://api.twitch.tv/helix/users?login={username}"

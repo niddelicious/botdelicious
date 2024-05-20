@@ -4,3 +4,5 @@ coloredlogs
 openai
 simpleobsws
 webhook_listener
+websocket_server
+windows-curses
