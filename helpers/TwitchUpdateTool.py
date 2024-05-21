@@ -48,6 +48,8 @@ class TwitchUpdateTool:
         genre = genre.replace(" ", "")
         if "-" in genre:
             genres = genre.split("-")
+        else:
+            genres = [genre]
         for g in genres:
             if len(g) > 20:
                 g = g[:20]
@@ -62,25 +64,27 @@ class TwitchUpdateTool:
             f"grant_type=refresh_token&"
             f"refresh_token={self.refresh_token}&"
             f"client_id={self.client_id}&"
-            f"client_secret={self.config.client_secret}"
+            f"client_secret={self.client_secret}"
         )
         refresh = DotMap(httpx.post(twitch_refresh_url).json())
         logging.debug(f"Refresh response: {refresh}")
-        if self.config.access_token != refresh.access_token:
+        if self.access_token != refresh.access_token:
             ConfigController.update_config_file(
                 self.config_file,
                 "auth",
                 "channel_update_access_token",
-                refresh.channel_update_access_token,
+                refresh.access_token,
             )
+            self.access_token = refresh.access_token
 
-        if self.config.refresh_token != refresh.refresh_token:
+        if self.refresh_token != refresh.refresh_token:
             ConfigController.update_config_file(
                 self.config_file,
                 "auth",
                 "channel_update_refresh_token",
                 refresh.refresh_token,
             )
+            self.refresh_token = refresh.refresh_token
 
         logging.info("Refreshed Twitch Chat Tokens")
         return True

@@ -54,7 +54,7 @@ class _TwitchBot(commands.Bot):
         self.add_cog(CharityCog())
         self.add_cog(PublicAnnouncementCog(bot=self))
         self.add_cog(AdminCog())
-        self.add_cog(NFTCog(bot=self))
+        # self.add_cog(NFTCog(bot=self))
 
         if self.config.log_to_file:
             self.init_log_file()

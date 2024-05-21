@@ -1,3 +1,4 @@
+pyyaml
 dotmap
 twitchio
 coloredlogs
@@ -6,3 +7,5 @@ simpleobsws
 webhook_listener
 websocket_server
 windows-curses
+pysftp
+discord

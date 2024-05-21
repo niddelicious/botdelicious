@@ -144,6 +144,8 @@ def main():
     """Main entry point of the app"""
     b = Botdelicious()
     b.set_profile_path(profile_dir)
+    obs_info_tool = OBSInfoTool()
+    obs_info_tool.update_show_info(profile_dir)
     twitch_update_tool = TwitchUpdateTool()
     twitch_update_tool.refresh_tokens()
     twitch_config = ConfigController.get_config_file("twitch_channel.yaml")
@@ -165,8 +167,6 @@ def main():
         logger.error(
             f"Failed to update Twitch channel with new title: {new_twitch_title}"
         )
-    obs_info_tool = OBSInfoTool()
-    obs_info_tool.update_show_info(profile_dir)
     b.autostart()
     sleep_time = 2 if logging.getLogger().getEffectiveLevel() == logging.DEBUG else 0
     EventModule.set_loop_sleep(sleep_time=sleep_time)

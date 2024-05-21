@@ -87,9 +87,18 @@ class StableDiffusionModule(BotdeliciousModule):
         }
 
         cls._awaiting_images = True
-        response = await cls._httpx.post(
-            txt2img_url, headers=headers, data=json.dumps(data)
-        )
+        try:
+            response = await cls._httpx.post(
+                txt2img_url, headers=headers, data=json.dumps(data)
+            )
+            response.raise_for_status()
+            logging.debug(f"A111 response: {response.json()}")
+        except httpx.RequestError as e:
+            logging.error(f"An error occurred while requesting {e.request.url!r}.")
+        except httpx.HTTPStatusError as e:
+            logging.error(
+                f"Error response {e.response.status_code} while requesting {e.request.url!r}."
+            )
 
         cls._awaiting_images = False
         response_data = response.json()
