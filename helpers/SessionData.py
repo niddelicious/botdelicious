@@ -20,6 +20,7 @@ class SessionData:
     _chatters = []
     _tokens_count = 0
     _start_delay = None
+    _chat_session_started = False
 
     @classmethod
     def start_session(cls):
@@ -235,3 +236,11 @@ class SessionData:
             height += line_height
         height += bottom_margin
         return text, height
+
+    @classmethod
+    def start_chat_session(cls):
+        cls._chat_session_started = True
+
+    @classmethod
+    def chat_session_started(cls):
+        return cls._chat_session_started
