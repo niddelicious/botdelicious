@@ -219,6 +219,7 @@ class VideoBeeple(Enum):
     def id(cls, index: int = 0):
         return list(cls)[index]
 
+
 class VideoYule(Enum):
     CHRISTMAS_CHESHIRE_2 = "sleepless_monk/yule/Christmas Cheshire 2.mov"
     CHRISTMAS_CHESHIRE_3 = "sleepless_monk/yule/Christmas Cheshire 3.mov"
@@ -260,6 +261,7 @@ class VideoYule(Enum):
     @classmethod
     def id(cls, index: int = 0):
         return list(cls)[index]
+
 
 class VideoTrippy(Enum):
     AMANITA_2 = "sleepless_monk/trippy/Amanita 2.mov"
@@ -320,4 +322,3 @@ class VideoTrippy(Enum):
     @classmethod
     def id(cls, index: int = 0):
         return list(cls)[index]
-

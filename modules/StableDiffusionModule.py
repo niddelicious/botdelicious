@@ -9,6 +9,7 @@ import logging
 from PIL import Image
 from datetime import datetime
 import httpx
+import psutil
 from Controllers.ConfigController import ConfigController
 
 from Modules.BotdeliciousModule import BotdeliciousModule
@@ -39,22 +40,51 @@ class StableDiffusionModule(BotdeliciousModule):
 
     async def stop(self):
         self.set_status(ModuleStatus.STOPPING)
-        self.process.kill()
+        if self.process:
+            try:
+                # Use psutil to find and terminate the process tree
+                parent_pid = self.process.pid
+                parent = psutil.Process(parent_pid)
+                children = parent.children(recursive=True)
+                for child in children:
+                    child.terminate()
+                parent.terminate()
+                gone, still_alive = psutil.wait_procs([parent] + children, timeout=5)
+                for p in still_alive:
+                    p.kill()
+            except Exception as e:
+                logging.error(f"Error while stopping subprocess: {e}")
+            finally:
+                self.process = None
         self.set_status(ModuleStatus.IDLE)
 
     def listen(self):
         subprocess.run(self.executable)
 
     def console(self):
-        si = subprocess.STARTUPINFO()
-        si.dwFlags = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NEW_CONSOLE
-        # Save the current working directory
-        old_cwd = os.getcwd()
-        # Change the working directory to the directory of the batch file
-        os.chdir(self.working_directory)
-        self.process = subprocess.Popen(self.executable, close_fds=True, startupinfo=si)
-        # Change the working directory back to the original directory
-        os.chdir(old_cwd)
+        try:
+            si = subprocess.STARTUPINFO()
+            si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            si.wShowWindow = (
+                subprocess.SW_HIDE
+            )  # Prevents a console window from being created
+
+            # Save the current working directory
+            old_cwd = os.getcwd()
+            # Change the working directory to the directory of the batch file
+            os.chdir(self.working_directory)
+            self.process = subprocess.Popen(
+                self.executable,
+                close_fds=True,
+                startupinfo=si,
+                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
+                shell=True,
+            )
+            # Change the working directory back to the original directory
+            os.chdir(old_cwd)
+        except Exception as e:
+            logging.error(f"Failed to start subprocess: {e}")
+            self.process = None
 
     @classmethod
     async def generate_image(cls, prompt, style, author):

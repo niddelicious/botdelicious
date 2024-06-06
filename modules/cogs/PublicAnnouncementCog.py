@@ -15,6 +15,8 @@ class PublicAnnouncementCog(commands.Cog):
         self._message_index = 0
         twitch_config = ConfigController.get_config_file("twitch_channel.yaml")
         self._public_announcements = twitch_config.commands.pa
+        if isinstance(twitch_config.commands.delay, int):
+            self._message_delay = 60 * twitch_config.commands.delay
         asyncio.create_task(self.pa_autostart())
 
     def get_announcement(self):

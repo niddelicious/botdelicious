@@ -181,9 +181,6 @@ class _TwitchBot(commands.Bot):
 
     async def send_message_to_channel(self, channel, message):
         chan = self.get_channel(channel)
-        if not self._connection._websocket or self._connection._websocket.closed:
-            logging.error("WebSocket connection is closed, cannot send message")
-            return
         # Split the message into chunks of up to 500 characters
         message_chunks = []
         while message:
@@ -223,7 +220,7 @@ class _TwitchBot(commands.Bot):
     async def say_hello(self):
         if SessionData.chat_session_started():
             logging.info("Chat session already started")
-        await asyncio.sleep(5)
+            # return
         for channel in self.connected_channels:
             current_time_string = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             await self.send_message_to_channel(
@@ -282,39 +279,58 @@ class _TwitchBot(commands.Bot):
         }
         await WebsocketModule.send_websocket_message(payload)
 
+    async def event_token_expired(self):
+        logging.debug("Token expired")
+        await self.get_new_tokens()
+
+    async def get_new_tokens(self):
+        logging.debug("Attempt token refresh")
+        await self._update_tokens()
+        self._connection._token = self.config.access_token
+        logging.debug("Token refreshed")
+        logging.debug(f"New token: {self.config.access_token}")
+
+    async def _update_tokens(self):
+        logging.debug("Refreshing Twitch Chat tokens")
+        twitch_refresh_url = str(
+            f"https://id.twitch.tv/oauth2/token?"
+            f"grant_type=refresh_token&"
+            f"refresh_token={self.config.refresh_token}&"
+            f"client_id={self.config.client_id}&"
+            f"client_secret={self.config.client_secret}"
+        )
+        refresh = DotMap(requests.post(twitch_refresh_url).json())
+        logging.debug(f"Refresh response: {refresh}")
+        if self.config.access_token != refresh.access_token:
+            ConfigController.update_config("chat", "access_token", refresh.access_token)
+
+        if self.config.refresh_token != refresh.refresh_token:
+            ConfigController.update_config(
+                "chat", "refresh_token", refresh.refresh_token
+            )
+
+        logging.info("Refreshed Twitch Chat Tokens")
+        return True
+
 
 class ChatModule(BotdeliciousModule):
     _bot: _TwitchBot
 
     def __init__(self):
         super().__init__()
-        self._update_task = None
-        self._bot_task = None
-        self.config = None
-        self.bot = None
 
     async def start(self):
         self.set_status(ModuleStatus.RUNNING)
         self.config = ConfigController.get("chat")
-        self._update_task = asyncio.create_task(self._periodic_token_update())
-        await self._restart_bot()
+        await self._update_tokens()
+        self.bot = _TwitchBot(self.config)
+        self.set_bot(self.bot)
+        await self.bot.start()
 
     async def stop(self):
         self.set_status(ModuleStatus.STOPPING)
-        if self._update_task:
-            self._update_task.cancel()
-            try:
-                await self._update_task
-            except asyncio.CancelledError:
-                pass
-        if self._bot_task:
-            await self.bot.say_bye()
-            await self.bot.close()
-            self._bot_task.cancel()
-            try:
-                await self._bot_task
-            except asyncio.CancelledError:
-                pass
+        await self.bot.say_bye()
+        await self.bot.close()
         self.set_status(ModuleStatus.IDLE)
 
     @classmethod
@@ -350,57 +366,3 @@ class ChatModule(BotdeliciousModule):
 
         logging.info("Refreshed Twitch Chat Tokens")
         return True
-
-    async def _run_bot(self):
-        await self.bot.run()
-        # await self.bot.connect()
-
-    async def _periodic_token_update(self):
-        bot_count = 1
-        while True:
-            try:
-                await self._update_tokens()
-                self.config = ConfigController.get("chat")
-                await self._restart_bot()
-                await asyncio.sleep(15)
-            except asyncio.CancelledError:
-                break
-            except Exception as e:
-                logging.error(f"Error in periodic token update: {e}")
-
-    async def _periodic_token_update(self):
-        while True:
-            try:
-                await asyncio.sleep(30)  # Sleep for 1 hour
-                await self._update_tokens()
-                self.config = ConfigController.get("chat")
-                await self._restart_bot()
-            except asyncio.CancelledError:
-                break
-            except Exception as e:
-                logging.error(f"Error in periodic token update: {e}")
-
-    async def _restart_bot(self):
-        logging.info("Restarting bot with updated tokens")
-        if self._bot_task:
-            logging.info("Cancelling existing bot task")
-            await self.bot.close()
-            if self._bot_task:
-                self._bot_task.cancel()
-            try:
-                await self._bot_task
-            except asyncio.CancelledError:
-                logging.error("CancelledError when cancelling bot task")
-
-        logging.info("Creating a new bot instance")
-        self.bot = _TwitchBot(self.config)
-        self.set_bot(self.bot)
-        self._bot_task = asyncio.create_task(self._run_bot())
-
-        # Wait a bit to ensure the bot is fully started
-        await asyncio.sleep(5)
-        logging.info(
-            f"WebSocket connected: {self.bot._connection._websocket is not None and not self.bot._connection._websocket.closed}"
-        )
-
-        logging.info("Bot restarted successfully")

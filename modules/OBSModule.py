@@ -319,6 +319,8 @@ class OBSModule(BotdeliciousModule):
         )
         result = await self.call(type="Get SceneItems", request=request)
         scene_items = []
+        if result == None or "sceneItems" not in result:
+            return scene_items
         for scene_item in result["sceneItems"]:
             if scene_item["isGroup"]:
                 group_items = await self.call_get_group_items(
@@ -552,6 +554,8 @@ class OBSModule(BotdeliciousModule):
         scene_items = await self.call_get_scene_items(
             scene_name="Elements: Credits texts"
         )
+        if not scene_items:
+            return
         for item in credits:
             for scene_item in scene_items:
                 if item.source == scene_item["sourceName"]:
@@ -662,6 +666,11 @@ class OBSModule(BotdeliciousModule):
                 filter_name="Slide",
                 filter_enabled=True,
             )
+            await self.call_toggle_filter(
+                source_name="Bumps",
+                filter_name="Play Follow Audio",
+                filter_enabled=True,
+            )
         await asyncio.sleep(10)
         if self._name == "video":
             await self.reset_video_texts()
@@ -704,6 +713,11 @@ class OBSModule(BotdeliciousModule):
             await self.call_toggle_filter(
                 source_name="Bumps",
                 filter_name="Slide",
+                filter_enabled=True,
+            )
+            await self.call_toggle_filter(
+                source_name="Bumps",
+                filter_name="Play Raid Audio",
                 filter_enabled=True,
             )
         await asyncio.sleep(10)

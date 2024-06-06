@@ -27,18 +27,14 @@ class CommandLine:
             ModulesController.start_module(module_name=command[6:])
         if command.startswith("stop "):
             if command[5:] == "event":
-                logging.info(
-                    f"Cannot stop event loop. Exit application instead"
-                )
+                logging.info(f"Cannot stop event loop. Exit application instead")
             else:
                 ModulesController.stop_module(module_name=command[5:])
         if command.startswith("restart "):
             ModulesController.stop_module(module_name=command[8:])
             ModulesController.start_module(module_name=command[8:])
         if command.startswith("event "):
-            AsyncioThread.run_coroutine(
-                EventModule.queue_event(event=command[6:])
-            )
+            AsyncioThread.run_coroutine(EventModule.queue_event(event=command[6:]))
         if command == "help":
             logging.info(f"Commands:")
             logging.info(f"exit")
@@ -64,9 +60,7 @@ class CommandLine:
             if level == "critical":
                 logging.getLogger().setLevel(logging.CRITICAL)
                 EventModule.set_loop_sleep()
-            set_level = logging.getLevelName(
-                logging.getLogger().getEffectiveLevel()
-            )
+            set_level = logging.getLevelName(logging.getLogger().getEffectiveLevel())
             logging.info(f"Log level set to {set_level}")
         if command.startswith("test"):
             text_avatar_url = "https://loremflickr.com/300/300/twitch"
@@ -98,13 +92,9 @@ class CommandLine:
                     EventModule.queue_event(event="show_small_track_id")
                 )
             if command[5:] == "fire":
-                AsyncioThread.run_coroutine(
-                    EventModule.queue_event(event="fire")
-                )
+                AsyncioThread.run_coroutine(EventModule.queue_event(event="fire"))
             if command[5:] == "tune":
-                AsyncioThread.run_coroutine(
-                    EventModule.queue_event(event="tune")
-                )
+                AsyncioThread.run_coroutine(EventModule.queue_event(event="tune"))
             if command[5:] == "midjourney":
                 AsyncioThread.run_coroutine(
                     EventModule.queue_event(
@@ -146,9 +136,9 @@ class CommandLine:
             if command[5:] == "sd":
                 prompt = input("Enter a prompt: ")
                 AsyncioThread.run_coroutine(
-                    ModulesController.get_module(
-                        "stablediffusion"
-                    ).generate_image(prompt=prompt)
+                    ModulesController.get_module("stablediffusion").generate_image(
+                        prompt=prompt
+                    )
                 )
 
         return 1

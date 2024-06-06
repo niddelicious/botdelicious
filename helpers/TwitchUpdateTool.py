@@ -1,5 +1,6 @@
 import httpx
 import logging
+import re
 from dotmap import DotMap
 from Controllers.ConfigController import ConfigController
 
@@ -15,6 +16,10 @@ class TwitchUpdateTool:
         self.access_token = self.config.auth.channel_update_access_token
         self.refresh_token = self.config.auth.channel_update_refresh_token
         self.url = "https://api.twitch.tv/helix/channels"
+        self.headers = {}
+        self.update_headers()
+
+    def update_headers(self):
         self.headers = {
             "Authorization": f"Bearer {self.access_token}",
             "Client-Id": f"{self.client_id}",
@@ -45,15 +50,13 @@ class TwitchUpdateTool:
         return title
 
     def genre_to_tags(self, genre, tags=None):
-        genre = genre.replace(" ", "")
-        if "-" in genre:
-            genres = genre.split("-")
-        else:
-            genres = [genre]
+        delimiters = r"[-,\.&|/\\;:\s]"
+        genres = re.split(delimiters, genre)
+        genres = [g for g in genres if g]
         for g in genres:
             if len(g) > 20:
                 g = g[:20]
-            if g not in tags:
+            if g not in tags and g.isalnum():
                 tags.append(g)
         return tags
 
@@ -85,6 +88,6 @@ class TwitchUpdateTool:
                 refresh.refresh_token,
             )
             self.refresh_token = refresh.refresh_token
-
+        self.update_headers()
         logging.info("Refreshed Twitch Chat Tokens")
         return True

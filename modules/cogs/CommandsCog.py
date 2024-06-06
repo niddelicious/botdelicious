@@ -386,3 +386,10 @@ class CommandsCog(commands.Cog):
         await EventModule.direct_event(
             event="macrodose",
         )
+
+    @commands.command(
+        name="discord",
+        aliases=["disc", "discordlink", "discordinvite", "discordserver", "disclink"],
+    )
+    async def discord(self, ctx: commands.Context):
+        await ctx.send(f"https://discord.gg/jXxtveja5F")

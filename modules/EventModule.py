@@ -311,6 +311,9 @@ class EventModule(BotdeliciousModule):
     @classmethod
     async def handle_sd_generate_image(cls, item_data=None, *args, **kwargs):
         logging.debug("SD start image")
+        if not cls._sd_module:
+            logging.warning("No SD module found!")
+            return
         await asyncio.gather(
             cls._sd_module.generate_image(
                 item_data.prompt, item_data.style, item_data.author
