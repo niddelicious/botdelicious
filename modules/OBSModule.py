@@ -154,7 +154,11 @@ class OBSModule(BotdeliciousModule):
 
     async def disconnect(self):
         logging.info(f"Disconnecting from {self._name}")
-        await self.ws.disconnect()
+        try:
+            await self.ws.disconnect()
+        except ConnectionError:
+            logging.warn(f"Could not disconnect from {self._name}")
+            return
 
     async def call(
         self,
