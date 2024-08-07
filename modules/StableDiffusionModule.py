@@ -180,7 +180,10 @@ class StableDiffusionModule(BotdeliciousModule):
             img.save(f"stable-diffusion-th.jpg", "JPEG", quality=60)
 
         if sd_config.upload_site:
-            FTPClient.upload(new_filename)
+            if FTPClient.upload(new_filename):
+                await ChatModule.send_message(
+                    f"{author} ordered a '{prompt}': {sd_config.site_url}/{new_filename}"
+                )
         if sd_config.upload_discord:
             discord_url = await DiscordBot.upload(
                 filename=new_filename, prompt=prompt, author=author
