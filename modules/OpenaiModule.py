@@ -43,6 +43,7 @@ class OpenaiModule(BotdeliciousModule):
         cls._system_prompt = config.system_prompt
         cls._event_prompt = config.event_prompt
         cls._pa_prompt = config.pa_prompt
+        cls._so_prompt = config.so_prompt
         cls._cmd_prompt = config.cmd_prompt
 
     async def start(self):
@@ -198,8 +199,8 @@ class OpenaiModule(BotdeliciousModule):
         if cls.get_status() != ModuleStatus.RUNNING:
             return None, None, None, None
 
-        system_name = "ai_shoutout_generator"
-        system_prompt = "Hype Twitch Streamer Shoutout Generator"
+        system_name = "ai_command_generator"
+        system_prompt = cls._so_prompt
 
         username = Utilities.find_username(content)
         if username:
@@ -229,7 +230,7 @@ class OpenaiModule(BotdeliciousModule):
                 if stream_info
                 else "is currently not live, but was last seen"
             )
-            system_message = cls._system_prompt.format(
+            system_message = cls._so_prompt.format(
                 username=username,
                 live_message=live_message,
                 game_name=game_name,
