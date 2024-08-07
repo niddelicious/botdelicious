@@ -49,6 +49,19 @@ class TwitchUpdateTool:
         title = f"{genre} | {series} #{episode} | {tagline}"
         return title
 
+    def title_override(self, title):
+        print(f"Current title: {title}")
+        new_title = input("Enter new title (press Enter to skip): ").strip()
+        if new_title:
+            title = f"{new_title} | {self.config.info.series} #{self.config.info.episode} | {self.config.info.tagline}"
+        print(f"New title: {title}")
+        overwrite_title = input(
+            "Enter full new title or press Enter to accept: "
+        ).strip()
+        if overwrite_title:
+            title = f"{overwrite_title}"
+        return title
+
     def genre_to_tags(self, genre, tags=None):
         delimiters = r"[-,\.&|/\\;:\s]"
         genres = re.split(delimiters, genre)
@@ -58,6 +71,16 @@ class TwitchUpdateTool:
                 g = g[:20]
             if g not in tags and g.isalnum():
                 tags.append(g)
+        return tags
+
+    def add_tags(self, tags=[]):
+        print("Current tags: ", tags)
+        new_tags = input("Enter new tags separated by commas: ").strip()
+        new_tags = new_tags.split(",")
+        new_tags = [t.strip() for t in new_tags if t.strip()]
+        for t in new_tags:
+            if t not in tags and t.isalnum():
+                tags.append(t)
         return tags
 
     def refresh_tokens(self):

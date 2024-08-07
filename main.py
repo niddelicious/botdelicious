@@ -155,8 +155,11 @@ def main():
         twitch_config.info.genre,
         twitch_config.info.tagline,
     )
+    new_twitch_title = twitch_update_tool.title_override(new_twitch_title)
+
     new_tags = twitch_config.info.tags
     new_tags = twitch_update_tool.genre_to_tags(twitch_config.info.genre, new_tags)
+    new_tags = twitch_update_tool.add_tags(new_tags)
     if twitch_update_tool.update_twitch_channel(
         title=new_twitch_title,
         category_id=twitch_config.info.category_id,
