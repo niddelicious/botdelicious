@@ -405,3 +405,13 @@ class EventModule(BotdeliciousModule):
             *[instance.event_tune() for instance in cls._obs_instances],
             TwinklyModule.playlist(TwinklyPlaylist.RAINBOW_WAVES, 10),
         )
+
+    @classmethod
+    async def direct_heartrate(cls, item_data=None, *args, **kwargs):
+        logging.debug(f"Heartbeat!")
+        await asyncio.gather(
+            *[
+                instance.update_heartrate(item_data.heartrate)
+                for instance in cls._obs_instances
+            ]
+        )
