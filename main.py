@@ -123,27 +123,7 @@ def setup_logging(base_path):
     return logger  # Optionally return the logger
 
 
-def main():
-    directory = "./Profiles"
-    subdirs = list_subfolders(directory)
-
-    profile_dir = menu(subdirs)
-    if profile_dir:
-        print(f"Selected Profile: {profile_dir}")
-        # You can now use `selected_folder` for further operations, such as setting up config files.
-
-    ConfigController.set_config_base_path(profile_dir)
-    ConfigController.get_config()
-
-    setup_logging(profile_dir)
-
-    # Create logger
-    logger = logging.getLogger()
-    logger.info(f"Application started")
-
-    """Main entry point of the app"""
-    b = Botdelicious()
-    b.set_profile_path(profile_dir)
+def setup_stream(profile_dir, logger):
     obs_info_tool = OBSInfoTool()
     obs_info_tool.update_show_info(profile_dir)
     twitch_update_tool = TwitchUpdateTool()
@@ -170,6 +150,31 @@ def main():
         logger.error(
             f"Failed to update Twitch channel with new title: {new_twitch_title}"
         )
+
+
+def main():
+    directory = "./Profiles"
+    subdirs = list_subfolders(directory)
+
+    profile_dir = menu(subdirs)
+    if profile_dir:
+        print(f"Selected Profile: {profile_dir}")
+        # You can now use `selected_folder` for further operations, such as setting up config files.
+
+    ConfigController.set_config_base_path(profile_dir)
+    ConfigController.get_config()
+
+    setup_logging(profile_dir)
+
+    # Create logger
+    logger = logging.getLogger()
+    logger.info(f"Application started")
+
+    """Main entry point of the app"""
+    b = Botdelicious()
+    b.set_profile_path(profile_dir)
+    setup_stream(profile_dir, logger)
+
     b.autostart()
     sleep_time = 2 if logging.getLogger().getEffectiveLevel() == logging.DEBUG else 0
     EventModule.set_loop_sleep(sleep_time=sleep_time)

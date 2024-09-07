@@ -83,3 +83,13 @@ class WebhookModule(BotdeliciousModule):
                 message=kofi_data["message"],
             )
         )
+
+    def heart(self, request, *args, **kwargs):
+        bpm = kwargs["rate"]
+        if bpm > 30:
+            AsyncioThread.run_coroutine(
+                EventModule.direct_event(
+                    event="heartrate",
+                    heartrate=bpm,
+                )
+            )

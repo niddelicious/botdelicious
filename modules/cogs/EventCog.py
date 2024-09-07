@@ -11,10 +11,7 @@ class EventCog(commands.Cog):
     @commands.command(name="lineup", aliases=["schedule", "times"])
     async def lineup(self, ctx: commands.Context):
         pass
-        return None
-        lineup = "Remaining lineup of streamers in this raid train and times in CET: 09:00 @dj_martin_lune 11:00 @DanjunaDJ 13:00 @Dieselmax 15:00 @adrienLT_DJ 17:00 @JostonMusic 19:00 @BendyBusDriver 21:00 @tkkttony"
-        reply = await OpenaiModule.pa_intepretor(
-                content=lineup, author="niddelicious"
-            )
+        return
+        lineup = "This is the Summer Shindig 2024 Raid Train, and the upcoming streamers are: @Hallucyn8 4pm CET, @DJEgo07 6pm CET, and @loft214 8pm CET, with more than a dozen after that. Full schedule: https://raidpal.com/en/event/summer-shindig-2024"
+        reply = await OpenaiModule.pa_intepretor(content=lineup, author="niddelicious")
         await ctx.send(reply)
-

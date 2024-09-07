@@ -1111,3 +1111,6 @@ class OBSModule(BotdeliciousModule):
         await self.set_scene_item_visibility(
             scene_name="Screen: GH5", source_name="Screen: Macrodose", visibility=False
         )
+
+    async def update_heartrate(self, heartrate):
+        await self.call_update_text(input_name="HeartRate", text=f"{heartrate}")
