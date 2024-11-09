@@ -113,7 +113,6 @@ class ShotsCog(commands.Cog):
             return
         if ctx.author.is_broadcaster:
             self._shot_accepted = True
-            self._shot_requested = False
             self.add_drinker(ctx.author.name)
             await ctx.send(
                 f"✅ ACCEPTED! @{ctx.author.name} IS IN! LESSGO!"
@@ -138,6 +137,7 @@ class ShotsCog(commands.Cog):
             self._shots += 1
             self._shot_taken = True
             self._shot_accepted = False
+            self._shot_requested = False
             self.move_drinkers()
             await Timer.start("Reopen the bar", 15 * 60, self._reopen_the_bar, ctx=ctx)
         else:
