@@ -33,11 +33,11 @@ class LightsCog(commands.Cog):
         elif splits[1] == "anim" and splits[2].isnumeric():
             anim_id = int(splits[2]) - 1
             if 0 <= anim_id < len(TwinklyPlaylist):
-                anim = TwinklyPlaylist.id(anim_id)
+                effect = TwinklyPlaylist(anim_id)
             else:
-                anim = random.choice(list(TwinklyPlaylist))
-            await TwinklyModule.playlist(animation=anim)
-            await ctx.send(f"Animation: {anim.name.replace('_', ' ').title()}")
+                effect = random.choice(list(TwinklyPlaylist))
+            await TwinklyModule.playlist(effect=effect, time=0)
+            await ctx.send(effect.name.replace("_", " ").title())
         elif (
             (splits[1] == "color" or splits[1] == "colour")
             and splits[2].isnumeric()

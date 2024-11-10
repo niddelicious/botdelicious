@@ -25,9 +25,7 @@ class TwinklyController:
     async def _login_to_twinkly_unit(self, **kwargs):
         challenge_length = 32
         challenge = "".join(
-            random.choices(
-                string.ascii_uppercase + string.digits, k=challenge_length
-            )
+            random.choices(string.ascii_uppercase + string.digits, k=challenge_length)
         )
 
         login_request = requests.post(
@@ -84,22 +82,19 @@ class TwinklyController:
     ):
         playlist_item = {"id": effect.value}
         effect = {"mode": "playlist"}
-        requests.post(
-            self.unit_url + "led/mode", json=effect, headers=self.headers
-        )
+        requests.post(self.unit_url + "led/mode", json=effect, headers=self.headers)
         requests.post(
             self.unit_url + "playlist/current",
             json=playlist_item,
             headers=self.headers,
         )
 
-        await asyncio.sleep(time)
-        await self.reset_lights()
+        if time > 0:
+            await asyncio.sleep(time)
+            await self.reset_lights()
 
     @_handshake
-    async def run_twinkly_react(
-        self, react: TwinklyReact = TwinklyReact.BEAT_HUE
-    ):
+    async def run_twinkly_react(self, react: TwinklyReact = TwinklyReact.BEAT_HUE):
         react_id = react.value
         # json_payload = {
         #     "mode": "effect",
@@ -142,7 +137,5 @@ class TwinklyController:
             self.unit_url + "led/color", json=rgb_values, headers=self.headers
         )
         effect = {"mode": "color"}
-        requests.post(
-            self.unit_url + "led/mode", json=effect, headers=self.headers
-        )
+        requests.post(self.unit_url + "led/mode", json=effect, headers=self.headers)
         self.set_settings("color", rgb_values)
