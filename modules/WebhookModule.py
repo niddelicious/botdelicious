@@ -86,7 +86,7 @@ class WebhookModule(BotdeliciousModule):
 
     def heart(self, request, *args, **kwargs):
         bpm = kwargs["rate"]
-        if bpm > 30:
+        if int(bpm) > 30:
             AsyncioThread.run_coroutine(
                 EventModule.direct_event(
                     event="heartrate",

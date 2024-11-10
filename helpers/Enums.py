@@ -86,6 +86,14 @@ class TwinklyPlaylist(Enum):
     RAINBOW_WAVES = 3
     I_LOVE_YOU = 4
 
+    @classmethod
+    def index(cls, member):
+        return list(cls).index(member)
+
+    @classmethod
+    def id(cls, index: int = 0):
+        return list(cls)[index]
+
 
 class StableDiffusionStyles(Enum):
     GHIBLI = "Ghibli"
