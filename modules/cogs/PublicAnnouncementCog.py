@@ -1,7 +1,7 @@
 import asyncio
 from twitchio.ext import commands
 from Helpers.Timer import Timer
-from Modules.OpenaiModule import OpenaiModule
+from Modules.AnthropicModule import AnthropicModule
 from Controllers.ConfigController import ConfigController
 
 
@@ -49,7 +49,7 @@ class PublicAnnouncementCog(commands.Cog):
 
     async def _public_announcement(self):
         while self._pa_enabled:
-            reply = await OpenaiModule.pa_intepretor(
+            reply = await AnthropicModule.pa_intepretor(
                 content=self.get_announcement(), author="niddelicious"
             )
             await self.bot.say_everywhere(reply)

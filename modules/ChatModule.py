@@ -17,7 +17,7 @@ from Modules.Cogs.LightsCog import LightsCog
 from Modules.Cogs.PublicAnnouncementCog import PublicAnnouncementCog
 from Modules.EventModule import EventModule
 from Modules.Cogs.CommandsCog import CommandsCog
-from Modules.OpenaiModule import OpenaiModule
+from Modules.AnthropicModule import AnthropicModule
 from Modules.Cogs.ShotsCog import ShotsCog
 from Modules.Cogs.CharityCog import CharityCog
 from Modules.Cogs.AdminCog import AdminCog
@@ -90,7 +90,7 @@ class _TwitchBot(commands.Bot):
             await self.chatter_active(message.author.name)
 
         if re.match(self._pattern, message.content):
-            reply = await OpenaiModule.chat(
+            reply = await AnthropicModule.chat(
                 channel=message.channel.name,
                 username=message.author.name,
                 message=message.content,
@@ -140,7 +140,7 @@ class _TwitchBot(commands.Bot):
                 avatar_url=avatar_url,
             )
         )
-        message = await OpenaiModule.event_intepretor(
+        message = await AnthropicModule.event_intepretor(
             f"@{payload.data.user.name} followed"
         )
         await self.send_message_to_channel(
@@ -164,7 +164,7 @@ class _TwitchBot(commands.Bot):
                 avatar_url=avatar_url,
             )
         )
-        message = await OpenaiModule.event_intepretor(
+        message = await AnthropicModule.event_intepretor(
             f"@{payload.data.raider.name} raided "
             f"with {payload.data.viewer_count} friends"
         )

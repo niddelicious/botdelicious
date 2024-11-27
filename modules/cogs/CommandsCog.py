@@ -8,7 +8,7 @@ from Helpers.SessionData import SessionData
 from Helpers.Timer import Timer
 from Helpers.Utilities import Utilities
 from Modules.EventModule import EventModule
-from Modules.OpenaiModule import OpenaiModule
+from Modules.AnthropicModule import AnthropicModule
 from Helpers.Enums import (
     Status,
     StableDiffusionStyles,
@@ -106,7 +106,7 @@ class CommandsCog(commands.Cog):
 
     @commands.command(name="lurk", aliases=["lurking", "lurker", "wurk", "wurking"])
     async def lurk(self, ctx: commands.Context):
-        reply = await OpenaiModule.command_intepretor(
+        reply = await AnthropicModule.command_intepretor(
             ctx.message.content, ctx.author.name
         )
 
@@ -260,7 +260,7 @@ class CommandsCog(commands.Cog):
             username,
             message,
             avatar_url,
-        ) = await OpenaiModule.shoutout(
+        ) = await AnthropicModule.shoutout(
             content=ctx.message.content, author=ctx.author.name
         )
         if success:
@@ -286,14 +286,14 @@ class CommandsCog(commands.Cog):
 
     @commands.command(name="hug", aliases=["squeeze", "pounce"])
     async def hug(self, ctx: commands.Context):
-        reply = await OpenaiModule.command_intepretor(
+        reply = await AnthropicModule.command_intepretor(
             content=ctx.message.content, author=ctx.author.name
         )
         await ctx.send(reply)
 
     @commands.command(name="lick", aliases=["lickitylick"])
     async def lick(self, ctx: commands.Context):
-        reply = await OpenaiModule.command_intepretor(
+        reply = await AnthropicModule.command_intepretor(
             content=ctx.message.content, author=ctx.author.name
         )
         await ctx.send(reply)

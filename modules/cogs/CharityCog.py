@@ -1,7 +1,7 @@
 import asyncio
 from twitchio.ext import commands
 from Helpers.Timer import Timer
-from Modules.OpenaiModule import OpenaiModule
+from Modules.AnthropicModule import AnthropicModule
 
 
 class CharityCog(commands.Cog):
@@ -34,9 +34,7 @@ class CharityCog(commands.Cog):
                 """
                 await ctx.send(static_message)
 
-    @commands.command(
-        name="uncharity", aliases=["unfundraiser", "undonate", "uncause"]
-    )
+    @commands.command(name="uncharity", aliases=["unfundraiser", "undonate", "uncause"])
     async def uncharity(self, ctx: commands.Context):
         if ctx.author.is_broadcaster:
             self._charity_enabled = False
@@ -44,7 +42,7 @@ class CharityCog(commands.Cog):
 
     async def _puplic_announcement(self, ctx: commands.Context):
         while self._charity_enabled:
-            reply = await OpenaiModule.pa_intepretor(
+            reply = await AnthropicModule.pa_intepretor(
                 content=self._charity_message, author=ctx.author.name
             )
             await ctx.send(reply)

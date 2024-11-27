@@ -3,7 +3,7 @@ import random
 from twitchio.ext import commands
 
 from Helpers.Enums import TwinklyEffect, TwinklyReact, TwinklyMusic, TwinklyPlaylist
-from Modules.OpenaiModule import OpenaiModule
+from Modules.AnthropicModule import AnthropicModule
 from Modules.TwinklyModule import TwinklyModule
 
 
@@ -52,7 +52,7 @@ class LightsCog(commands.Cog):
         elif splits[1] == "black":
             await TwinklyModule.color(red=0, green=0, blue=0)
         elif splits[1] == "ai":
-            colors = await OpenaiModule.rgb_intepretor(ctx.message.content)
+            colors = await AnthropicModule.rgb_intepretor(ctx.message.content)
             if colors is not None:
                 await TwinklyModule.color(
                     red=colors["red"],

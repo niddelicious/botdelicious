@@ -47,6 +47,12 @@ class ConversationEntry:
 
 
 @dataclass
+class AnthropicEntry:
+    role: str
+    content: str
+
+
+@dataclass
 class MidjourneyImage:
     index: int
     filename: str

@@ -4,6 +4,7 @@ from Modules.ChatModule import ChatModule
 from Modules.EventModule import EventModule
 from Modules.OBSModule import OBSModule
 from Modules.OpenaiModule import OpenaiModule
+from Modules.AnthropicModule import AnthropicModule
 from Modules.WebhookModule import WebhookModule
 from Modules.DJctlModule import DJctlModule
 from Modules.TwinklyModule import TwinklyModule
@@ -23,6 +24,7 @@ class ModulesController:
         "djctl": DJctlModule(),
         "twinkly": TwinklyModule(),
         "openai": OpenaiModule(),
+        "anthropic": AnthropicModule(),
         "stablediffusion": StableDiffusionModule(),
         "websocket": WebsocketModule(),
     }

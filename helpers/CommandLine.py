@@ -62,6 +62,7 @@ class CommandLine:
                 EventModule.set_loop_sleep()
             set_level = logging.getLevelName(logging.getLogger().getEffectiveLevel())
             logging.info(f"Log level set to {set_level}")
+
         if command.startswith("test"):
             text_avatar_url = "https://loremflickr.com/300/300/twitch"
             if command[5:] == "moderator":
@@ -140,5 +141,16 @@ class CommandLine:
                         prompt=prompt
                     )
                 )
+
+            if command[5:] == "claude":
+                prompt = input("Enter a prompt: ")
+                reply = AsyncioThread.run_coroutine(
+                    ModulesController.get_module("anthropic").chat(
+                        channel="niddelicious",
+                        username="claude_test",
+                        message=prompt,
+                    )
+                )
+                logging.info(f"reply: {reply}")
 
         return 1
