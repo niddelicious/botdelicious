@@ -17,8 +17,12 @@ class CommandLine:
             ModulesController.stop_module(module_name="webhook")
             ModulesController.stop_module(module_name="twitch")
             ModulesController.stop_module(module_name="podcast")
+            ModulesController.stop_module(module_name="video")
             ModulesController.stop_module(module_name="twinkly")
             ModulesController.stop_module(module_name="stablediffusion")
+            ModulesController.stop_module(module_name="openai")
+            ModulesController.stop_module(module_name="anthropic")
+            ModulesController.stop_module(module_name="websocket")
             logging.info(f"Exiting...\n")
             return 0
         if command == "status":
