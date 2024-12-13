@@ -46,6 +46,7 @@ class AnthropicModule(BotdeliciousModule):
         cls._pa_prompt = config.pa_prompt
         cls._so_prompt = config.so_prompt
         cls._cmd_prompt = config.cmd_prompt
+        cls.get_stream_info()
 
     async def start(self):
         config = ConfigController.get_config_file("anthropic.yaml")
@@ -53,6 +54,14 @@ class AnthropicModule(BotdeliciousModule):
         self.set_config(config)
         await self.anthropic_logging()
         self.set_status(ModuleStatus.RUNNING)
+
+    @classmethod
+    def get_stream_info(cls):
+        twitch_info = ConfigController.get_config_file("twitch_channel.yaml")
+        cls._prompt = (
+            cls._prompt
+            + f" Current stream is: {twitch_info.info.series}, episode {twitch_info.info.episode} - {twitch_info.info.genre}"
+        )
 
     @classmethod
     def set_client(cls, api_key):
@@ -152,11 +161,12 @@ class AnthropicModule(BotdeliciousModule):
                         "content": assistant_message.content,
                     }
                 )
+            system_message = cls._prompt
             cls._logger.info(json_messages)
             response = cls._client.messages.create(
                 max_tokens=cls._max_tokens,
                 model=cls._model,
-                system=cls._prompt,
+                system=system_message,
                 messages=json_messages,
             )
             if response:
